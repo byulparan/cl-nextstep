@@ -1,6 +1,7 @@
 (asdf:defsystem #:cl-nextstep
   :depends-on (#:alexandria
 	       #:cffi
+	       #:cffi-shared-libs
 	       #:float-features
 	       #:bordeaux-threads
 	       #:trivial-main-thread)
