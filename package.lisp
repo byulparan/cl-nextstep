@@ -6,5 +6,8 @@
 	   #:with-event-loop
 	   #:cls
 	   #:sel
-	   #:objc))
+	   #:objc
+
+	   #:window
+	   #:window-show))
 

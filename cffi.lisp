@@ -6,7 +6,6 @@
 (cffi:use-foreign-library lib-nextstep)
 
 
-
 (cffi:defcfun ("objc_getClass" cls) :pointer
   (name :string))
 
@@ -28,5 +27,15 @@
 (cffi:defcfun ("execute_in_event_loop" %execute-in-event-loop) :void
   (id :int))
 
+;; Window
+(cffi:defcfun ("make_window" %make-window) :pointer
+  (id :int)
+  (x :int)
+  (y :int)
+  (w :int)
+  (h :int)
+  (close-fn :pointer))
 
+(cffi:defcfun ("window_show" %window-show) :void
+  (window :pointer))
 

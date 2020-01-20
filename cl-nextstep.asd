@@ -9,4 +9,5 @@
   :components ((:file "package")
 	       (:file "cffi")
 	       #-ccl (:file "id-map")
-	       (:file "cl-nextstep")))
+	       (:file "cl-nextstep")
+	       (:file "window")))
