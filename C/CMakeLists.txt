@@ -8,7 +8,8 @@ set(CMAKE_INSTALL_NAME_DIR @loader_path)
 set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR ON)
 
 set(SRC_FILES
-  cocoa-application.m)
+  application.m
+  window.m)
 
 add_library(cl_nextstep SHARED ${SRC_FILES})
 target_link_libraries(cl_nextstep "-framework Cocoa")
