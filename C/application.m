@@ -12,17 +12,28 @@ void start_event_loop(void(*callback)(int)) {
   NSApp = [NSApplication sharedApplication];
 
   id menubar = [[NSMenu new] autorelease];
+  [NSApp setMainMenu:menubar];
+  
   id appMenuItem = [[NSMenuItem new] autorelease];
   [menubar addItem:appMenuItem];
-  [NSApp setMainMenu:menubar];
   id appMenu = [[NSMenu new] autorelease];
-  id appName = [[NSProcessInfo processInfo] processName];
-  id quitTitle = [@"Quit " stringByAppendingString:appName];
+  id quitTitle = [@"Quit " stringByAppendingString: [[NSProcessInfo processInfo] processName]];
   id quitMenuItem = [[[NSMenuItem alloc] initWithTitle:quitTitle
 						action:@selector(terminate:)
 					 keyEquivalent:@"q"] autorelease];
   [appMenu addItem:quitMenuItem];
   [appMenuItem setSubmenu:appMenu];
+
+
+  id editMenuItem = [[NSMenuItem new] autorelease];
+  [menubar addItem:editMenuItem];
+  id editMenu = [[[NSMenu alloc] initWithTitle: @"Edit"] autorelease];
+  id closeMenuItem = [[[NSMenuItem alloc] initWithTitle:@"Close"
+						 action:@selector(performClose:)
+					 keyEquivalent:@"w"] autorelease];
+  [editMenu addItem: closeMenuItem];
+  [editMenuItem setSubmenu: editMenu];
+
   
   [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular]; // Launching App on MenuBar
   [NSApp activateIgnoringOtherApps:YES]; // Enable Foreground
