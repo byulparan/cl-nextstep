@@ -23,9 +23,10 @@
     (when close-fn
       (setf (gethash id *window-callback-table*) self))))
 
-
 (defun window-show (window)
   (%window-show (cocoa-ref window)))
 
+(defun toggle-fullscreen (window)
+  (ns:objc window "toggleFullscreen"))
 
 

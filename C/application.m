@@ -32,6 +32,11 @@ void start_event_loop(void(*callback)(int)) {
 						 action:@selector(performClose:)
 					 keyEquivalent:@"w"] autorelease];
   [editMenu addItem: closeMenuItem];
+  id fullscreenMenuItem = [[[NSMenuItem alloc] initWithTitle:@"ToggleFullscreen"
+						 action:@selector(toggleFullscreen)
+					 keyEquivalent:@"f"] autorelease];
+  [editMenu addItem: fullscreenMenuItem];
+  
   [editMenuItem setSubmenu: editMenu];
 
   

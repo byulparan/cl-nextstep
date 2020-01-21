@@ -10,6 +10,7 @@
 
 	   #:window
 	   #:window-show
+	   #:toggle-fullscreen
 
 	   #:opengl-view
 	   #:width
