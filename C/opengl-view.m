@@ -1,25 +1,8 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
+#import "view.h"
 #import <Cocoa/Cocoa.h>
 #import <pthread.h>
-
-typedef void(*DrawFn)(int,int,void*,void*,int,int);
-typedef void(*MouseFn)(int inID, int type, NSEvent*, double locationX, double locationY);
-  
-enum {
-      INIT = 0,
-      DRAW,
-      RESHAPE,
-      SHUTDOWN
-};
-
-enum {
-      DOWN = 0,
-      DRAGGED,
-      UP,
-      MOVED,
-      SCROLLWHEEL
-};
 
 static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now,
 				    const CVTimeStamp* outputTime, CVOptionFlags flagsIn,
@@ -38,7 +21,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 }
 
 -(id) initWithID: (int) inID
-	   Frame: (NSRect) rect
+	   frame: (NSRect) frame
      pixelFormat: (NSOpenGLPixelFormat*) pixelFormat
        isAnimate: (bool) isAnimate
 	  drawFn: (DrawFn) drawFn
@@ -48,12 +31,12 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 @implementation LispOpenGLView
 
 -(id) initWithID: (int) inID
-	   Frame: (NSRect) rect
+	   frame: (NSRect) frame
      pixelFormat: (NSOpenGLPixelFormat*) pixelFormat
        isAnimate: (bool) isAnimate
 	  drawFn: (DrawFn) drawFn
 	 mouseFn: (MouseFn) mouseFn {
-  self = [super initWithFrame: rect pixelFormat: pixelFormat];
+  self = [super initWithFrame: frame pixelFormat: pixelFormat];
   mID = inID;
   mDisplayLinkThread = NULL;
   mIsAnimate = isAnimate;
@@ -61,10 +44,6 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
   mMouseFn = mouseFn;
   return self;
 }
-
-// - (BOOL)acceptsFirstMouse:(NSEvent *)event {
-//   return YES;
-// }
 
 -(void) prepareOpenGL {
   [super prepareOpenGL];
@@ -175,7 +154,7 @@ void* make_opengl_view(int inID, unsigned int* _attributes, bool isAnimate,int x
   NSOpenGLPixelFormat *pixelFormat = [[NSOpenGLPixelFormat alloc]
 				       initWithAttributes:(NSOpenGLPixelFormatAttribute*)_attributes];
   LispOpenGLView  *view = [[LispOpenGLView alloc] initWithID: inID
-						       Frame: NSMakeRect(x,y,w,h)
+						       frame: NSMakeRect(x,y,w,h)
 						 pixelFormat: pixelFormat
 						   isAnimate: isAnimate
 						      drawFn: drawFn
