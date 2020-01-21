@@ -3,6 +3,7 @@
 
 @interface LispView : NSView {
   int mID;
+  bool mIsAnimate;
   DrawFn mDrawFn;
   MouseFn mMouseFn;
 }
@@ -12,11 +13,13 @@
 
 -(id) initWithID: (int) inID
 	   frame: (NSRect) frame
+       isAnimate: (bool) isAnimate
 	  drawFn: (DrawFn) drawFn
 	 mouseFn: (MouseFn) mouseFn 
 {
   self = [super initWithFrame: frame];
   mID = inID;
+  mIsAnimate = isAnimate;
   mDrawFn = drawFn;
   mMouseFn = mouseFn;
   return self;
@@ -70,7 +73,8 @@
 LispView* make_view(int inID, bool isAnimate, int x, int y, int w, int h,
 		    DrawFn drawFn, MouseFn mouseFn) {
   LispView* view = [[LispView alloc] initWithID: inID
-					  frame: NSMakeRect(x, y ,w, h)
+					  frame: NSMakeRect(x, y, w, h)
+				      isAnimate: isAnimate
 					 drawFn: drawFn
 					mouseFn: mouseFn];
   return view;
