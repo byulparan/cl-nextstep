@@ -30,6 +30,7 @@
 ;; Window
 (cffi:defcfun ("make_window" %make-window) :pointer
   (id :int)
+  (title :string)
   (x :int)
   (y :int)
   (w :int)

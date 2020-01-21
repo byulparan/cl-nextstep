@@ -26,13 +26,14 @@
 @end
 
 
-LispWindow* make_window(int inID, int x, int y, int w, int h, void(*inCloseFn)(int)) {
+LispWindow* make_window(int inID, char* title, int x, int y, int w, int h, void(*inCloseFn)(int)) {
   LispWindow* window = [[LispWindow alloc] initWithID: inID
 						    X: x
 						    Y: y
 						    W: w
 						    H: h
 					      closeFn: inCloseFn];
+  window.title = [NSString stringWithUTF8String: title];
   [window setDelegate: window];
   return window;
 }
