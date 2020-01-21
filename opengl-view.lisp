@@ -39,7 +39,7 @@
     	  (1 (draw view))
     	  (2 (reshape view))
     	  (3 (shutdown view)))
-      (error (c) (break (format nil "~a" c))))))
+      (error (c) (break (format nil "catch signal while Drawing OpenGL: ~s " c))))))
 
 
 (defconstant +cgl-pfa-double-buffer+ 5)

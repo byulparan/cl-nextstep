@@ -5,7 +5,8 @@
 (cffi:defcallback dispatch-callback :void ((id :int))
   (let* ((task (id-map-free-object *dispatch-id-map* id)))
     (when task
-      (funcall task))))
+      (handler-case (funcall task)
+	(error (c) (break (format nil "catch signal while Dispatching Event: ~s " c)))))))
 
 (defun start-event-loop ()
   (trivial-main-thread:call-in-main-thread

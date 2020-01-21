@@ -5,7 +5,8 @@
 (cffi:defcallback window-callback :void ((id :int))
   (when-let* ((window (gethash id *window-callback-table*))
 	      (close-fn (close-fn window)))
-    (funcall close-fn)))
+    (handler-case (funcall close-fn)
+      (error (c) (break (format nil "catch signal while Closing Window: ~s " c))))))
 
 (defclass window ()
   ((cocoa-ref :reader cocoa-ref)
