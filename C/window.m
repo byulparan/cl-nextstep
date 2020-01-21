@@ -13,8 +13,9 @@ static NSMutableArray* gFullscreenWindows = NULL;
 
 @implementation LispWindow
 
--(id) initWithID: (int) inID X: (int) x Y: (int) y W: (int) w H: (int) h closeFn: (void(*)(int)) inCloseFn {
-  NSRect frame = NSMakeRect(x, y, w, h);
+-(id) initWithID: (int) inID
+	   frame: (NSRect) frame
+	 closeFn: (void(*)(int)) closeFn {
   self = [super initWithContentRect: frame
 			  styleMask: NSWindowStyleMaskTitled | NSWindowStyleMaskClosable
 			    backing: NSBackingStoreBuffered
@@ -23,7 +24,7 @@ static NSMutableArray* gFullscreenWindows = NULL;
     gFullscreenWindows = [[NSMutableArray alloc] init];
   }
   mID = inID;
-  mCloseFn = inCloseFn;
+  mCloseFn = closeFn;
   mIsFullscreen = NO;
   return self;
 }
@@ -73,13 +74,10 @@ static NSMutableArray* gFullscreenWindows = NULL;
 
 LispWindow* make_window(int inID, char* title, int x, int y, int w, int h, void(*inCloseFn)(int)) {
   LispWindow* window = [[LispWindow alloc] initWithID: inID
-						    X: x
-						    Y: y
-						    W: w
-						    H: h
+						frame: NSMakeRect(x, y, w, h)
 					      closeFn: inCloseFn];
   window.title = [NSString stringWithUTF8String: title];
-  [window setDelegate: window];
+  window.delegate = window;
   return window;
 }
 
