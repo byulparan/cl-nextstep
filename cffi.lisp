@@ -57,5 +57,6 @@
   (y :int)
   (w :int)
   (h :int)
-  (draw-fn :pointer))
+  (draw-fn :pointer)
+  (mouse-fn :pointer))
 

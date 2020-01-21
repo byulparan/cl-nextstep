@@ -18,5 +18,14 @@
 	   #:init
 	   #:draw
 	   #:reshape
-	   #:shutdown))
+	   #:shutdown
+	   #:mouse-down
+	   #:mouse-dragged
+	   #:mouse-up
+	   #:mouse-moved
+	   #:mouse-wheel
+	   #:command-p
+	   #:shift-p
+	   #:ctrl-p
+	   #:opt-p))
 

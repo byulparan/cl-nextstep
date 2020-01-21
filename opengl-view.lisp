@@ -26,6 +26,34 @@
 (defmethod shutdown ((self opengl-view))
   ())
 
+(defmethod mouse-down ((self opengl-view) event location-x location-y)
+  (declare (ignorable event location-x location-y)))
+
+(defmethod mouse-dragged ((self opengl-view) event location-x location-y)
+  (declare (ignorable event location-x location-y)))
+
+(defmethod mouse-up ((self opengl-view) event location-x location-y)
+  (declare (ignorable event location-x location-y)))
+
+(defmethod mouse-moved ((self opengl-view) event location-x location-y)
+  (declare (ignorable event location-x location-y)))
+
+(defmethod mouse-wheel ((self opengl-view) event location-x location-y)
+  (declare (ignorable event location-x location-y)))
+
+
+(defun command-p (event)
+  (not (zerop (logand (ns:objc event "modifierFlags" :unsigned-int) (ash 1 20)))))
+
+(defun shift-p (event)
+  (not (zerop (logand (ns:objc event "modifierFlags" :unsigned-int) (ash 1 17)))))
+
+(defun ctrl-p (event)
+  (not (zerop (logand (ns:objc event "modifierFlags" :unsigned-int) (ash 1 18)))))
+
+(defun opt-p (event)
+  (not (zerop (logand (ns:objc event "modifierFlags" :unsigned-int) (ash 1 19)))))
+
 
 (cffi:defcallback opengl-callback :void ((id :int) (draw-flag :int) (context :pointer) (pixel-format :pointer) (width :int) (height :int))
   (let* ((view (gethash id *opengl-view-table*)))
@@ -41,6 +69,16 @@
     	  (3 (shutdown view)))
       (error (c) (break (format nil "catch signal while Drawing OpenGL: ~s " c))))))
 
+(cffi:defcallback mouse-callback :void ((id :int) (mouse-flag :int) (event :pointer) (x :double) (y :double))
+  (let* ((view (gethash id *opengl-view-table*)))
+    (handler-case
+	(ecase mouse-flag
+	  (0 (mouse-down view event x y))
+	  (1 (mouse-dragged view event x y))
+	  (2 (mouse-up view event x y))
+	  (3 (mouse-moved view event x y))
+	  (4 (mouse-wheel view event x y)))
+      (error (c) (break (format nil "catch signal while Handling Mouse: ~s " c))))))
 
 (defconstant +cgl-pfa-double-buffer+ 5)
 (defconstant +cgl-pfa-accelerated+ 73)
@@ -83,7 +121,8 @@
 						  attrib-object
 						  t ;; animate
 						  x y w h
-						  (cffi:callback opengl-callback)))))))
+						  (cffi:callback opengl-callback)
+						  (cffi:callback mouse-callback)))))))
 
 
 

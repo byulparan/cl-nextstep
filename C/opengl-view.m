@@ -4,12 +4,21 @@
 #import <pthread.h>
 
 typedef void(*DrawFn)(int,int,void*,void*,int,int);
-
+typedef void(*MouseFn)(int inID, int type, NSEvent*, double locationX, double locationY);
+  
 enum {
       INIT = 0,
       DRAW,
       RESHAPE,
       SHUTDOWN
+};
+
+enum {
+      DOWN = 0,
+      DRAGGED,
+      UP,
+      MOVED,
+      SCROLLWHEEL
 };
 
 static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now,
@@ -21,17 +30,19 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
   int mID;
   CGLContextObj mCGLContext;
   CGLPixelFormatObj mCGLPixelFormat;
-  DrawFn mDrawFn;
   CVDisplayLinkRef mLink;
   pthread_t mDisplayLinkThread;
   bool mIsAnimate;
+  DrawFn mDrawFn;
+  MouseFn mMouseFn;
 }
 
 -(id) initWithID: (int) inID
 	   Frame: (NSRect) rect
      pixelFormat: (NSOpenGLPixelFormat*) pixelFormat
        isAnimate: (bool) isAnimate
-	  drawFn: (DrawFn) drawFn;
+	  drawFn: (DrawFn) drawFn
+	 mouseFn: (MouseFn) mouseFn;
 @end
 
 @implementation LispOpenGLView
@@ -40,12 +51,14 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 	   Frame: (NSRect) rect
      pixelFormat: (NSOpenGLPixelFormat*) pixelFormat
        isAnimate: (bool) isAnimate
-	  drawFn: (DrawFn) drawFn {
+	  drawFn: (DrawFn) drawFn
+	 mouseFn: (MouseFn) mouseFn {
   self = [super initWithFrame: rect pixelFormat: pixelFormat];
   mID = inID;
-  mDrawFn = drawFn;
   mDisplayLinkThread = NULL;
   mIsAnimate = isAnimate;
+  mDrawFn = drawFn;
+  mMouseFn = mouseFn;
   return self;
 }
 
@@ -116,8 +129,40 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
   mDrawFn(mID, SHUTDOWN, mCGLContext, mCGLPixelFormat, r.size.width, r.size.height);
   [context flushBuffer];
   [super dealloc];
-  NSLog(@"Dealloc object");
 }
+
+-(void) mouseDown:(NSEvent*) event {
+  NSPoint point = [self convertPoint: [event locationInWindow]
+			    fromView: nil];
+  mMouseFn(mID, DOWN, event, point.x, point.y);
+}
+
+-(void) mouseDragged:(NSEvent*) event {
+  NSPoint point = [self convertPoint: [event locationInWindow]
+			    fromView: nil];
+  mMouseFn(mID, DRAGGED, event, point.x, point.y);
+}
+
+-(void) mouseUp:(NSEvent*) event {
+  NSPoint point = [self convertPoint: [event locationInWindow]
+			    fromView: nil];
+  mMouseFn(mID, UP, event, point.x, point.y);
+}
+
+-(void) mouseMoved: (NSEvent*) event {
+  NSPoint point = [self convertPoint: [event locationInWindow]
+			    fromView: nil];
+  mMouseFn(mID, MOVED, event, point.x, point.y);
+}
+
+
+-(void) scrollWheel:(NSEvent*) event {
+  NSPoint point = [self convertPoint: [event locationInWindow]
+			    fromView: nil];
+  mMouseFn(mID, SCROLLWHEEL, event, point.x, point.y);
+}
+
+
 @end
 
 
@@ -126,14 +171,15 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 // ============================================================
 
 void* make_opengl_view(int inID, unsigned int* _attributes, bool isAnimate,int x, int y, int w, int h,
-		       DrawFn drawFn) {
+		       DrawFn drawFn, MouseFn mouseFn) {
   NSOpenGLPixelFormat *pixelFormat = [[NSOpenGLPixelFormat alloc]
 				       initWithAttributes:(NSOpenGLPixelFormatAttribute*)_attributes];
   LispOpenGLView  *view = [[LispOpenGLView alloc] initWithID: inID
 						       Frame: NSMakeRect(x,y,w,h)
 						 pixelFormat: pixelFormat
 						   isAnimate: isAnimate
-						      drawFn: drawFn];
+						      drawFn: drawFn
+						     mouseFn: mouseFn];
   return view;
 }
 
