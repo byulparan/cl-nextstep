@@ -10,4 +10,5 @@
 	       (:file "cffi")
 	       #-ccl (:file "id-map")
 	       (:file "cl-nextstep")
-	       (:file "window")))
+	       (:file "window")
+	       (:file "opengl-view")))

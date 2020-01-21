@@ -40,3 +40,13 @@
 (cffi:defcfun ("window_show" %window-show) :void
   (window :pointer))
 
+;; OpenGL-view
+(cffi:defcfun ("make_opengl_view" %make-opengl-view) :pointer
+  (id :int)
+  (draw-fn :pointer)
+  (attributes :pointer)
+  (x :int)
+  (y :int)
+  (w :int)
+  (h :int))
+

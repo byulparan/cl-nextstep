@@ -10,7 +10,8 @@ set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR ON)
 set(SRC_FILES
   application.m
   window.m
-  view.m)
+  view.m
+  opengl-view.m)
 
 add_library(cl_nextstep SHARED ${SRC_FILES})
-target_link_libraries(cl_nextstep "-framework Cocoa")
+target_link_libraries(cl_nextstep "-framework Cocoa" "-framework QuartzCore")

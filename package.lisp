@@ -9,5 +9,13 @@
 	   #:objc
 
 	   #:window
-	   #:window-show))
+	   #:window-show
+
+	   #:opengl-view
+	   #:width
+	   #:height
+	   #:init
+	   #:draw
+	   #:reshape
+	   #:shutdown))
 
