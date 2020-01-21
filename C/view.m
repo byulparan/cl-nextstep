@@ -22,6 +22,8 @@
   mIsAnimate = isAnimate;
   mDrawFn = drawFn;
   mMouseFn = mouseFn;
+
+  mDrawFn(mID, INIT, NULL, NULL, frame.size.width, frame.size.height);
   return self;
 }
 
@@ -30,6 +32,8 @@
 }
 
 -(void) dealloc {
+  NSRect frame = [self bounds];
+  mDrawFn(mID, SHUTDOWN, NULL, NULL, frame.size.width, frame.size.height);
   [super dealloc];
 }
 
