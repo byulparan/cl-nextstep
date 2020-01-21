@@ -1,3 +1,5 @@
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 #import <Cocoa/Cocoa.h>
 #import <pthread.h>
 
@@ -110,6 +112,9 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 }
 @end
 
+
+// ============================================================
+// export C
 // ============================================================
 
 void* make_opengl_view(int inID, DrawFn drawFn, unsigned int* _attributes, int x, int y, int w, int h) {
