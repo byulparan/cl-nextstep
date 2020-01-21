@@ -51,10 +51,11 @@
 ;; OpenGL-view
 (cffi:defcfun ("make_opengl_view" %make-opengl-view) :pointer
   (id :int)
-  (draw-fn :pointer)
   (attributes :pointer)
+  (animate-p :bool)
   (x :int)
   (y :int)
   (w :int)
-  (h :int))
+  (h :int)
+  (draw-fn :pointer))
 

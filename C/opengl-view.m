@@ -24,11 +24,13 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
   DrawFn mDrawFn;
   CVDisplayLinkRef mLink;
   pthread_t mDisplayLinkThread;
+  bool mIsAnimate;
 }
 
 -(id) initWithID: (int) inID
 	   Frame: (NSRect) rect
      pixelFormat: (NSOpenGLPixelFormat*) pixelFormat
+       isAnimate: (bool) isAnimate
 	  drawFn: (DrawFn) drawFn;
 @end
 
@@ -37,11 +39,13 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 -(id) initWithID: (int) inID
 	   Frame: (NSRect) rect
      pixelFormat: (NSOpenGLPixelFormat*) pixelFormat
+       isAnimate: (bool) isAnimate
 	  drawFn: (DrawFn) drawFn {
   self = [super initWithFrame: rect pixelFormat: pixelFormat];
   mID = inID;
   mDrawFn = drawFn;
   mDisplayLinkThread = NULL;
+  mIsAnimate = isAnimate;
   return self;
 }
 
@@ -59,14 +63,15 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
   NSRect r = [self bounds];
   mDrawFn(mID, INIT, mCGLContext, mCGLPixelFormat, r.size.width, r.size.height);
   [context flushBuffer];
-  
-  GLint swapInt = 1;
-  [[self openGLContext] setValues:&swapInt forParameter:  NSOpenGLContextParameterSwapInterval];
-  
-  CVDisplayLinkCreateWithActiveCGDisplays(&mLink);
-  CVDisplayLinkSetOutputCallback(mLink, &DisplayLinkCallback ,self);
-  CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(mLink, mCGLContext, mCGLPixelFormat);
-  CVDisplayLinkStart(mLink);
+
+  if(mIsAnimate) {
+    GLint swapInt = 1;
+    [[self openGLContext] setValues:&swapInt forParameter:  NSOpenGLContextParameterSwapInterval];
+    CVDisplayLinkCreateWithActiveCGDisplays(&mLink);
+    CVDisplayLinkSetOutputCallback(mLink, &DisplayLinkCallback ,self);
+    CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(mLink, mCGLContext, mCGLPixelFormat);
+    CVDisplayLinkStart(mLink);
+  }
 }
 
 -(void) reshape {
@@ -99,9 +104,12 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 }
 
 -(void) dealloc {
-  CVDisplayLinkStop(mLink);
-  pthread_join(mDisplayLinkThread, NULL);
-  CVDisplayLinkRelease(mLink);
+  if (mIsAnimate) {
+    CVDisplayLinkStop(mLink);
+    pthread_join(mDisplayLinkThread, NULL);
+    CVDisplayLinkRelease(mLink);
+  }
+  
   NSOpenGLContext* context = [self openGLContext];
   [context makeCurrentContext];
   NSRect r = [self bounds];
@@ -117,13 +125,15 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 // export C
 // ============================================================
 
-void* make_opengl_view(int inID, DrawFn drawFn, unsigned int* _attributes, int x, int y, int w, int h) {
+void* make_opengl_view(int inID, unsigned int* _attributes, bool isAnimate,int x, int y, int w, int h,
+		       DrawFn drawFn) {
   NSOpenGLPixelFormat *pixelFormat = [[NSOpenGLPixelFormat alloc]
 				       initWithAttributes:(NSOpenGLPixelFormatAttribute*)_attributes];
   LispOpenGLView  *view = [[LispOpenGLView alloc] initWithID: inID
-						      Frame: NSMakeRect(x,y,w,h)
-						pixelFormat: pixelFormat
-						     drawFn: drawFn];
+						       Frame: NSMakeRect(x,y,w,h)
+						 pixelFormat: pixelFormat
+						   isAnimate: isAnimate
+						      drawFn: drawFn];
   return view;
 }
 

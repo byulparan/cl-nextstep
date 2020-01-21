@@ -80,9 +80,10 @@
 	      do (setf (cffi:mem-aref attrib-object :int i) attr)
 	      finally (setf (cffi:mem-aref attrib-object :int nattribute) 0))
 	(setf (cocoa-ref self) (%make-opengl-view (id self)
-						  (cffi:callback opengl-callback)
 						  attrib-object
-						  x y w h))))))
+						  t ;; animate
+						  x y w h
+						  (cffi:callback opengl-callback)))))))
 
 
 
