@@ -32,8 +32,12 @@
 (cffi:defcfun ("start_event_loop" %start-event-loop) :void
   (event-callback :pointer))
 
-(cffi:defcfun ("execute_in_event_loop" %execute-in-event-loop) :void
+(cffi:defcfun ("execute_in_event_loop_async" %execute-in-event-loop-async) :void
   (id :int))
+
+(cffi:defcfun ("execute_in_event_loop_sync" %execute-in-event-loop-sync) :void
+  (id :int))
+
 
 ;; Window
 (cffi:defcfun ("make_window" %make-window) :pointer

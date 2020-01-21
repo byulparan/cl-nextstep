@@ -2,10 +2,16 @@
 
 static void (*gLispCallback)(int task_id);
 
-void execute_in_event_loop(int task_id) {
+void execute_in_event_loop_async(int task_id) {
   dispatch_async(dispatch_get_main_queue(),
 		 ^{ gLispCallback(task_id); });
 }
+
+void execute_in_event_loop_sync(int task_id) {
+  dispatch_sync(dispatch_get_main_queue(),
+		^{ gLispCallback(task_id); });
+}
+
 
 void start_event_loop(void(*callback)(int)) {
   NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];

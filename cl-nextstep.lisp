@@ -18,18 +18,12 @@
   (alexandria:with-gensyms (result semaphore id) 
     `(cond ((eql (trivial-main-thread:find-main-thread) (bt:current-thread)) (progn ,@body))
 	   (,waitp (let* ((,result nil)
-			  (,semaphore #+sbcl (sb-thread:make-semaphore)
-				      #+ccl (ccl:make-semaphore))
 			  (,id (assign-id-map-id *dispatch-id-map*
 						 (lambda ()
-						   (setf ,result (progn ,@body))
-						   #+sbcl (sb-thread:signal-semaphore ,semaphore)
-						   #+ccl (ccl:signal-semaphore ,semaphore)))))
-		     (cffi:foreign-funcall "execute_in_event_loop" :int ,id)
-		     #+sbcl (sb-thread:wait-on-semaphore ,semaphore)
-		     #+ccl (ccl:wait-on-semaphore ,semaphore)
+						   (setf ,result (progn ,@body))))))
+		     (%execute-in-event-loop-sync ,id)
 		     ,result))
 	   (t (let* ((,id (assign-id-map-id *dispatch-id-map* (lambda () ,@body))))
-		(cffi:foreign-funcall "execute_in_event_loop" :int ,id))))))
+		(%execute-in-event-loop-async ,id))))))
 
 
