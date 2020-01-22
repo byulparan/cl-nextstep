@@ -13,10 +13,10 @@
   (window :pointer))
 
 
-(defvar *window-callback-table* (make-hash-table))
+(defvar *window-table* (make-hash-table))
 
 (cffi:defcallback window-callback :void ((id :int))
-  (when-let* ((window (gethash id *window-callback-table*))
+  (when-let* ((window (gethash id *window-table*))
 	      (close-fn (close-fn window)))
     (handler-case (funcall close-fn)
       (error (c) (break (format nil "catch signal while Closing Window: ~s " c))))))
@@ -34,7 +34,7 @@
     (incf g-id)
     (setf cocoa-ref (%make-window id title x y w h (cffi:callback window-callback)))
     (when close-fn
-      (setf (gethash id *window-callback-table*) self))))
+      (setf (gethash id *window-table*) self))))
 
 (defun window-show (window)
   (%window-show (cocoa-ref window)))

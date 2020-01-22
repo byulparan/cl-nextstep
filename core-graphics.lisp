@@ -1,4 +1,4 @@
-(in-package #:cg)
+(in-package :cg)
 
 (cffi:defcstruct (point :class %point)
   (x :double)

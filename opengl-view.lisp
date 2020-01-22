@@ -11,14 +11,6 @@
   (draw-fn :pointer)
   (mouse-fn :pointer))
 
-(defclass opengl-view (base-view)
-  ((core-profile :initarg :core-profile
-		 :initform t
-		 :reader core-profile)))
-
-(defmethod reshape ((self opengl-view))
-  ())
-
 (defconstant +cgl-pfa-double-buffer+ 5)
 (defconstant +cgl-pfa-accelerated+ 73)
 (defconstant +cgl-pfa-color-size+ 8)
@@ -39,6 +31,16 @@
    +cgl-pfa-sample-buffers+ 1
    +cgl-pfa-samples+ 4
    +cgl-pfa-no-recovery+))
+
+
+(defclass opengl-view (base-view)
+  ((core-profile :initarg :core-profile
+		 :initform t
+		 :reader core-profile)))
+
+(defmethod reshape ((self opengl-view))
+  ())
+
 
 (defmethod initialize-instance :after ((self opengl-view) &key (x 0) (y 0) (w 400) (h 200))
   (let* ((attributes *default-cgl-pixel-format*))
