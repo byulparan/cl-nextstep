@@ -1,11 +1,11 @@
-(asdf:defsystem #:cl-nextstep
-  :depends-on (#:alexandria
-	       #:cffi
-	       #:cffi-libffi
-	       #:cffi-shared-libs
-	       #:float-features
-	       #:bordeaux-threads
-	       #:trivial-main-thread)
+(asdf:defsystem :cl-nextstep
+  :depends-on (:alexandria
+	       :cffi
+	       :cffi-libffi
+	       :cffi-shared-libs
+	       :float-features
+	       :bordeaux-threads
+	       :trivial-main-thread)
   :serial t
   :components ((:file "core-graphics")
 	       (:file "package")
