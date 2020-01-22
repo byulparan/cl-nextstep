@@ -7,13 +7,18 @@
 	       :bordeaux-threads
 	       :trivial-main-thread)
   :serial t
-  :components ((:module "frameworks"
-		:components
-		((:file "core-graphics")))
-	       (:file "package")
+  :components ((:file "package")
 	       #-ccl (:file "id-map")
 	       (:file "cl-nextstep")
 	       (:file "timer")
 	       (:file "window")
+	       (:module "frameworks"
+		:components
+		((:module "core-graphics"
+		  :components ((:file "package")
+			       (:file "type")
+			       (:file "color")
+			       (:file "context")
+			       (:file "image")))))
 	       (:file "view")
 	       (:file "opengl-view")))
