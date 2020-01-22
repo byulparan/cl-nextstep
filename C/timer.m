@@ -33,11 +33,6 @@ typedef void(*TimerFn)(int);
   [mTimer invalidate];
 }
 
--(void) dealloc {
-  NSLog(@"release timer");
-  [super dealloc];
-}
-
 @end
 
 
