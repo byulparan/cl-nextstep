@@ -32,8 +32,10 @@
 	   #:ctrl-p
 	   #:opt-p
 	   #:redisplay
-	   
+
 	   #:view
+	   #:current-cg-context
+	   
 	   #:opengl-view
 	   #:reshape))
 

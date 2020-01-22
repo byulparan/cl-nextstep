@@ -99,3 +99,5 @@
 				     (cffi:callback draw-callback)
 				     (cffi:callback mouse-callback))))
 
+(defun current-cg-context ()
+  (ns:objc (ns:objc "NSGraphicsContext" "currentContext" :pointer) "CGContext" :pointer))
