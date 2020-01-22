@@ -1,84 +1,12 @@
 (in-package :cl-nextstep)
 
-(defvar *opengl-view-table* (make-hash-table))
-
-(defclass opengl-view ()
-  ((id :reader id)
-   (g-id :initform 0 :reader g-id :allocation :class)
-   (context :accessor context)
-   (pixel-format :accessor pixel-format)
-   (width :accessor width )
-   (heigh :accessor height)
-   (core-profile :initarg :core-profile
+(defclass opengl-view (base-view)
+  ((core-profile :initarg :core-profile
 		 :initform t
-		 :reader core-profile)
-   (cocoa-ref :accessor cocoa-ref)))
-
-(defmethod init ((self opengl-view))
-  ())
-
-(defmethod draw ((self opengl-view))
-  ())
+		 :reader core-profile)))
 
 (defmethod reshape ((self opengl-view))
   ())
-
-(defmethod shutdown ((self opengl-view))
-  ())
-
-(defmethod mouse-down ((self opengl-view) event location-x location-y)
-  (declare (ignorable event location-x location-y)))
-
-(defmethod mouse-dragged ((self opengl-view) event location-x location-y)
-  (declare (ignorable event location-x location-y)))
-
-(defmethod mouse-up ((self opengl-view) event location-x location-y)
-  (declare (ignorable event location-x location-y)))
-
-(defmethod mouse-moved ((self opengl-view) event location-x location-y)
-  (declare (ignorable event location-x location-y)))
-
-(defmethod mouse-wheel ((self opengl-view) event location-x location-y)
-  (declare (ignorable event location-x location-y)))
-
-
-(defun command-p (event)
-  (not (zerop (logand (ns:objc event "modifierFlags" :unsigned-int) (ash 1 20)))))
-
-(defun shift-p (event)
-  (not (zerop (logand (ns:objc event "modifierFlags" :unsigned-int) (ash 1 17)))))
-
-(defun ctrl-p (event)
-  (not (zerop (logand (ns:objc event "modifierFlags" :unsigned-int) (ash 1 18)))))
-
-(defun opt-p (event)
-  (not (zerop (logand (ns:objc event "modifierFlags" :unsigned-int) (ash 1 19)))))
-
-
-(cffi:defcallback opengl-callback :void ((id :int) (draw-flag :int) (context :pointer) (pixel-format :pointer) (width :int) (height :int))
-  (let* ((view (gethash id *opengl-view-table*)))
-    (setf (context view) context
-	  (pixel-format view) pixel-format
-	  (width view) width
-	  (height view) height)
-    (handler-case 
-    	(ecase draw-flag
-    	  (0 (init view))
-    	  (1 (draw view))
-    	  (2 (reshape view))
-    	  (3 (shutdown view)))
-      (error (c) (break (format nil "catch signal while Drawing OpenGL: ~s " c))))))
-
-(cffi:defcallback mouse-callback :void ((id :int) (mouse-flag :int) (event :pointer) (x :double) (y :double))
-  (let* ((view (gethash id *opengl-view-table*)))
-    (handler-case
-	(ecase mouse-flag
-	  (0 (mouse-down view event x y))
-	  (1 (mouse-dragged view event x y))
-	  (2 (mouse-up view event x y))
-	  (3 (mouse-moved view event x y))
-	  (4 (mouse-wheel view event x y)))
-      (error (c) (break (format nil "catch signal while Handling Mouse: ~s " c))))))
 
 (defconstant +cgl-pfa-double-buffer+ 5)
 (defconstant +cgl-pfa-accelerated+ 73)
@@ -102,27 +30,23 @@
    +cgl-pfa-no-recovery+))
 
 (defmethod initialize-instance :after ((self opengl-view) &key (x 0) (y 0) (w 400) (h 200))
-  (with-slots (id g-id) self
-    (setf id g-id)
-    (incf g-id))
-  (setf (gethash (id self) *opengl-view-table*) self)
   (let* ((attributes *default-cgl-pixel-format*))
     (when (core-profile self)
       (setf attributes (append attributes
-			       (list +cgl-pfa-opengl-profile+
-				     +cgl-opengl-profile-version3-2-core+))))
+  			       (list +cgl-pfa-opengl-profile+
+  				     +cgl-opengl-profile-version3-2-core+))))
     (let* ((nattribute (length attributes)))
       (cffi:with-foreign-objects ((attrib-object :unsigned-int (1+ nattribute)))
-	(loop for attr in attributes
-	      for i from 0 
-	      do (setf (cffi:mem-aref attrib-object :int i) attr)
-	      finally (setf (cffi:mem-aref attrib-object :int nattribute) 0))
-	(setf (cocoa-ref self) (%make-opengl-view (id self)
-						  attrib-object
-						  t ;; animate
-						  x y w h
-						  (cffi:callback opengl-callback)
-						  (cffi:callback mouse-callback)))))))
+  	(loop for attr in attributes
+  	      for i from 0 
+  	      do (setf (cffi:mem-aref attrib-object :int i) attr)
+  	      finally (setf (cffi:mem-aref attrib-object :int nattribute) 0))
+  	(setf (cocoa-ref self) (%make-opengl-view (id self)
+  						  attrib-object
+  						  t ;; animate
+  						  x y w h
+  						  (cffi:callback draw-callback)
+  						  (cffi:callback mouse-callback)))))))
 
 
 

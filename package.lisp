@@ -12,7 +12,6 @@
 	   #:window-show
 	   #:toggle-fullscreen
 
-	   #:opengl-view
 	   #:width
 	   #:height
 	   #:init
@@ -27,5 +26,8 @@
 	   #:command-p
 	   #:shift-p
 	   #:ctrl-p
-	   #:opt-p))
+	   #:opt-p
+	   
+	   #:view
+	   #:opengl-view))
 

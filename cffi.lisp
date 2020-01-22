@@ -39,7 +39,7 @@
   (id :int))
 
 
-;; Window
+;; window
 (cffi:defcfun ("make_window" %make-window) :pointer
   (id :int)
   (title :string)
@@ -51,6 +51,18 @@
 
 (cffi:defcfun ("window_show" %window-show) :void
   (window :pointer))
+
+;; view
+(cffi:defcfun ("make_view" %make-view) :pointer
+  (id :int)
+  (animate-p :bool)
+  (x :int)
+  (y :int)
+  (w :int)
+  (h :int)
+  (draw-fn :pointer)
+  (mouse-fn :pointer))
+
 
 ;; OpenGL-view
 (cffi:defcfun ("make_opengl_view" %make-opengl-view) :pointer

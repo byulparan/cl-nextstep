@@ -11,4 +11,5 @@
 	       #-ccl (:file "id-map")
 	       (:file "cl-nextstep")
 	       (:file "window")
+	       (:file "view")
 	       (:file "opengl-view")))
