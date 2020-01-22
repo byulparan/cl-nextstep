@@ -2,7 +2,6 @@
 
 (cffi:defcfun ("make_view" %make-view) :pointer
   (id :int)
-  (animate-p :bool)
   (x :int)
   (y :int)
   (w :int)
@@ -94,16 +93,8 @@
 (defclass view (base-view)
   ())
 
-(defmethod initialize-instance :after ((self view) &key animate-p (x 0) (y 0) (w 400) (h 200))
+(defmethod initialize-instance :after ((self view) &key (x 0) (y 0) (w 400) (h 200))
   (setf (cocoa-ref self) (%make-view (id self)
-				     animate-p
 				     x y w h
 				     (cffi:callback draw-callback)
 				     (cffi:callback mouse-callback))))
-
-
-
-
-
-
-
