@@ -21,7 +21,6 @@
 	   #:height
 	   #:init
 	   #:draw
-	   #:reshape
 	   #:shutdown
 	   #:mouse-down
 	   #:mouse-dragged
@@ -32,7 +31,9 @@
 	   #:shift-p
 	   #:ctrl-p
 	   #:opt-p
+	   #:redisplay
 	   
 	   #:view
-	   #:opengl-view))
+	   #:opengl-view
+	   #:reshape))
 

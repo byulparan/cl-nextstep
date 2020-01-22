@@ -7,9 +7,9 @@
 	       #:bordeaux-threads
 	       #:trivial-main-thread)
   :serial t
-  :components ((:file "package")
+  :components ((:file "core-graphics")
+	       (:file "package")
 	       #-ccl (:file "id-map")
-	       (:file "core-graphics")
 	       (:file "cl-nextstep")
 	       (:file "timer")
 	       (:file "window")

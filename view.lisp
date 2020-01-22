@@ -74,9 +74,6 @@
 (defmethod mouse-wheel ((self base-view) event location-x location-y)
   (declare (ignorable event location-x location-y)))
 
-
-
-
 (defun command-p (event)
   (not (zerop (logand (ns:objc event "modifierFlags" :unsigned-int) (ash 1 20)))))
 
@@ -89,6 +86,8 @@
 (defun opt-p (event)
   (not (zerop (logand (ns:objc event "modifierFlags" :unsigned-int) (ash 1 19)))))
 
+(defun redisplay (view)
+  (ns:objc view "setNeedsDisplayInRect:" (:struct cg:rect) (cg:make-rect 0 0 (ns:width view) (ns:height view))))
 
 ;; view
 (defclass view (base-view)
@@ -99,3 +98,4 @@
 				     x y w h
 				     (cffi:callback draw-callback)
 				     (cffi:callback mouse-callback))))
+
