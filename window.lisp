@@ -42,4 +42,13 @@
 (defun toggle-fullscreen (window)
   (ns:objc window "toggleFullscreen"))
 
+(defun content-view (window)
+  (ns:objc window "contentView" :pointer))
+
+(defun (setf content-view) (view window)
+  (ns:objc window "setContentView:" :pointer (ns:objc view "autorelease" :pointer)))
+
+(defun add-subviews (superview subview &rest subviews)
+  (dolist (sub (cons subview subviews))
+    (ns:objc superview "addSubview:" :pointer (ns:objc sub "autorelease" :pointer))))
 

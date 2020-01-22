@@ -14,6 +14,8 @@
 	   #:window
 	   #:window-show
 	   #:toggle-fullscreen
+	   #:content-view
+	   #:add-subviews
 
 	   #:width
 	   #:height
