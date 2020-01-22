@@ -49,11 +49,14 @@
       (handler-case (funcall task)
 	(error (c) (break (format nil "catch signal while Dispatching Event: ~s " c)))))))
 
-(defun start-event-loop ()
-  (trivial-main-thread:call-in-main-thread
-    (lambda ()
-      (float-features:with-float-traps-masked (:invalid :overflow :divide-by-zero)
-	(cffi:foreign-funcall "start_event_loop" :pointer (cffi:callback dispatch-callback))))))
+(let* ((running-p nil))
+  (defun start-event-loop ()
+    (unless running-p
+      (trivial-main-thread:call-in-main-thread
+       (lambda ()
+	 (setf running-p t)
+	 (float-features:with-float-traps-masked (:invalid :overflow :divide-by-zero)
+	   (cffi:foreign-funcall "start_event_loop" :pointer (cffi:callback dispatch-callback))))))))
 
 (defmacro with-event-loop ((&key waitp nil) &body body)
   (alexandria:with-gensyms (result semaphore id) 
