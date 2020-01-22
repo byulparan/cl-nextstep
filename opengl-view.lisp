@@ -1,5 +1,16 @@
 (in-package :cl-nextstep)
 
+(cffi:defcfun ("make_opengl_view" %make-opengl-view) :pointer
+  (id :int)
+  (attributes :pointer)
+  (animate-p :bool)
+  (x :int)
+  (y :int)
+  (w :int)
+  (h :int)
+  (draw-fn :pointer)
+  (mouse-fn :pointer))
+
 (defclass opengl-view (base-view)
   ((core-profile :initarg :core-profile
 		 :initform t

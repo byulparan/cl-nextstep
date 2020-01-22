@@ -1,5 +1,18 @@
 (in-package :cl-nextstep)
 
+(cffi:defcfun ("make_window" %make-window) :pointer
+  (id :int)
+  (title :string)
+  (x :int)
+  (y :int)
+  (w :int)
+  (h :int)
+  (close-fn :pointer))
+
+(cffi:defcfun ("window_show" %window-show) :void
+  (window :pointer))
+
+
 (defvar *window-callback-table* (make-hash-table))
 
 (cffi:defcallback window-callback :void ((id :int))

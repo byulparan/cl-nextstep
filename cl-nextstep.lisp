@@ -1,5 +1,46 @@
 (in-package :cl-nextstep)
 
+
+(cffi:define-foreign-library lib-nextstep
+  (:darwin "libcl_nextstep.dylib"))
+
+(cffi:use-foreign-library lib-nextstep)
+
+
+(cffi:defcfun ("objc_getClass" cls) :pointer
+  (name :string))
+
+(cffi:defcfun ("sel_getUid" sel) :pointer
+  (name :string))
+
+(defgeneric cocoa-ref (self))
+
+(defmethod cocoa-ref ((self t))
+  self)
+
+(defmethod cocoa-ref ((self string))
+  (cls self))
+
+(defmacro objc (class sel &rest rest)
+  (with-gensyms (cls selector)
+    `(let* ((,cls (cocoa-ref ,class))
+	    (,selector (sel ,sel)))
+       (assert (not (cffi:null-pointer-p ,cls)) nil "Can't find NSClass: ~a" ,class)
+       (assert (not (cffi:null-pointer-p ,selector)) nil "Can't find Selector: ~a" ,sel)
+       (cffi:foreign-funcall "objc_msgSend" :pointer ,cls :pointer ,selector ,@rest))))
+
+
+(cffi:defcfun ("start_event_loop" %start-event-loop) :void
+  (event-callback :pointer))
+
+(cffi:defcfun ("execute_in_event_loop_async" %execute-in-event-loop-async) :void
+  (id :int))
+
+(cffi:defcfun ("execute_in_event_loop_sync" %execute-in-event-loop-sync) :void
+  (id :int))
+
+
+
 (defvar *dispatch-id-map* (make-id-map))
 
 (cffi:defcallback dispatch-callback :void ((id :int))

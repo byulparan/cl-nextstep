@@ -1,5 +1,15 @@
 (in-package :cl-nextstep)
 
+(cffi:defcfun ("make_view" %make-view) :pointer
+  (id :int)
+  (animate-p :bool)
+  (x :int)
+  (y :int)
+  (w :int)
+  (h :int)
+  (draw-fn :pointer)
+  (mouse-fn :pointer))
+
 (defvar *view-table* (make-hash-table))
 
 (defclass base-view ()

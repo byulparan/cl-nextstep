@@ -8,7 +8,6 @@
 	       #:trivial-main-thread)
   :serial t
   :components ((:file "package")
-	       (:file "cffi")
 	       #-ccl (:file "id-map")
 	       (:file "core-graphics")
 	       (:file "cl-nextstep")
