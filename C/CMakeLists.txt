@@ -9,7 +9,7 @@ set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR ON)
 
 set(SRC_FILES
   core-graphics.m
-  application.m
+  cl_nextstep.m
   timer.m
   window.m
   view.m
