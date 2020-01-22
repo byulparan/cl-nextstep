@@ -1,6 +1,7 @@
 (asdf:defsystem #:cl-nextstep
   :depends-on (#:alexandria
 	       #:cffi
+	       #:cffi-libffi
 	       #:cffi-shared-libs
 	       #:float-features
 	       #:bordeaux-threads
@@ -9,6 +10,7 @@
   :components ((:file "package")
 	       (:file "cffi")
 	       #-ccl (:file "id-map")
+	       (:file "core-graphics")
 	       (:file "cl-nextstep")
 	       (:file "window")
 	       (:file "view")

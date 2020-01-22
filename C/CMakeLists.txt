@@ -8,6 +8,7 @@ set(CMAKE_INSTALL_NAME_DIR @loader_path)
 set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR ON)
 
 set(SRC_FILES
+  core-graphics.m
   application.m
   window.m
   view.m

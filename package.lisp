@@ -31,3 +31,28 @@
 	   #:view
 	   #:opengl-view))
 
+(defpackage #:cg
+  (:use #:cl)
+  (:export #:point
+	   #:make-point
+	   #:point-x
+	   #:point-y
+	   #:size
+	   #:make-size
+	   #:size-width
+	   #:size-height
+	   #:rect
+	   #:make-rect
+	   #:rect-x
+	   #:rect-y
+	   #:rect-width
+	   #:rect-height
+	   #:load-image
+	   #:image-width
+	   #:image-height
+	   #:image-bpp
+	   #:image-bitmap-data
+	   #:retain-image
+	   #:release-image
+	   #:make-image-from-screen))
+
