@@ -1,3 +1,32 @@
+(defpackage :cg
+  (:use :cl)
+  (:export #:point
+	   #:make-point
+	   #:point-x
+	   #:point-y
+	   #:size
+	   #:make-size
+	   #:size-width
+	   #:size-height
+	   #:rect
+	   #:make-rect
+	   #:rect-x
+	   #:rect-y
+	   #:rect-width
+	   #:rect-height
+	   #:load-image
+	   #:image-width
+	   #:image-height
+	   #:image-bpp
+	   #:image-bitmap-data
+	   #:retain-image
+	   #:release-image
+	   #:make-image-from-screen
+
+	   #:context-set-rgb-fill-color
+	   #:context-set-rgb-stroke-color
+	   #:context-fill-rect))
+
 (in-package :cg)
 
 (cffi:defcstruct (point :class %point)
@@ -90,4 +119,25 @@
 
 (cffi:defcfun ("cg_get_cgimage_from_screen" make-image-from-screen) :pointer
   (rect (:struct rect)))
+
+
+;; drwing-call
+(defun context-set-rgb-fill-color (context red green blue &optional (alpha 1))
+  (cffi:foreign-funcall "CGContextSetRGBFillColor" :pointer context
+						   :double (float red 1.0d0)
+						   :double (float green 1.0d0)
+						   :double (float blue 1.0d0)
+						   :double (float alpha 1.0d0)))
+
+(defun context-set-rgb-stroke-color (context red green blue &optional (alpha 1))
+  (cffi:foreign-funcall "CGContextSetRGBStrokeColor" :pointer context
+						   :double (float red 1.0d0)
+						   :double (float green 1.0d0)
+						   :double (float blue 1.0d0)
+						   :double (float alpha 1.0d0)))
+
+
+(defun context-fill-rect (context rect)
+  (cffi:foreign-funcall "CGContextFillRect" :pointer context (:struct cg:rect) rect))
+
 
