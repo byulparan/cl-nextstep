@@ -23,10 +23,6 @@
   return self;
 }
 
--(void) timerHandle:(NSTimer*) timer {
-  [self setNeedsDisplay: YES];
-}
-
 -(void) drawRect:(NSRect) frame {
   mDrawFn(mID, DRAW, NULL, NULL, frame.size.width, frame.size.height);
 }

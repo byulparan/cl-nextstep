@@ -10,6 +10,7 @@ set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR ON)
 set(SRC_FILES
   core-graphics.m
   application.m
+  timer.m
   window.m
   view.m
   opengl-view.m)

@@ -8,6 +8,9 @@
 	   #:sel
 	   #:objc
 
+	   #:timer
+	   #:invalidate
+	   
 	   #:window
 	   #:window-show
 	   #:toggle-fullscreen
