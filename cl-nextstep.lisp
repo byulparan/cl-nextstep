@@ -25,7 +25,7 @@
   (with-gensyms (cls selector)
     `(let* ((,cls (cocoa-ref ,class))
 	    (,selector (sel ,sel)))
-       (assert (not (cffi:null-pointer-p ,cls)) nil "Can't find NSClass: ~a" ,class)
+       (assert (not (cffi:null-pointer-p ,cls)) nil "Can't find NSClass: '~a' with SEL: '~a'" ,class ,sel)
        (cffi:foreign-funcall "objc_msgSend" :pointer ,cls :pointer ,selector ,@rest))))
 
 
