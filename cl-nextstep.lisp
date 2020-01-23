@@ -46,7 +46,8 @@
   (let* ((task (id-map-free-object *dispatch-id-map* id)))
     (when task
       (handler-case (funcall task)
-	(error (c) (break (format nil "catch signal while Dispatching Event: \"~a\"" c)))))))
+	(error (c)
+	  (break (format nil "catch signal while Dispatching Event: \"~a\"" c)))))))
 
 (let* ((running-p nil))
   (defun start-event-loop ()

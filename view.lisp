@@ -23,7 +23,7 @@
     	  (1 (draw view))
     	  (2 (reshape view))
     	  (3 (shutdown view)))
-      (error (c) (break (format nil "catch signal while Drawing OpenGL: ~s " c))))))
+      (error (c) (break (format nil "catch signal while Drawing OpenGL: \"~a\"" c))))))
 
 (cffi:defcallback mouse-callback :void ((id :int) (mouse-flag :int) (event :pointer) (x :double) (y :double))
   (let* ((view (gethash id *view-table*)))
@@ -34,7 +34,7 @@
 	  (2 (mouse-up view event x y))
 	  (3 (mouse-moved view event x y))
 	  (4 (mouse-wheel view event x y)))
-      (error (c) (break (format nil "catch signal while Handling Mouse: ~s " c))))))
+      (error (c) (break (format nil "catch signal while Handling Mouse: \"~a\"" c))))))
 
 (defclass base-view ()
   ((id :accessor id)
