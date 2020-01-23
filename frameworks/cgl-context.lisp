@@ -31,7 +31,7 @@
 (defconstant +pfa-opengl-profile+ 99)
 (defconstant +opengl-profile-version3-2-core+ 12800)
 
-(defun make-attributes (&key core-profile)
+(defun make-attributes (&key (core-profile t))
   (append 
    (list
     +pfa-double-buffer+
