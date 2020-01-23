@@ -11,10 +11,10 @@
 
 (defvar *view-table* (make-hash-table))
 
-(cffi:defcallback draw-callback :void ((id :int) (draw-flag :int) (context :pointer) (pixel-format :pointer) (width :int) (height :int))
+(cffi:defcallback draw-callback :void ((id :int) (draw-flag :int) (cgl-context :pointer) (cgl-pixel-format :pointer) (width :int) (height :int))
   (let* ((view (gethash id *view-table*)))
-    (setf (context view) context
-	  (pixel-format view) pixel-format
+    (setf (cgl-context view) cgl-context
+	  (cgl-pixel-format view) cgl-pixel-format
 	  (width view) width
 	  (height view) height)
     (handler-case 
@@ -39,8 +39,8 @@
 (defclass base-view ()
   ((id :accessor id)
    (g-id :initform 0 :accessor g-id :allocation :class)
-   (context :accessor context)
-   (pixel-format :accessor pixel-format)
+   (cgl-context :accessor cgl-context)
+   (cgl-pixel-format :accessor cgl-pixel-format)
    (width :accessor width )
    (heigh :accessor height)
    (cocoa-ref :accessor cocoa-ref)))

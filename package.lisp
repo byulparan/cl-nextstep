@@ -19,6 +19,8 @@
 
 	   #:width
 	   #:height
+	   #:cgl-context
+	   #:cgl-pixel-format
 	   #:init
 	   #:draw
 	   #:shutdown
