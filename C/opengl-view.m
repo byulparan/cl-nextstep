@@ -142,10 +142,10 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 // export C
 // ============================================================
 
-LispOpenGLView* make_opengl_view(int inID, unsigned int* _attributes, bool isAnimate,int x, int y, int w, int h,
+LispOpenGLView* make_opengl_view(int inID, CGLPixelFormatObj cglPixelFormat, bool isAnimate,int x, int y, int w, int h,
 		       DrawFn drawFn, MouseFn mouseFn) {
   NSOpenGLPixelFormat *pixelFormat = [[NSOpenGLPixelFormat alloc]
-				       initWithAttributes:(NSOpenGLPixelFormatAttribute*)_attributes];
+				       initWithCGLPixelFormatObj: cglPixelFormat];
   LispOpenGLView  *view = [[LispOpenGLView alloc] initWithID: inID
 						       frame: NSMakeRect(x,y,w,h)
 						 pixelFormat: pixelFormat
