@@ -49,15 +49,6 @@
 	(error (c)
 	  (break (format nil "catch signal while Dispatching Event: \"~a\"" c)))))))
 
-(let* ((running-p nil))
-  (defun start-event-loop ()
-    (unless running-p
-      (trivial-main-thread:call-in-main-thread
-       (lambda ()
-	 (setf running-p t)
-	 (float-features:with-float-traps-masked (:invalid :overflow :divide-by-zero)
-	   (cffi:foreign-funcall "start_event_loop" :pointer (cffi:callback dispatch-callback))))))))
-
 (defmacro with-event-loop ((&key waitp nil) &body body)
   (alexandria:with-gensyms (result semaphore id) 
     `(cond ((eql (trivial-main-thread:find-main-thread) (bt:current-thread)) (progn ,@body))
@@ -69,5 +60,19 @@
 		     ,result))
 	   (t (let* ((,id (assign-id-map-id *dispatch-id-map* (lambda () ,@body))))
 		(%execute-in-event-loop-async ,id))))))
+
+
+(let* ((running-p nil))
+  (defun start-event-loop ()
+    (unless running-p
+      (trivial-main-thread:call-in-main-thread
+       (lambda ()
+	 (setf running-p t)
+	 (defun trivial-main-thread:call-in-main-thread (function &key blocking (runner trivial-main-thread::*runner*))
+	   (declare (ignore runner))
+	   (ns:with-event-loop (:waitp blocking)
+	     (funcall function)))
+	 (float-features:with-float-traps-masked (:invalid :overflow :divide-by-zero)
+	   (cffi:foreign-funcall "start_event_loop" :pointer (cffi:callback dispatch-callback))))))))
 
 
