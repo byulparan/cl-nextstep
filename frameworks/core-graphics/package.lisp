@@ -17,6 +17,9 @@
 
 	   #:color-create-generic-rgb
 	   
+	   #:color-space-create
+	   #:color-space-release
+	   
 	   #:context-save-gstate
 	   #:context-restore-gstate
 	   #:context-scale-ctm
