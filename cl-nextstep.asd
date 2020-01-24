@@ -22,6 +22,7 @@
 			       (:file "context")
 			       (:file "image")))
 		 (:file "cgl-context")
-		 (:file "ci-context")))
+		 (:file "core-image")
+		 (:file "ci-filter-db")))
 	       (:file "view")
 	       (:file "opengl-view")))
