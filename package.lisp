@@ -7,6 +7,9 @@
 	   #:cls
 	   #:sel
 	   #:objc
+	   #:retain
+	   #:release
+	   #:autorelease
 
 	   #:timer
 	   #:invalidate

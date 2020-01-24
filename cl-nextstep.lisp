@@ -30,7 +30,14 @@
        (assert (not (cffi:null-pointer-p ,object)) nil "`ns:objc` accept NullPointer with SEL: \"~a\"" ,sel)
        (cffi:foreign-funcall "objc_msgSend" :pointer ,object :pointer ,selector ,@rest))))
 
-(defun retain (instance))
+(defun retain (instance)
+  (ns:objc instance "retain" :pointer))
+
+(defun release (instance)
+  (ns:objc instance "release" :pointer))
+
+(defun autorelease (instance)
+  (ns:objc instance "autorelease" :pointer))
 
 
 (cffi:defcfun ("start_event_loop" %start-event-loop) :void
