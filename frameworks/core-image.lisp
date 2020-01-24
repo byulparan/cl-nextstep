@@ -46,13 +46,13 @@
 
 ;; ci-image
 (defun load-image (path)
-  (let* ((path (uiop:truenamize path)))
+  (let* ((path (namestring (uiop:truenamize path))))
     (assert (probe-file path) nil "can't find file: ~s" path)
     (ns:with-event-loop (:waitp t)
       (let* ((path (ns:autorelease (ns:make-ns-string path)))
 	     (url (ns:objc "NSURL" "fileURLWithPath:" :pointer path :pointer)))
 	(ns:objc (ns:objc "CIImage" "alloc" :pointer)
-		 "initWithContentOfURL:" :pointer url :pointer)))))
+		 "initWithContentsOfURL:" :pointer url :pointer)))))
 
 (defun image-from-texture (texture size)
   (let* ((color-space (cg:color-space-create :color-space-srgb)))
@@ -75,7 +75,7 @@
 
 (defclass filter ()
   ((name :initarg :name :reader name)
-   (params :initarg :param :reader params)
+   (params :initarg :params :reader params)
    (cocoa-ref :initarg :cocoa-ref :reader ns::cocoa-ref)))
 
 (defmethod print-object ((object filter) stream)
