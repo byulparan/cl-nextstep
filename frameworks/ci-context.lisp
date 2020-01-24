@@ -33,15 +33,16 @@
 	   (:struct cg:rect) in-rect
 	   (:struct cg:rect) from-rect))
 
-(defun render-to-bitmap (context image data row-bytes format bounds)
+(defun render-to-bitmap (context image data row-bytes bounds format color-space)
   (ns:objc context "render:toBitmap:rowBytes:bounds:format:colorSpace:"
 	   :pointer image
 	   :pointer data
 	   :int row-bytes
+	   (:struct cg:rect) bounds
 	   :int (case format
 		  (:ci-format-argb8 265)
 		  (t format))
-	   :pointer (cffi:null-pointer)))
+	   :pointer color-space))
 
 ;; ci-image
 
