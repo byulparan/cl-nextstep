@@ -42,25 +42,25 @@
 (defun cf-release (cf-instance)
   (cffi:foreign-funcall "CFRelease" :pointer cf-instance))
 
-(defun make-nsstring (string)
+(defun make-ns-string (string)
   (cffi:with-foreign-strings ((s string))
     (ns:objc (ns:objc "NSString" "alloc" :pointer)
 	     "initWithUTF8String:" :pointer s :pointer)))
 
-(defun nsstring-to-lisp (nsstring)
-  (cffi:foreign-string-to-lisp (ns:objc nsstring "UTF8String" :pointer)))
+(defun ns-string-to-lisp (ns-string)
+  (cffi:foreign-string-to-lisp (ns:objc ns-string "UTF8String" :pointer)))
 
-(defun make-cfstring (string)
+(defun make-cf-string (string)
   (cffi:foreign-funcall "CFStringCreateWithCString"
 			:pointer (cffi:null-pointer)
 			:string string
 			:int 134217984	;NSUTF8StringEncoding
 			:pointer))
 
-(defun cfstring-to-lisp (cfstring)
-  (let* ((len (1+ (* 3 (cffi:foreign-funcall "CFStringGetLength" :pointer cfstring :int)))))
+(defun cf-string-to-lisp (cf-string)
+  (let* ((len (1+ (* 3 (cffi:foreign-funcall "CFStringGetLength" :pointer cf-string :int)))))
     (cffi:with-foreign-objects ((buffer :char len))
-      (cffi:foreign-funcall "CFStringGetCString" :pointer cfstring
+      (cffi:foreign-funcall "CFStringGetCString" :pointer cf-string
 						 :pointer buffer
 						 :int len
 						 :int 134217984	;NSUTF8StringEncoding

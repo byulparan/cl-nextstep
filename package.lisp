@@ -11,10 +11,10 @@
 	   #:release
 	   #:autorelease
 	   #:cf-release
-	   #:make-nsstring
-	   #:nsstring-to-lisp
-	   #:make-cfstring
-	   #:cfstring-to-lisp
+	   #:make-ns-string
+	   #:ns-string-to-lisp
+	   #:make-cf-string
+	   #:cf-string-to-lisp
 	   
 	   #:timer
 	   #:invalidate
