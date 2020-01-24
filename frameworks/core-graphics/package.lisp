@@ -62,6 +62,10 @@
 	   #:context-set-character-spacing
 	   #:context-set-text-position
 	   #:context-set-text-drawing-mode
+
+	   #:create-font
+	   #:context-set-font
+	   #:context-set-font-size
 	   #:context-select-font
 	   #:context-show-text
 	   #:context-show-text-at-point

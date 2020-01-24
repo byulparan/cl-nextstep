@@ -338,10 +338,19 @@ CGContextGetTextMatrix
                 (otherwise mode))))
     (cffi:foreign-funcall "CGContextSetTextDrawingMode" :pointer context :int code)))
 
-#|
-CGContextSetFont
-CGContextSetFontSize
-|#
+(defun create-font (name)
+  (let* ((cf-name (ns:make-cf-string name)))
+    (unwind-protect (cffi:foreign-funcall "CGFontCreateWithFontName"
+					  :pointer cf-name
+					  :pointer)
+      (ns:cf-release cf-name))))
+
+(defun context-set-font (context font)
+  (cffi:foreign-funcall "CGContextSetFont" :pointer context :pointer font))
+
+(defun context-set-font-size (context size)
+  (cffi:foreign-funcall "CGContextSetFontSize" :pointer context :double (cgfloat size)))
+
 
 (defun context-select-font (context font-name size encoding)
   (let ((code (case encoding

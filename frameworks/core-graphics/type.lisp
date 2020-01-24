@@ -61,3 +61,5 @@
 	      y (coerce (rect-y rect) 'double-float)
 	  width (coerce (rect-width rect) 'double-float)
 	  height (coerce (rect-height rect) 'double-float))))))
+
+
