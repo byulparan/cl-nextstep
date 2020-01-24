@@ -36,7 +36,7 @@
 (let* ((running-p nil))
   (defun start-event-loop ()
     (unless running-p
-      (trivial-main-thread:call-in-main-thread
+      (trivial-main-thread:swap-main-thread 
        (lambda ()
 	 (setf running-p t)
 	 (defun trivial-main-thread:call-in-main-thread (function &key blocking (runner trivial-main-thread::*runner*))
