@@ -34,10 +34,38 @@
   (ns:objc instance "retain" :pointer))
 
 (defun release (instance)
-  (ns:objc instance "release" :pointer))
+  (ns:objc instance "release"))
 
 (defun autorelease (instance)
   (ns:objc instance "autorelease" :pointer))
+
+(defun cf-release (cf-instance)
+  (cffi:foreign-funcall "CFRelease" :pointer cf-instance))
+
+(defun make-nsstring (string)
+  (cffi:with-foreign-strings ((s string))
+    (ns:objc (ns:objc "NSString" "alloc" :pointer)
+	     "initWithUTF8String:" :pointer s :pointer)))
+
+(defun nsstring-to-lisp (nsstring)
+  (cffi:foreign-string-to-lisp (ns:objc nsstring "UTF8String" :pointer)))
+
+(defun make-cfstring (string)
+  (cffi:foreign-funcall "CFStringCreateWithCString"
+			:pointer (cffi:null-pointer)
+			:string string
+			:int 134217984	;NSUTF8StringEncoding
+			:pointer))
+
+(defun cfstring-to-lisp (cfstring)
+  (let* ((len (1+ (* 3 (cffi:foreign-funcall "CFStringGetLength" :pointer cfstring :int)))))
+    (cffi:with-foreign-objects ((buffer :char len))
+      (cffi:foreign-funcall "CFStringGetCString" :pointer cfstring
+						 :pointer buffer
+						 :int len
+						 :int 134217984	;NSUTF8StringEncoding
+						 )
+      (cffi:foreign-string-to-lisp buffer))))
 
 
 (cffi:defcfun ("start_event_loop" %start-event-loop) :void

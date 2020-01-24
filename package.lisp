@@ -10,7 +10,12 @@
 	   #:retain
 	   #:release
 	   #:autorelease
-
+	   #:cf-release
+	   #:make-nsstring
+	   #:nsstring-to-lisp
+	   #:make-cfstring
+	   #:cfstring-to-lisp
+	   
 	   #:timer
 	   #:invalidate
 	   
