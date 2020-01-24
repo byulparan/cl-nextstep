@@ -66,10 +66,11 @@
 	   #:load-image
 	   #:image-width
 	   #:image-height
-	   #:image-bpp
-	   #:image-bitmap-data
+	   #:image-bits-per-pixel
+	   #:image-bytes-per-row
 	   #:image-retain
 	   #:image-release
-	   #:make-image-from-screen))
+	   #:image-bitmap-data
+	   #:image-from-screen))
 
 
