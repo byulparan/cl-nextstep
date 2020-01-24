@@ -44,6 +44,7 @@
 	   (ns:with-event-loop (:waitp blocking)
 	     (funcall function)))
 	 (float-features:with-float-traps-masked (:invalid :overflow :divide-by-zero)
-	   (cffi:foreign-funcall "start_event_loop" :pointer (cffi:callback dispatch-callback))))))))
+	   (cffi:foreign-funcall "start_event_loop" :pointer (cffi:callback dispatch-callback)))))
+      :start-event-loop)))
 
 
