@@ -9,9 +9,9 @@
   :serial t
   :components ((:file "package")
 	       #-ccl (:file "id-map")
-	       (:file "cl-nextstep")
-	       (:file "timer")
-	       (:file "window")
+	       (:file "library")
+	       (:file "core-foundation")
+	       (:file "application")
 	       (:module "frameworks"
 		:components
 		((:module "core-graphics"
@@ -24,5 +24,7 @@
 		 (:file "cgl-context")
 		 (:file "core-image")
 		 (:file "ci-filter-db")))
+	       (:file "timer")
+	       (:file "window")
 	       (:file "view")
 	       (:file "opengl-view")))

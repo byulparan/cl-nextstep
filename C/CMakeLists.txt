@@ -8,8 +8,8 @@ set(CMAKE_INSTALL_NAME_DIR @loader_path)
 set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR ON)
 
 set(SRC_FILES
-  frameworks/core-graphics.m
-  cl_nextstep.m
+  application.m
+  core-graphics.m
   timer.m
   window.m
   view.m

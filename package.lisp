@@ -2,9 +2,7 @@
   (:use :cl :alexandria)
   #+ccl (:import-from #:ccl #:make-id-map #:assign-id-map-id #:id-map-free-object)
   (:nicknames :ns)
-  (:export #:start-event-loop 
-	   #:with-event-loop
-	   #:cls
+  (:export #:cls
 	   #:sel
 	   #:objc
 	   #:retain
@@ -15,6 +13,9 @@
 	   #:ns-string-to-lisp
 	   #:make-cf-string
 	   #:cf-string-to-lisp
+
+	   #:start-event-loop 
+	   #:with-event-loop
 	   
 	   #:timer
 	   #:invalidate
