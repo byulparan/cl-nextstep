@@ -19,14 +19,18 @@
   self)
 
 (defmethod cocoa-ref ((self string))
-  (cls self))
+  (let* ((object (cls self)))
+    (assert (not (cffi:null-pointer-p object)) nil "Can't find NSClass: '~a'" object)
+    object))
 
-(defmacro objc (class sel &rest rest)
-  (with-gensyms (cls selector)
-    `(let* ((,cls (cocoa-ref ,class))
+(defmacro objc (instance sel &rest rest)
+  (with-gensyms (object selector)
+    `(let* ((,object (cocoa-ref ,instance))
 	    (,selector (sel ,sel)))
-       (assert (not (cffi:null-pointer-p ,cls)) nil "Can't find NSClass: '~a' with SEL: '~a'" ,class ,sel)
-       (cffi:foreign-funcall "objc_msgSend" :pointer ,cls :pointer ,selector ,@rest))))
+       (assert (not (cffi:null-pointer-p ,object)) nil "`ns:objc` accept NullPointer with SEL: \"~a\"" ,sel)
+       (cffi:foreign-funcall "objc_msgSend" :pointer ,object :pointer ,selector ,@rest))))
+
+(defun retain (instance))
 
 
 (cffi:defcfun ("start_event_loop" %start-event-loop) :void
