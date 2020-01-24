@@ -1,5 +1,8 @@
 (in-package :cl-nextstep)
 
+;; =======================================================
+;; object management
+
 (cffi:defcfun ("objc_getClass" cls) :pointer
   (name :string))
 
@@ -43,6 +46,8 @@
 
 
 
+;; =======================================================
+;; string utilities
 
 (defun make-ns-string (string)
   (cffi:with-foreign-strings ((s string))
