@@ -46,8 +46,6 @@ void start_event_loop(void(*callback)(int)) {
   [editMenuItem setSubmenu: editMenu];
 
   
-  [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular]; // Launching App on MenuBar
-  [NSApp activateIgnoringOtherApps:YES]; // Enable Foreground
 
   unsigned long long activityOptions =
     NSActivityIdleDisplaySleepDisabled |
@@ -61,7 +59,10 @@ void start_event_loop(void(*callback)(int)) {
   [[NSProcessInfo processInfo] beginActivityWithOptions: activityOptions
 						 reason: @"NONE REASON"];
   gLispCallback = callback;
-  
+
+  [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular]; // Launching App on MenuBar
+  [NSApp activateIgnoringOtherApps:YES]; // Enable Foreground
+
   [NSApp run];
   [pool release];
 }
