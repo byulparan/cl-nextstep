@@ -7,6 +7,7 @@
 	   #:image-from-texture
 	   #:image-from-cg-image
 	   #:extent
+	   #:draw-image-to-view
 	   #:make-filter
 	   #:set-filter-param
 	   #:apply-filter))
@@ -69,6 +70,24 @@
 
 (defun extent (ci-image)
   (ns:objc ci-image "extent" (:struct cg:rect)))
+
+(defun draw-image-to-view (ci-image rect from-rect operation delta)
+  (ns:objc ci-image "drawInRect:fromRect:operation:fraction:"
+	   (:struct cg:rect) rect
+	   (:struct cg:rect) from-rect
+	   :int (case operation
+		  (:clear 0)
+		  (:copy 1)
+		  (:source-over 2)
+		  (:source-in 3)
+		  (:source-out 4)
+		  (:source-at-op 5)
+		  (:destination-over 6)
+		  (:destination-in 7)
+		  (:destination-out 8)
+		  (:Destination-at-op)
+		  (t operation))
+	   :double (float delta 1.0d0)))
 
 ;; ci-filter
 (defvar *core-filter-db*)
