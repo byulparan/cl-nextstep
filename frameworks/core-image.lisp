@@ -69,7 +69,7 @@
   (ns:objc "CIImage" "imageWithCGImage:" :pointer cg-image :pointer))
 
 (defun extent (ci-image)
-  (ns:objc ci-image "extent" (:struct cg:rect)))
+  (ns:objc-stret cg:rect ci-image "extent"))
 
 (defun draw-image-to-view (ci-image rect from-rect operation delta)
   (ns:objc ci-image "drawInRect:fromRect:operation:fraction:"
