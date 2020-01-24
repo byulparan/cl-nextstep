@@ -7,6 +7,7 @@
    #:cls
    #:sel
    #:objc
+   #:objc-stret
    #:retain
    #:release
    #:autorelease

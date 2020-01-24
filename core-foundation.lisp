@@ -26,6 +26,17 @@
        (assert (not (cffi:null-pointer-p ,object)) nil "`ns:objc` accept NullPointer with SEL: \"~a\"" ,sel)
        (cffi:foreign-funcall "objc_msgSend" :pointer ,object :pointer ,selector ,@rest))))
 
+(defmacro objc-stret (return-type instance sel &rest rest)
+  (with-gensyms (object selector result)
+    `(let* ((,object (cocoa-ref ,instance))
+	    (,selector (sel ,sel)))
+       (assert (not (cffi:null-pointer-p ,object)) nil "`ns:objc` accept NullPointer with SEL: \"~a\"" ,sel)
+       (cffi:with-foreign-objects ((,result '(:pointer (:struct ,return-type))))
+	 (cffi:foreign-funcall "objc_msgSend_stret"
+			       :pointer ,result
+			       :pointer ,object :pointer ,selector ,@rest)
+	 (cffi:mem-ref ,result '(:struct ,return-type))))))
+
 (defun retain (instance)
   (ns:objc instance "retain" :pointer))
 
