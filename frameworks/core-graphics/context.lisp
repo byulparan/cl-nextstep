@@ -338,39 +338,41 @@ CGContextGetTextMatrix
                 (otherwise mode))))
     (cffi:foreign-funcall "CGContextSetTextDrawingMode" :pointer context :int code)))
 
-(defun create-font (name)
-  (let* ((cf-name (ns:make-cf-string name)))
-    (unwind-protect (cffi:foreign-funcall "CGFontCreateWithFontName"
-					  :pointer cf-name
-					  :pointer)
-      (ns:cf-release cf-name))))
-
-(defun context-set-font (context font)
-  (cffi:foreign-funcall "CGContextSetFont" :pointer context :pointer font))
-
-(defun context-set-font-size (context size)
-  (cffi:foreign-funcall "CGContextSetFontSize" :pointer context :double (cgfloat size)))
 
 
-(defun context-select-font (context font-name size encoding)
-  (let ((code (case encoding
-		(:macroman 1) ;; #$kCGEncodingMacRoman
-		(:font-specific 0) ;; #$kCGEncodingFontSpecific
-		(otherwise encoding))))
-    (cffi:foreign-funcall "CGContextSelectFont" :pointer context :string font-name :double (cgfloat size) :int code)))
-#|
-CGContextShowGlyphsAtPositions
-|#
+;; (defun create-font (name)
+;;   (let* ((cf-name (ns:make-cf-string name)))
+;;     (unwind-protect (cffi:foreign-funcall "CGFontCreateWithFontName"
+;; 					  :pointer cf-name
+;; 					  :pointer)
+;;       (ns:cf-release cf-name))))
 
-;;; Text convenience functions
-(defun context-show-text (context string)
-  (let ((n (length (babel:string-to-octets string))))
-    (cffi:foreign-funcall "CGContextShowText" :pointer context :string string :int n)))
+;; (defun context-set-font (context font)
+;;   (cffi:foreign-funcall "CGContextSetFont" :pointer context :pointer font))
 
-(defun context-show-text-at-point (context x y string)
-  (let ((n (length (babel:string-to-octets string))))
-    (cffi:foreign-funcall "CGContextShowTextAtPoint" :pointer context :double (cgfloat x) 
-			  :double (cgfloat y) :string string :int n)))
+;; (defun context-set-font-size (context size)
+;;   (cffi:foreign-funcall "CGContextSetFontSize" :pointer context :double (cgfloat size)))
+
+
+;; (defun context-select-font (context font-name size encoding)
+;;   (let ((code (case encoding
+;; 		(:macroman 1) ;; #$kCGEncodingMacRoman
+;; 		(:font-specific 0) ;; #$kCGEncodingFontSpecific
+;; 		(otherwise encoding))))
+;;     (cffi:foreign-funcall "CGContextSelectFont" :pointer context :string font-name :double (cgfloat size) :int code)))
+;; #|
+;; CGContextShowGlyphsAtPositions
+;; |#
+
+;; ;;; Text convenience functions
+;; (defun context-show-text (context string)
+;;   (let ((n (length (babel:string-to-octets string))))
+;;     (cffi:foreign-funcall "CGContextShowText" :pointer context :string string :int n)))
+
+;; (defun context-show-text-at-point (context x y string)
+;;   (let ((n (length (babel:string-to-octets string))))
+;;     (cffi:foreign-funcall "CGContextShowTextAtPoint" :pointer context :double (cgfloat x) 
+;; 			  :double (cgfloat y) :string string :int n)))
 
 #|
 CGContextShowGlyphs
