@@ -287,11 +287,14 @@ CGContextSetRenderingIntent
 
 ;;; Image functions
 #|
-CGContextDrawImage
 CGContextDrawTiledImage
 CGInterpolationQuality
 CGContextSetInterpolationQuality
 |#
+(defun context-draw-image (context rect cg-image)
+  (cffi:foreign-funcall "CGContextDrawImage" :pointer context
+			(:struct cg:rect) rect
+			:pointer cg-image))
 
 ;;; Shadow support
 #|

@@ -59,6 +59,7 @@
 	   #:context-set-rgb-stroke-color
 	   #:context-set-cmyk-fill-color
 	   #:context-set-cmyk-stroke-color
+	   #:context-draw-image
 	   #:context-set-character-spacing
 	   #:context-set-text-position
 	   #:context-set-text-drawing-mode
