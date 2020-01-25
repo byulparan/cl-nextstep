@@ -36,13 +36,13 @@
 (let* ((running-p nil))
   (defun start-event-loop ()
     (unless running-p
+      (defun trivial-main-thread:call-in-main-thread (function &key blocking (runner trivial-main-thread::*runner*))
+	(declare (ignore runner))
+	(ns:with-event-loop (:waitp blocking)
+	  (funcall function)))
       (trivial-main-thread:swap-main-thread 
        (lambda ()
 	 (setf running-p t)
-	 (defun trivial-main-thread:call-in-main-thread (function &key blocking (runner trivial-main-thread::*runner*))
-	   (declare (ignore runner))
-	   (ns:with-event-loop (:waitp blocking)
-	     (funcall function)))
 	 (float-features:with-float-traps-masked (:invalid :overflow :divide-by-zero)
 	   (cffi:foreign-funcall "start_event_loop" :pointer (cffi:callback dispatch-callback)))))
       :start-event-loop)))
