@@ -21,6 +21,7 @@
    ;; application.lisp
    #:start-event-loop 
    #:with-event-loop
+   #:enable-foreground
    ;; timer.lisp
    #:timer
    #:invalidate

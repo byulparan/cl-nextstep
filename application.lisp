@@ -47,4 +47,8 @@
 	   (cffi:foreign-funcall "start_event_loop" :pointer (cffi:callback dispatch-callback)))))
       :start-event-loop)))
 
+(defun enable-foreground ()
+  (ns:with-event-loop nil
+    (ns:objc (ns:objc "NSApplication" "sharedApplication" :pointer)
+	     "activateIgnoringOtherApps:" :bool t)))
 
