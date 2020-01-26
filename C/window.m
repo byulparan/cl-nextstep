@@ -34,6 +34,26 @@ static NSMutableArray* gFullscreenWindows = NULL;
   mCloseFn(mID);
 }
 
+
+-(void) detectChangedViewSize: (NSNotification*) notification {
+  [[NSNotificationCenter defaultCenter] removeObserver: self
+					    name: NSViewFrameDidChangeNotification
+					  object: [notification object]];
+  NSRect frame = [self frame];
+  NSRect contentRect = [self frameRectForContentRect: [[notification object] frame]];
+  
+  NSRect newRect = NSMakeRect(frame.origin.x, frame.origin.y - (contentRect.size.height - frame.size.height),
+			      contentRect.size.width, contentRect.size.height);
+  
+  [self setFrame: newRect display: YES];
+
+  [[NSNotificationCenter defaultCenter] addObserver: self
+				     selector: @selector(detectChangedViewSize:)
+					 name: NSViewFrameDidChangeNotification
+				       object: [notification object]];
+}
+
+
 -(void) enterFullscreen {
   mMemFrame = self.frame;
   mMemStyleMask = self.styleMask;
