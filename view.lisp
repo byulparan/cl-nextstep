@@ -1,14 +1,5 @@
 (in-package :cl-nextstep)
 
-(cffi:defcfun ("make_view" %make-view) :pointer
-  (id :int)
-  (x :int)
-  (y :int)
-  (w :int)
-  (h :int)
-  (draw-fn :pointer)
-  (mouse-fn :pointer))
-
 (defvar *view-table* (make-hash-table))
 
 (cffi:defcallback draw-callback :void ((id :int) (draw-flag :int) (cgl-context :pointer) (cgl-pixel-format :pointer) (width :int) (height :int))
@@ -94,10 +85,13 @@
   ())
 
 (defmethod initialize-instance :after ((self view) &key (x 0) (y 0) (w 400) (h 200))
-  (setf (cocoa-ref self) (%make-view (id self)
-				     x y w h
-				     (cffi:callback draw-callback)
-				     (cffi:callback mouse-callback))))
+  (setf (cocoa-ref self) (ns:objc (ns:objc "LispView" "alloc" :pointer)
+				  "initWithID:frame:drawFn:mouseFn:"
+				  :int (id self)
+				  (:struct rect) (make-rect x y w h)
+				  :pointer (cffi:callback draw-callback)
+				  :pointer (cffi:callback mouse-callback)
+				  :pointer)))
 
 (defun current-cg-context ()
   (ns:objc (ns:objc "NSGraphicsContext" "currentContext" :pointer) "CGContext" :pointer))

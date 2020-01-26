@@ -1,16 +1,5 @@
 (in-package :cl-nextstep)
 
-(cffi:defcfun ("make_opengl_view" %make-opengl-view) :pointer
-  (id :int)
-  (cgl-pixel-format :pointer)
-  (animate-p :bool)
-  (x :int)
-  (y :int)
-  (w :int)
-  (h :int)
-  (draw-fn :pointer)
-  (mouse-fn :pointer))
-
 (defclass opengl-view (base-view)
   ((core-profile :initarg :core-profile
 		 :initform t
@@ -21,13 +10,15 @@
 
 
 (defmethod initialize-instance :after ((self opengl-view) &key (x 0) (y 0) (w 400) (h 200))
-  (setf (cocoa-ref self) (%make-opengl-view (id self)
-					    (cgl:make-pixel-format (cgl:make-attributes
-								    :core-profile (core-profile self)))
-					    t ;; animate
-					    x y w h
-					    (cffi:callback draw-callback)
-					    (cffi:callback mouse-callback))))
-
-
+  (setf (cocoa-ref self) (ns:objc
+			  (ns:objc "LispOpenGLView" "alloc" :pointer)
+			  "initWithID:frame:pixelFormat:isAnimate:drawFn:mouseFn:"
+			  :int (id self)
+			  (:struct ns:rect) (ns:make-rect x y w h)
+			  :pointer (cgl:make-pixel-format (cgl:make-attributes
+							   :core-profile (core-profile self)))
+			  :unsigned-char 1
+			  :pointer (cffi:callback draw-callback)
+			  :pointer (cffi:callback mouse-callback)
+			  :pointer)))
 

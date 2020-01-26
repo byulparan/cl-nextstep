@@ -25,11 +25,12 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 
 -(id) initWithID: (int) inID
 	   frame: (NSRect) frame
-     pixelFormat: (NSOpenGLPixelFormat*) pixelFormat
+     pixelFormat: (CGLPixelFormatObj) pixelFormat
        isAnimate: (bool) isAnimate
 	  drawFn: (DrawFn) drawFn
 	 mouseFn: (MouseFn) mouseFn {
-  self = [super initWithFrame: frame pixelFormat: pixelFormat];
+  self = [super initWithFrame: frame
+		  pixelFormat: [[NSOpenGLPixelFormat alloc] initWithCGLPixelFormatObj: pixelFormat]];
   mID = inID;
   mDisplayLinkThread = NULL;
   mIsAnimate = isAnimate;
@@ -137,30 +138,3 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 
 @end
 
-
-// ============================================================
-// export C
-// ============================================================
-
-LispOpenGLView* make_opengl_view(int inID, CGLPixelFormatObj cglPixelFormat, bool isAnimate,int x, int y, int w, int h,
-		       DrawFn drawFn, MouseFn mouseFn) {
-  NSOpenGLPixelFormat *pixelFormat = [[NSOpenGLPixelFormat alloc]
-				       initWithCGLPixelFormatObj: cglPixelFormat];
-  LispOpenGLView  *view = [[LispOpenGLView alloc] initWithID: inID
-						       frame: NSMakeRect(x,y,w,h)
-						 pixelFormat: pixelFormat
-						   isAnimate: isAnimate
-						      drawFn: drawFn
-						     mouseFn: mouseFn];
-  return view;
-}
-
-// void setCglBestResolution(void* view, int option) {
-//   [(GLView*)view setWantsBestResolutionOpenGLSurface: (option == 1) ? YES:NO];
-// }
-
-// void convertSizeToBacking(void* view, int w, int h, int* width, int* height) {
-//   NSSize sz = [(GLView*)view convertSizeToBacking: NSMakeSize(w, h)];
-//   *width = sz.width;
-//   *height = sz.height;
-// }

@@ -65,16 +65,3 @@
 }
 
 @end
-
-// ============================================================
-// export C
-// ============================================================
-
-LispView* make_view(int inID, int x, int y, int w, int h,
-		    DrawFn drawFn, MouseFn mouseFn) {
-  LispView* view = [[LispView alloc] initWithID: inID
-					  frame: NSMakeRect(x, y, w, h)
-					 drawFn: drawFn
-					mouseFn: mouseFn];
-  return view;
-}
