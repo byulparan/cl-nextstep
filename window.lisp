@@ -28,15 +28,22 @@
    (title :initarg :title :initform "" :reader title)
    (close-fn :initarg :close-fn :initform nil :accessor close-fn)))
 
-(defmethod initialize-instance :after ((self window) &key (x 0) (y 0) (w 100) (h 200))
+(defmethod initialize-instance :after ((self window) &key (x 0) (y 0) (w 400) (h 200))
   (with-slots (cocoa-ref id g-id title close-fn) self
     (setf id g-id)
     (incf g-id)
-    (setf cocoa-ref (%make-window id title x y w h (cffi:callback window-callback)))
+    (setf cocoa-ref (ns:objc (ns:objc "LispWindow" "alloc" :pointer)
+			     "initWithID:frame:closeFn:"
+			     :int id
+			     (:struct rect) (make-rect x y w h)
+			     :pointer (cffi:callback window-callback)
+			     :pointer))
+    (ns:objc cocoa-ref "setTitle:" :pointer (autorelease (make-ns-string title)))
+    (ns:objc cocoa-ref "setDelegate:" :pointer cocoa-ref)
     (setf (gethash id *window-table*) self)))
 
 (defun window-show (window)
-  (%window-show (cocoa-ref window)))
+  (ns:objc window "makeKeyAndOrderFront:" :pointer (cffi:null-pointer)))
 
 (defun toggle-fullscreen (window)
   (ns:objc window "toggleFullscreen"))

@@ -88,21 +88,3 @@ static NSMutableArray* gFullscreenWindows = NULL;
 
 @end
 
-// ============================================================
-// export C
-// ============================================================
-
-LispWindow* make_window(int inID, char* title, int x, int y, int w, int h, void(*inCloseFn)(int)) {
-  LispWindow* window = [[LispWindow alloc] initWithID: inID
-						frame: NSMakeRect(x, y, w, h)
-					      closeFn: inCloseFn];
-  window.title = [NSString stringWithUTF8String: title];
-  window.delegate = window;
-  return window;
-}
-
-void window_show(NSWindow* window) {
-  [window makeKeyAndOrderFront: nil];
-}
-
-
