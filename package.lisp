@@ -46,6 +46,7 @@
    #:toggle-fullscreen
    #:content-view
    #:add-subviews
+   #:set-always-on-top
    ;; view.lisp
    #:width
    #:height

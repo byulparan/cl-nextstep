@@ -16,7 +16,6 @@
 		:components
 		((:module "core-graphics"
 		  :components ((:file "package")
-			       (:file "type")
 			       (:file "color")
 			       (:file "color-space")
 			       (:file "context")

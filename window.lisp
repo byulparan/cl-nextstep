@@ -45,3 +45,10 @@
   (dolist (sub (cons subview subviews))
     (ns:objc superview "addSubview:" :pointer (ns:objc sub "autorelease" :pointer))))
 
+(defun set-always-on-top (window flag)
+  (ns:objc window "setLevel:" :int (if flag
+				       9 ;; kCGStatusWindowLevelKey
+				     0 ;; kCGBaseWindowLevelKey
+				     )))
+
+
