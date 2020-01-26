@@ -27,6 +27,7 @@
    ;; window.lisp
    #:window
    #:window-show
+   #:close-fn
    #:toggle-fullscreen
    #:content-view
    #:add-subviews
