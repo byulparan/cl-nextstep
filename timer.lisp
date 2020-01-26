@@ -22,8 +22,13 @@
   (incf (g-id self))
   (setf (gethash (id self) *timer-table*) self)
   (setf (cocoa-ref self)
-    (objc (%make-timer (id self) (cffi:callback timer-callback) (float interval 1.0d0))
-	  "autorelease" :pointer)))
+    (autorelease
+     (objc (objc "LispTimer" "alloc" :pointer)
+	   "initWithID:timerFn:timerInterval:"
+	   :int (id self)
+	   :pointer (cffi:callback timer-callback)
+	   :double (float interval 1.0d0)
+	   :pointer))))
 
 (defun invalidate (timer)
   (objc timer "invalidate"))

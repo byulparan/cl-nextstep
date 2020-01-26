@@ -36,15 +36,3 @@ typedef void(*TimerFn)(int);
 @end
 
 
-// ============================================================
-// export C
-// ============================================================
-
-LispTimer* make_timer(int inID, TimerFn timerFn, double timerInterval) {
-  LispTimer* timer = [[LispTimer alloc] initWithID: inID
-					   timerFn: timerFn
-				     timerInterval: timerInterval];
-  return timer;
-}
-
-
