@@ -18,6 +18,20 @@
    #:ns-string-to-lisp
    #:make-cf-string
    #:cf-string-to-lisp
+   #:point
+   #:make-point
+   #:point-x
+   #:point-y
+   #:size
+   #:make-size
+   #:size-width
+   #:size-height
+   #:rect
+   #:make-rect
+   #:rect-x
+   #:rect-y
+   #:rect-width
+   #:rect-height
    ;; application.lisp
    #:start-event-loop 
    #:with-event-loop

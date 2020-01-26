@@ -31,15 +31,15 @@
 (defun draw-image (ci-context ci-image in-rect from-rect)
   (ns:objc ci-context "drawImage:inRect:fromRect:"
 	   :pointer ci-image
-	   (:struct cg:rect) in-rect
-	   (:struct cg:rect) from-rect))
+	   (:struct ns:rect) in-rect
+	   (:struct ns:rect) from-rect))
 
 (defun render-to-bitmap (ci-context ci-image data row-bytes bounds format color-space)
   (ns:objc ci-context "render:toBitmap:rowBytes:bounds:format:colorSpace:"
 	   :pointer ci-image
 	   :pointer data
 	   :int row-bytes
-	   (:struct cg:rect) bounds
+	   (:struct ns:rect) bounds
 	   :int (case format
 		  (:ci-format-argb8 265)
 		  (t format))
@@ -59,7 +59,7 @@
   (let* ((color-space (cg:color-space-create :color-space-srgb)))
     (unwind-protect (ns:objc "CIImage" "imageWithTexture:size:flipped:colorSpace:"
 			     :unsigned-int texture
-			     (:struct cg:size) size
+			     (:struct ns:size) size
 			     :bool nil
 			     :pointer color-space
 			     :pointer)
@@ -69,12 +69,12 @@
   (ns:objc "CIImage" "imageWithCGImage:" :pointer cg-image :pointer))
 
 (defun extent (ci-image)
-  (ns:objc-stret cg:rect ci-image "extent"))
+  (ns:objc-stret ns:rect ci-image "extent"))
 
 (defun draw-image-to-view (ci-image rect from-rect operation delta)
   (ns:objc ci-image "drawInRect:fromRect:operation:fraction:"
-	   (:struct cg:rect) rect
-	   (:struct cg:rect) from-rect
+	   (:struct ns:rect) rect
+	   (:struct ns:rect) from-rect
 	   :int (case operation
 		  (:clear 0)
 		  (:copy 1)

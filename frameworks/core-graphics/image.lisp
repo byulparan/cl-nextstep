@@ -46,7 +46,7 @@
 
 (defun image-from-screen (rect)
   (cffi:foreign-funcall "CGWindowListCreateImage"
-			(:struct cg:rect) rect
+			(:struct ns:rect) rect
 			:int 12 	; kCGWindowListOptionIncludingWindow | kCGWindowListOptionOnScreenBelowWindow
 			:int 0		; kCGNullWindowID
 			:int 16		; kCGWindowImageNominalResolution

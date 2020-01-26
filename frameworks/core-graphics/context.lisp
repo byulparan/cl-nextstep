@@ -184,25 +184,25 @@ CGContextPathContainsPoint
   (cffi:foreign-funcall "CGContextStrokePath" :pointer context))
 
 (defun context-fill-rect (context rect)
-  (cffi:foreign-funcall "CGContextFillRect" :pointer context (:struct cg:rect) rect))
+  (cffi:foreign-funcall "CGContextFillRect" :pointer context (:struct ns:rect) rect))
 
 ;; (defun fill-rects (context rects count)
 ;;   (cffi:foreign-funcall "CGContextFillRects" :pointer context (:struct cg:rect) rects :int count))
 
 (defun context-stroke-rect (context rect)
-  (cffi:foreign-funcall "CGContextStrokeRect" :pointer context (:struct cg:rect) rect))
+  (cffi:foreign-funcall "CGContextStrokeRect" :pointer context (:struct ns:rect) rect))
 
 (defun context-stroke-rect-with-width (context rect width)
-  (cffi:foreign-funcall "CGContextStrokeRectWithWidth" :pointer context (:struct cg:rect) rect :double (cgfloat width)))
+  (cffi:foreign-funcall "CGContextStrokeRectWithWidth" :pointer context (:struct ns:rect) rect :double (cgfloat width)))
 
 (defun context-clear-rect (context rect)
-  (cffi:foreign-funcall "CGContextClearRect" :pointer context (:struct cg:rect) rect))
+  (cffi:foreign-funcall "CGContextClearRect" :pointer context (:struct ns:rect) rect))
 
 (defun context-fill-ellipse-in-rect (context rect)
-  (cffi:foreign-funcall "CGContextFillEllipseInRect" :pointer context (:struct cg:rect) rect))
+  (cffi:foreign-funcall "CGContextFillEllipseInRect" :pointer context (:struct ns:rect) rect))
 
 (defun context-stroke-ellipse-in-rect (context rect)
-  (cffi:foreign-funcall "CGContextStrokeEllipseInRect" :pointer context (:struct cg:rect) rect))
+  (cffi:foreign-funcall "CGContextStrokeEllipseInRect" :pointer context (:struct ns:rect) rect))
 
 ;; (defun stroke-line-segments (context points count)
 ;;   (cffi:foreign-funcall "CGContextStrokeLineSegments" :pointer  context points count))
@@ -293,7 +293,7 @@ CGContextSetInterpolationQuality
 |#
 (defun context-draw-image (context rect cg-image)
   (cffi:foreign-funcall "CGContextDrawImage" :pointer context
-			(:struct cg:rect) rect
+			(:struct ns:rect) rect
 			:pointer cg-image))
 
 ;;; Shadow support
