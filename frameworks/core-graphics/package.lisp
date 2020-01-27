@@ -63,6 +63,9 @@
 	   #:context-set-character-spacing
 	   #:context-set-text-position
 	   #:context-set-text-drawing-mode
+	   #:context-set-font
+	   #
+	   
 
 	   #:load-image
 	   #:image-width
