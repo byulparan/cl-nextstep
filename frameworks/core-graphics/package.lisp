@@ -64,9 +64,11 @@
 	   #:context-set-text-position
 	   #:context-set-text-drawing-mode
 	   #:context-set-font
-	   #
+	   #:context-set-font-size
+	   #:context-select-font
+	   #:context-show-text
+	   #:context-show-text-at-point
 	   
-
 	   #:load-image
 	   #:image-width
 	   #:image-height
