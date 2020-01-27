@@ -76,7 +76,7 @@
     (ns:release (capture-data capture))))
 
 (defmacro with-capture-data ((capture bpr width height data) &body body)
-  (with-gensyms (m-head)
+  (alexandria:with-gensyms (m-head)
     `(let* ((,m-head (ns:objc (capture-data ,capture) "getImageBuffer" :pointer)))
        (cffi:foreign-funcall "CVPixelBufferLockBaseAddress" :pointer ,m-head :int 0)
        (unwind-protect (let* ((,bpr (cffi:foreign-funcall "CVPixelBufferGetBytesPerRow" :pointer ,m-head :sizet))
