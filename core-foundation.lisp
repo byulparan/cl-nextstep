@@ -90,6 +90,17 @@
       (cffi:foreign-string-to-lisp buffer))))
 
 ;; =======================================================
+;; color
+(defun make-color (&key (red 0.0) (green 0.0) (blue 0.0) (alpha 1.0))
+  (ns:objc "NSColor" "colorWithCalibratedRed:green:blue:alpha:"
+	   :double (float red 1.0d0)
+	   :double (float green 1.0d0)
+	   :double (float blue 1.0d0)
+	   :double (float alpha 1.0d0)
+	   :pointer))
+
+
+;; =======================================================
 ;; structure
 
 (cffi:defcstruct (point :class %point)
