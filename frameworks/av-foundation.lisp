@@ -6,10 +6,18 @@
 	   #:start-capture
 	   #:stop-capture
 	   #:release-capture
-	   #:with-capture-data))
+	   #:with-capture-data
+
+	   #:player
+	   #:make-player
+	   #:status
+	   #:play
+	   #:pause
+	   #:volume))
 
 (in-package :av)
 
+;; Capture
 (defun list-camera-device ()
   (ns:with-event-loop nil
     (let* ((devices (ns:objc "AVCaptureDevice" "devicesWithMediaType:"
@@ -88,7 +96,70 @@
 
 
 
+;; Player
+(defvar *player-table* (make-hash-table))
 
+(defclass player ()
+  ((id :accessor id)
+   (g-id :initform 0 :accessor g-id :allocation :class)
+   (player :accessor player)
+   (player-delegate :accessor player-delegate)
+   (did-end :initform nil :accessor did-end)))
+
+(cffi:defcallback player-did-reach-end :void ((id :int))
+  (alexandria:when-let* ((player (gethash id *player-table*))
+			 (did-end (did-end player)))
+    (funcall did-end)))
+
+
+(defmethod initialize-instance :after ((self player) &key did-end)
+  (setf (id self) (g-id self))
+  (incf (g-id self))
+  (setf (gethash (id self) *player-table*) self))
+
+(defun make-player (path)
+  (let* ((path (uiop:truenamize path)))
+    (assert (probe-file path) nil "can't find file: ~a" path)
+    (ns:with-event-loop (:waitp t)
+      (let* ((player (make-instance 'player))
+	     (av-player (ns:objc (ns:alloc "AVPlayer")
+				 "initWithURL:" :pointer (ns:objc "NSURL" "fileURLWithPath:"
+								  :pointer (ns:autorelease (ns:make-ns-string (namestring path)))
+								  :pointer)
+				 :pointer))
+	     (av-player-item (ns:objc av-player "currentItem" :pointer))
+	     (player-item-delegate (ns:objc (ns:alloc "PlayerItemDelegate")
+	     				    "initWithID:endFn:" :int (id player)
+	     				    :pointer (cffi:callback player-did-reach-end)
+	     				    :pointer)))
+	(ns:objc av-player-item "addObserver:forKeyPath:options:context:"
+		 :pointer player-item-delegate
+		 :pointer (ns:autorelease (ns:make-ns-string "status"))
+		 :int 0
+		 :pointer (cffi:null-pointer))
+	(setf (player player) av-player
+	      (player-delegate player) player-item-delegate)
+	player))))
+
+(defun status (player)
+  (ns:with-event-loop (:waitp t)
+    (let* ((status (ns:objc (player player) "status" :int)))
+      (case status
+	(0 :unknown)
+	(1 :ready-to-play)
+	(2 :failed)))))
+
+(defun play (player)
+  (ns:with-event-loop nil
+    (ns:objc (player player) "play")))
+
+(defun pause (player)
+  (ns:with-event-loop nil
+    (ns:objc (player player) "pause")))
+
+(defun volume (player volume)
+  (ns:with-event-loop nil
+    (ns:objc (player player) "setVolume:" :float (float volume 1.0))))
 
 
 
