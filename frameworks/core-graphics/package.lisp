@@ -33,11 +33,11 @@
 	   #:context-set-alpha
 	   #:context-set-blend-mode
 	   #:context-begin-path
-	   #:context-move-to-path
+	   #:context-move-to-point
 	   #:context-add-line-to-point
 	   #:context-add-curve-to-point
 	   #:context-add-quad-curve-to-point
-	   #:context-clsoe-path
+	   #:context-close-path
 	   #:context-add-arc
 	   #:context-draw-path
 	   #:context-fill-path
