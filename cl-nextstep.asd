@@ -26,4 +26,5 @@
 	       (:file "timer")
 	       (:file "window")
 	       (:file "view")
-	       (:file "opengl-view")))
+	       (:file "opengl-view")
+	       (:file "widget")))

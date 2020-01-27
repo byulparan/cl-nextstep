@@ -19,6 +19,7 @@
    #:ns-string-to-lisp
    #:make-cf-string
    #:cf-string-to-lisp
+   #:make-color
    #:point
    #:make-point
    #:point-x
@@ -70,5 +71,7 @@
    #:current-cg-context
    ;; opengl-view.lisp
    #:opengl-view
-   #:reshape))
+   #:reshape
+   ;; widget.lisp
+   #:text-field))
 
