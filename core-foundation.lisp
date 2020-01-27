@@ -37,6 +37,10 @@
 			       :pointer ,object :pointer ,selector ,@rest)
 	 (cffi:mem-ref ,result '(:struct ,return-type))))))
 
+
+(defun alloc (cls)
+  (ns:objc cls "alloc" :pointer))
+
 (defun retain (instance)
   (ns:objc instance "retain" :pointer))
 

@@ -8,6 +8,7 @@
    #:sel
    #:objc
    #:objc-stret
+   #:alloc
    #:retain
    #:release
    #:autorelease
