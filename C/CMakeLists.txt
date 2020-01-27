@@ -12,7 +12,8 @@ set(SRC_FILES
   timer.m
   window.m
   view.m
-  opengl-view.m)
+  opengl-view.m
+  av-foundation.m)
 
 add_library(cl_nextstep SHARED ${SRC_FILES})
-target_link_libraries(cl_nextstep "-framework Cocoa" "-framework QuartzCore")
+target_link_libraries(cl_nextstep "-framework Cocoa" "-framework QuartzCore" "-framework AVFoundation" "-framework CoreMedia")
