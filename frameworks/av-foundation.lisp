@@ -3,18 +3,19 @@
   (:export #:with-media-data
 	   #:list-camera-device
 	   #:capture
+	   #:release-capture
 	   #:make-camera-capture
 	   #:start-capture
 	   #:stop-capture
-	   #:release-capture
 
 	   #:player
 	   #:make-player
+	   #:release-player
 	   #:status
 	   #:play
 	   #:pause
 	   #:volume
-	   #:release-player))
+	   #:seek-to-zero))
 
 (in-package :av)
 
@@ -167,9 +168,15 @@
   (ns:with-event-loop nil
     (ns:objc (player-object player) "setVolume:" :float (float volume 1.0))))
 
-(defun release-player (player)
-  (ns:release (player-object player))
-  (ns:release (player-delegate player)))
+;; CoreMedia
+(cffi:defcstruct cm-time
+  (value :int64)
+  (timescale :int)
+  (flags :unsigned-int)
+  (epoch :int64))
 
-
+(defun seek-to-zero (player)
+  (ns:with-event-loop nil
+    (ns:objc (player-object player) "seekToTime:"
+	     (:struct cm-time) (cffi:mem-ref (cffi:foreign-symbol-pointer "kCMTimeZero") '(:struct cm-time)) )))
 
