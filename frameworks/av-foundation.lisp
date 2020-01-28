@@ -105,20 +105,15 @@
 ;; Player
 (defvar *player-table* (make-hash-table))
 
-(defclass player ()
-  ((id :accessor id)
-   (g-id :initform 0 :accessor g-id :allocation :class)
-   (player :accessor player)
-   (player-item :accessor player-item)
-   (player-delegate :accessor player-delegate)
-   (did-end :initarg :did-end :initform nil :accessor did-end)))
+(defstruct (player (:constructor %make-player (&key id object item delegate did-end)))
+  id object item delegate did-end)
 
 (defmethod get-delegate ((av-media player))
-  (player-delegate av-media))
+  (player-delegate  av-media))
 
 (cffi:defcallback player-did-reach-end :void ((id :int))
   (alexandria:when-let* ((player (gethash id *player-table*))
-			 (did-end (did-end player)))
+			 (did-end (player-did-end player)))
     (funcall did-end)))
 
 (defmethod initialize-instance :after ((self player) &key did-end)
@@ -126,34 +121,34 @@
   (incf (g-id self))
   (setf (gethash (id self) *player-table*) self))
 
-(defun make-player (path &key did-end)
-  (let* ((path (uiop:truenamize path)))
-    (assert (probe-file path) nil "can't find file: ~a" path)
-    (ns:with-event-loop (:waitp t)
-      (let* ((player (make-instance 'player :did-end did-end))
-	     (av-player (ns:objc (ns:alloc "AVPlayer")
-				 "initWithURL:" :pointer (ns:objc "NSURL" "fileURLWithPath:"
-								  :pointer (ns:autorelease (ns:make-ns-string (namestring path)))
-								  :pointer)
-				 :pointer))
-	     (av-player-item (ns:objc av-player "currentItem" :pointer))
-	     (player-delegate (ns:objc (ns:alloc "PlayerDelegate")
-	     				    "initWithID:endFn:" :int (id player)
-	     				    :pointer (cffi:callback player-did-reach-end)
-	     				    :pointer)))
-	(ns:objc av-player-item "addObserver:forKeyPath:options:context:"
-		 :pointer player-delegate
-		 :pointer (ns:autorelease (ns:make-ns-string "status"))
-		 :int 0
-		 :pointer (cffi:null-pointer))
-	(setf (player player) av-player
-	      (player-item player) av-player-item
-	      (player-delegate player) player-delegate)
-	player))))
+(let* ((id 0))
+  (defun make-player (path &key did-end)
+    (let* ((path (uiop:truenamize path)))
+      (assert (probe-file path) nil "can't find file: ~a" path)
+      (ns:with-event-loop (:waitp t)
+	(let* ((av-player (ns:objc (ns:alloc "AVPlayer")
+				   "initWithURL:" :pointer (ns:objc "NSURL" "fileURLWithPath:"
+								    :pointer (ns:autorelease (ns:make-ns-string (namestring path)))
+								    :pointer)
+				   :pointer))
+	       (av-player-item (ns:objc av-player "currentItem" :pointer))
+	       (player-delegate (ns:objc (ns:alloc "PlayerDelegate")
+					 "initWithID:endFn:" :int id
+					 :pointer (cffi:callback player-did-reach-end)
+					 :pointer)))
+	  (ns:objc av-player-item "addObserver:forKeyPath:options:context:"
+		   :pointer player-delegate
+		   :pointer (ns:autorelease (ns:make-ns-string "status"))
+		   :int 0
+		   :pointer (cffi:null-pointer))
+	  (let* ((player (%make-player :id id :object av-player :item av-player-item :delegate player-delegate)))
+	    (setf (gethash id *player-table*) player)
+	    (incf id)
+	    player))))))
 
 (defun status (player)
   (ns:with-event-loop (:waitp t)
-    (let* ((status (ns:objc (player player) "status" :int)))
+    (let* ((status (ns:objc (player-object player) "status" :int)))
       (case status
 	(0 :unknown)
 	(1 :ready-to-play)
@@ -161,18 +156,18 @@
 
 (defun play (player)
   (ns:with-event-loop nil
-    (ns:objc (player player) "play")))
+    (ns:objc (player-object player) "play")))
 
 (defun pause (player)
   (ns:with-event-loop nil
-    (ns:objc (player player) "pause")))
+    (ns:objc (player-object player) "pause")))
 
 (defun volume (player volume)
   (ns:with-event-loop nil
-    (ns:objc (player player) "setVolume:" :float (float volume 1.0))))
+    (ns:objc (player-object player) "setVolume:" :float (float volume 1.0))))
 
 (defun release-player (player)
-  (ns:release (player player))
+  (ns:release (player-object player))
   (ns:release (player-delegate player)))
 
 
