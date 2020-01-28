@@ -44,7 +44,7 @@
 			(ns:objc (ns:objc devices "objectAtIndex:" :unsigned-int i :pointer) "localizedName"
 				 :pointer)))))))
 
-(defun make-capture-input-camera (index)
+(defun make-capture-camera-input (index)
   (let* ((devices (ns:objc "AVCaptureDevice" "devicesWithMediaType:"
 			   :pointer (cffi:mem-ref (cffi:foreign-symbol-pointer "AVMediaTypeVideo") :pointer)
 			   :pointer)))
@@ -70,23 +70,28 @@
 			       :pointer))
     video-output))
 
-(defstruct capture
+(defstruct (capture (:constructor %make-capture (&key session delegate)))
   session delegate)
 
 (defmethod get-delegate ((av-media capture))
   (capture-delegate av-media))
 
-(defun make-capture-device (input)
+(defun make-capture (input)
   (let* ((session (ns:objc (ns:alloc "AVCaptureSession") "init" :pointer))
 	 (capture-delegate (ns:objc (ns:alloc "CaptureDelegate") "init" :pointer))
 	 (output (make-capture-video-data-output capture-delegate)))
     (ns:objc session "addInput:" :pointer input)
     (ns:objc session "addOutput:" :pointer output)
-    (make-capture :session session :delegate capture-delegate)))
+    (%make-capture :session session :delegate capture-delegate)))
+
+(defun release-capture (capture)
+  (ns:with-event-loop (:waitp t)
+    (ns:release (capture-session capture))
+    (ns:release (capture-delegate capture))))
 
 (defun make-camera-capture (index)
   (ns:with-event-loop (:waitp t)
-    (make-capture-device (make-capture-input-camera index))))
+    (make-capture (make-capture-camera-input index))))
 
 (defun start-capture (capture)
   (ns:with-event-loop nil
@@ -96,10 +101,7 @@
   (ns:with-event-loop nil
     (ns:objc (capture-session capture) "stopRunning")))
 
-(defun release-capture (capture)
-  (ns:with-event-loop (:waitp t)
-    (ns:release (capture-session capture))
-    (ns:release (capture-delegate capture))))
+
 
 
 ;; Player
@@ -115,11 +117,6 @@
   (alexandria:when-let* ((player (gethash id *player-table*))
 			 (did-end (player-did-end player)))
     (funcall did-end)))
-
-(defmethod initialize-instance :after ((self player) &key did-end)
-  (setf (id self) (g-id self))
-  (incf (g-id self))
-  (setf (gethash (id self) *player-table*) self))
 
 (let* ((id 0))
   (defun make-player (path &key did-end)
@@ -145,6 +142,10 @@
 	    (setf (gethash id *player-table*) player)
 	    (incf id)
 	    player))))))
+
+(defun release-player (player)
+  (ns:release (player-object player))
+  (ns:release (player-delegate player)))
 
 (defun status (player)
   (ns:with-event-loop (:waitp t)
