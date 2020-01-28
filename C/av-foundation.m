@@ -6,7 +6,7 @@
 // AVFoundation Capture 
 
 
-@interface CaptureVideoDataOutputDelegate : NSObject <AVCaptureVideoDataOutputSampleBufferDelegate>  {
+@interface CaptureDelegate : NSObject <AVCaptureVideoDataOutputSampleBufferDelegate>  {
   CVImageBufferRef mHead;
 }
 
@@ -18,7 +18,13 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
 
 @end
 
-@implementation CaptureVideoDataOutputDelegate
+@implementation CaptureDelegate
+
+-(id) init {
+  self = [super init];
+  mHead = NULL;
+  return self;
+}
 
 -(CVImageBufferRef) getImageBuffer {
   return mHead;
@@ -29,10 +35,17 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
        fromConnection: (AVCaptureConnection*) connection {
   CVImageBufferRef frame = CMSampleBufferGetImageBuffer(buffer);
   CVImageBufferRef prev;
-  CVBufferRetain(frame);
-  prev = mHead;
-  mHead = frame;
-  CVBufferRelease(prev);
+  if(frame) {
+    CVBufferRetain(frame);
+    prev = mHead;
+    mHead = frame;
+    CVBufferRelease(prev);
+  }
+}
+
+-(void) dealloc {
+  CVBufferRelease(mHead);
+  [super dealloc];
 }
 
 @end
@@ -40,9 +53,10 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
 // =========================================================================
 // AVFoundation Player 
 
-@interface PlayerItemDelegate : NSObject {
+@interface PlayerDelegate : NSObject {
   int mID;
   void(*mEndFn)(int);
+  CVImageBufferRef mHead;
   AVPlayerItemVideoOutput* mOutput;
 }
 
@@ -53,19 +67,36 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
 
 @end
 
-@implementation PlayerItemDelegate
+@implementation PlayerDelegate
 
 -(id) initWithID: (int) inID
 	   endFn: (void(*)(int)) endFn {
   self = [super init];
   mID = inID;
   mEndFn = endFn;
+  mHead = NULL;
+  mOutput = NULL;
   return self;
 }
 
 -(void) playerItemDidReachEnd: (NSNotification*) notification {
   mEndFn(mID);
 } 
+
+
+-(CVImageBufferRef) getImageBuffer {
+  CMTime presentTime = [mOutput itemTimeForHostTime: CACurrentMediaTime()];
+  if([mOutput hasNewPixelBufferForItemTime: presentTime]) {
+    CVPixelBufferRef current;
+    CVPixelBufferRef prev;
+    current = [mOutput copyPixelBufferForItemTime: presentTime
+			       itemTimeForDisplay: nil];
+    prev = mHead;
+    mHead = current;
+    CVBufferRelease(prev);
+  }
+  return mHead;
+}
 
 -(void)observeValueForKeyPath: (NSString*) keyPath
 		     ofObject:(AVPlayerItem*) object
@@ -87,6 +118,11 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
 						 name: AVPlayerItemDidPlayToEndTimeNotification
 					       object: object];
   }
+}
+
+-(void) dealloc {
+  CVBufferRelease(mHead);
+  [super dealloc];
 }
 
 @end
