@@ -15,19 +15,19 @@
 	   #:play
 	   #:pause
 	   #:volume
-	   #:seek-to-zero))
+	   #:seek-to-zero
+	   #:ready?))
 
 (in-package :av)
 
 (defgeneric get-delegate (av-media))
 
-(defmacro with-media-data ((av-media bpr width height data) &body body)
+(defmacro with-media-data ((av-media width height data) &body body)
   (alexandria:with-gensyms (m-head)
     `(let* ((,m-head (ns:objc (get-delegate ,av-media) "getImageBuffer" :pointer)))
        (unless (cffi:null-pointer-p ,m-head)
 	 (cffi:foreign-funcall "CVPixelBufferLockBaseAddress" :pointer ,m-head :int 0)
-	 (unwind-protect (let* ((,bpr (cffi:foreign-funcall "CVPixelBufferGetBytesPerRow" :pointer ,m-head :sizet))
-				(,width (cffi:foreign-funcall "CVPixelBufferGetWidth" :pointer ,m-head :sizet))
+	 (unwind-protect (let* ((,width (cffi:foreign-funcall "CVPixelBufferGetWidth" :pointer ,m-head :sizet))
 				(,height (cffi:foreign-funcall "CVPixelBufferGetHeight" :pointer ,m-head :sizet))
 				(,data (cffi:foreign-funcall "CVPixelBufferGetBaseAddress" :pointer ,m-head :pointer)))
 			   ,@body)
@@ -167,6 +167,9 @@
 (defun volume (player volume)
   (ns:with-event-loop nil
     (ns:objc (player-object player) "setVolume:" :float (float volume 1.0))))
+
+(defun ready? (player)
+  (= 1 (ns:objc (player-delegate player) "ready" :int)))
 
 ;; CoreMedia
 (cffi:defcstruct cm-time

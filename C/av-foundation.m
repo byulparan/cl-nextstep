@@ -58,6 +58,7 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
   void(*mEndFn)(int);
   CVImageBufferRef mHead;
   AVPlayerItemVideoOutput* mOutput;
+  int mReady;
 }
 
 -(void)observeValueForKeyPath: (NSString*) keyPath
@@ -76,6 +77,7 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
   mEndFn = endFn;
   mHead = NULL;
   mOutput = NULL;
+  mReady = NO;
   return self;
 }
 
@@ -98,6 +100,10 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
   return mHead;
 }
 
+-(int)ready {
+  return mReady;
+}
+
 -(void)observeValueForKeyPath: (NSString*) keyPath
 		     ofObject:(AVPlayerItem*) object
 		       change:(NSDictionary*) change
@@ -117,6 +123,7 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
 					     selector: @selector(playerItemDidReachEnd:)
 						 name: AVPlayerItemDidPlayToEndTimeNotification
 					       object: object];
+    mReady = YES;
   }
 }
 
