@@ -5,7 +5,8 @@
 	       :cffi-shared-libs
 	       :float-features
 	       :bordeaux-threads
-	       :trivial-main-thread)
+	       :trivial-main-thread
+	       :cl-opengl)
   :serial t
   :components ((:file "package")
 	       #-ccl (:file "id-map")
