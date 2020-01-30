@@ -45,9 +45,9 @@
    (when core-profile
      (list +pfa-opengl-profile+ +opengl-profile-version3-2-core+))))
 
-(defun make-context (pixel-format)
+(defun make-context (cgl-pixel-format)
   (cffi:with-foreign-objects ((new-context :pointer))
-    (let* ((err (cffi:foreign-funcall "CGLCreateContext" :pointer pixel-format
+    (let* ((err (cffi:foreign-funcall "CGLCreateContext" :pointer cgl-pixel-format
 							 :pointer (cffi:null-pointer)
 							 :pointer new-context
 							 :int)))
@@ -72,15 +72,15 @@
 	(error "Error on cgl:make-pixel-format"))
       (cffi:mem-ref new-pixel-format :pointer))))
 
-(defun destroy-context (context)
-  (cffi:foreign-funcall "CGLDestroyContext" :pointer context))
+(defun destroy-context (cgl-context)
+  (cffi:foreign-funcall "CGLDestroyContext" :pointer cgl-context))
 
-(defun destroy-pixel-format (pixel-format)
-  (cffi:foreign-funcall "CGLDestroyPixelFormat" :pointer pixel-format))
+(defun destroy-pixel-format (cgl-pixel-format)
+  (cffi:foreign-funcall "CGLDestroyPixelFormat" :pointer cgl-pixel-format))
 
 (defun get-current-context ()
   (cffi:foreign-funcall "CGLGetCurrentContext" :pointer))
 
-(defun set-current-context (context)
-  (cffi:foreign-funcall "CGLSetCurrentContext" :pointer context))
+(defun set-current-context (cgl-context)
+  (cffi:foreign-funcall "CGLSetCurrentContext" :pointer cgl-context))
 
