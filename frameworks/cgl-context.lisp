@@ -16,7 +16,8 @@
 	   #:destroy-context
 	   #:destroy-pixel-format
 	   #:set-current-context
-	   #:get-current-context))
+	   #:get-current-context
+	   #:tex-image-io-surface-2d))
 
 (in-package :cgl)
 
@@ -45,7 +46,7 @@
    (when core-profile
      (list +pfa-opengl-profile+ +opengl-profile-version3-2-core+))))
 
-(defun make-context (cgl-pixel-format)
+(defun make-context (cgl-pixel-form)
   (cffi:with-foreign-objects ((new-context :pointer))
     (let* ((err (cffi:foreign-funcall "CGLCreateContext" :pointer cgl-pixel-format
 							 :pointer (cffi:null-pointer)
@@ -84,3 +85,14 @@
 (defun set-current-context (cgl-context)
   (cffi:foreign-funcall "CGLSetCurrentContext" :pointer cgl-context))
 
+(defun tex-image-io-surface-2d (cgl-context target internal-format width height format type io-surface plane)
+  (cffi:foreign-funcall "CGLTexImageIOSurface2D"
+			:pointer cgl-context
+			:int (cffi:foreign-enum-value '%gl:enum target)
+			:int (cffi:foreign-enum-value '%gl:enum internal-format)
+			:int width
+			:int height
+			:int (cffi:foreign-enum-value '%gl:enum format)
+			:int (cffi:foreign-enum-value '%gl:enum type)
+			:pointer io-surface
+			:unsigned-int plane))
