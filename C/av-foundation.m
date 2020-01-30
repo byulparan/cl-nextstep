@@ -7,10 +7,8 @@
 
 
 @interface CaptureDelegate : NSObject <AVCaptureVideoDataOutputSampleBufferDelegate>  {
-  CVImageBufferRef mHead;
+  CVPixelBufferRef mHead;
 }
-
--(CVImageBufferRef) getImageBuffer;
 
 -(void) captureOutput: (AVCaptureOutput*) output
 didOutputSampleBuffer: (CMSampleBufferRef) buffer
@@ -26,15 +24,15 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
   return self;
 }
 
--(CVImageBufferRef) getImageBuffer {
+-(CVPixelBufferRef) getImageBuffer {
   return mHead;
 }
 
 -(void) captureOutput: (AVCaptureOutput*) output
 didOutputSampleBuffer: (CMSampleBufferRef) buffer
        fromConnection: (AVCaptureConnection*) connection {
-  CVImageBufferRef frame = CMSampleBufferGetImageBuffer(buffer);
-  CVImageBufferRef prev;
+  CVPixelBufferRef frame = CMSampleBufferGetImageBuffer(buffer);
+  CVPixelBufferRef prev;
   if(frame) {
     CVBufferRetain(frame);
     prev = mHead;
@@ -53,13 +51,22 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
 // =========================================================================
 // AVFoundation Player 
 
-@interface PlayerDelegate : NSObject {
+enum {
+      LOAD_FN = 0,
+      END_FN = 1
+};
+
+@interface PlayerManager : NSObject {
   int mID;
-  void(*mEndFn)(int);
-  CVImageBufferRef mHead;
-  AVPlayerItemVideoOutput* mOutput;
-  int mReady;
+  void(*mHandlerFn)(int,int);
 }
+
+@property(assign, nonatomic) int ready;
+@property(assign, nonatomic) CVPixelBufferRef head;
+@property(assign, nonatomic) AVPlayer* player;
+@property(assign, nonatomic) AVPlayerItem* playerItem;
+@property(assign, nonatomic) AVPlayerItemVideoOutput* output;
+
 
 -(void)observeValueForKeyPath: (NSString*) keyPath
 		     ofObject:(AVPlayerItem*) object
@@ -68,41 +75,30 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
 
 @end
 
-@implementation PlayerDelegate
+@implementation PlayerManager
 
 -(id) initWithID: (int) inID
-	   endFn: (void(*)(int)) endFn {
+	    path: (NSString*) path
+       handlerFn: (void(*)(int,int)) handlerFn {
   self = [super init];
   mID = inID;
-  mEndFn = endFn;
-  mHead = NULL;
-  mOutput = NULL;
-  mReady = NO;
+  mHandlerFn = handlerFn;
+  self.ready = NO;
+  self.head = NULL;
+  self.player = [[AVPlayer alloc] initWithURL: [NSURL fileURLWithPath: path]];
+  self.playerItem = [self.player currentItem];
+  NSDictionary* options = @{
+			    (NSString*) kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32ARGB),
+			    (NSString*) kCVPixelBufferOpenGLCompatibilityKey: @YES
+  };
+  self.output = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes: options];
+  [self.playerItem addObserver: self
+		    forKeyPath: @"status"
+		       options: 0
+		       context: NULL];
   return self;
 }
 
--(void) playerItemDidReachEnd: (NSNotification*) notification {
-  mEndFn(mID);
-} 
-
-
--(CVImageBufferRef) getImageBuffer {
-  CMTime presentTime = [mOutput itemTimeForHostTime: CACurrentMediaTime()];
-  if([mOutput hasNewPixelBufferForItemTime: presentTime]) {
-    CVPixelBufferRef current;
-    CVPixelBufferRef prev;
-    current = [mOutput copyPixelBufferForItemTime: presentTime
-			       itemTimeForDisplay: nil];
-    prev = mHead;
-    mHead = current;
-    CVBufferRelease(prev);
-  }
-  return mHead;
-}
-
--(int)ready {
-  return mReady;
-}
 
 -(void)observeValueForKeyPath: (NSString*) keyPath
 		     ofObject:(AVPlayerItem*) object
@@ -110,25 +106,37 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
 		      context:(void*) context {
   if (object.status == AVPlayerStatusReadyToPlay) {
     [object removeObserver: self forKeyPath: @"status"];
-    NSDictionary* options = @{
-			      (NSString*) kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32ARGB),
-			      (NSString*) kCVPixelBufferOpenGLCompatibilityKey: @YES
-    };
-    
-    AVPlayerItemVideoOutput* output = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes: options];
-    [output autorelease];
-    mOutput = output;
-    [object addOutput: output];
+    [object addOutput: self.output];
     [[NSNotificationCenter defaultCenter] addObserver: self
 					     selector: @selector(playerItemDidReachEnd:)
 						 name: AVPlayerItemDidPlayToEndTimeNotification
 					       object: object];
-    mReady = YES;
+    self.ready = YES;
+    mHandlerFn(mID, LOAD_FN);
   }
 }
 
+-(void) playerItemDidReachEnd: (NSNotification*) notification {
+  mHandlerFn(mID, END_FN);
+} 
+
+
+-(CVPixelBufferRef) getImageBuffer {
+  CMTime presentTime = [self.output itemTimeForHostTime: CACurrentMediaTime()];
+  if([self.output hasNewPixelBufferForItemTime: presentTime]) {
+    CVPixelBufferRef current;
+    CVPixelBufferRef prev;
+    current = [self.output copyPixelBufferForItemTime: presentTime
+				   itemTimeForDisplay: nil];
+    prev = self.head;
+    self.head = current;
+    CVBufferRelease(prev);
+  }
+  return self.head;
+}
+
 -(void) dealloc {
-  CVBufferRelease(mHead);
+  CVBufferRelease(self.head);
   [super dealloc];
 }
 

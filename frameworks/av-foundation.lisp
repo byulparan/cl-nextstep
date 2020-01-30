@@ -11,27 +11,29 @@
 	   #:player
 	   #:make-player
 	   #:release-player
+	   #:ready
 	   #:status
 	   #:play
 	   #:pause
 	   #:volume
-	   #:seek-to-zero
-	   #:ready?))
+	   #:seek-to-zero))
 
 (in-package :av)
 
 (defgeneric get-delegate (av-media))
+(defgeneric ready (av-media))
 
 (defmacro with-media-data ((av-media width height data) &body body)
   (alexandria:with-gensyms (m-head)
-    `(let* ((,m-head (ns:objc (get-delegate ,av-media) "getImageBuffer" :pointer)))
-       (unless (cffi:null-pointer-p ,m-head)
-	 (cffi:foreign-funcall "CVPixelBufferLockBaseAddress" :pointer ,m-head :int 0)
-	 (unwind-protect (let* ((,width (cffi:foreign-funcall "CVPixelBufferGetWidth" :pointer ,m-head :sizet))
-				(,height (cffi:foreign-funcall "CVPixelBufferGetHeight" :pointer ,m-head :sizet))
-				(,data (cffi:foreign-funcall "CVPixelBufferGetBaseAddress" :pointer ,m-head :pointer)))
-			   ,@body)
-	   (cffi:foreign-funcall "CVPixelBufferUnlockBaseAddress" :pointer ,m-head :int 0))))))
+    `(when (ready ,av-media)
+       (let* ((,m-head (ns:objc (get-delegate ,av-media) "getImageBuffer" :pointer)))
+	 (unless (cffi:null-pointer-p ,m-head)
+	   (cffi:foreign-funcall "CVPixelBufferLockBaseAddress" :pointer ,m-head :int 0)
+	   (unwind-protect (let* ((,width (cffi:foreign-funcall "CVPixelBufferGetWidth" :pointer ,m-head :sizet))
+				  (,height (cffi:foreign-funcall "CVPixelBufferGetHeight" :pointer ,m-head :sizet))
+				  (,data (cffi:foreign-funcall "CVPixelBufferGetBaseAddress" :pointer ,m-head :pointer)))
+			     ,@body)
+	     (cffi:foreign-funcall "CVPixelBufferUnlockBaseAddress" :pointer ,m-head :int 0)))))))
 
 ;; Capture
 (defun list-camera-device ()
@@ -74,6 +76,9 @@
 (defstruct (capture (:constructor %make-capture (&key session delegate)))
   session delegate)
 
+(defmethod ready ((av-media capture))
+  t)
+
 (defmethod get-delegate ((av-media capture))
   (capture-delegate av-media))
 
@@ -108,68 +113,62 @@
 ;; Player
 (defvar *player-table* (make-hash-table))
 
-(defstruct (player (:constructor %make-player (&key id object item delegate did-end)))
-  id object item delegate did-end)
+(defstruct (player (:constructor %make-player (&key id manager load-fn end-fn)))
+  id manager load-fn end-fn)
 
 (defmethod get-delegate ((av-media player))
-  (player-delegate  av-media))
+  (player-manager av-media))
 
-(cffi:defcallback player-did-reach-end :void ((id :int))
+(cffi:defcallback player-handler :void ((id :int) (command :int))
   (alexandria:when-let* ((player (gethash id *player-table*))
-			 (did-end (player-did-end player)))
-    (funcall did-end)))
+			 (handler (case command
+				    (0 (player-load-fn player))
+				    (1 (player-end-fn player)))))
+    (funcall handler)))
 
 (let* ((id 0))
-  (defun make-player (path &key did-end)
-    (let* ((path (uiop:truenamize path)))
+  (defun make-player (path &key load-fn end-fn)
+    (let* ((path (uiop:truenamize path))
+	   (player nil)
+	   (load-object nil)
+	   (load-handle load-fn))
       (assert (probe-file path) nil "can't find file: ~a" path)
+      (unless (or (eql (bt:current-thread) (trivial-main-thread:find-main-thread))
+		  load-handle)
+	(setf load-object (sb-thread:make-semaphore)
+	      load-handle (lambda () (sb-thread:signal-semaphore load-object))))
       (ns:with-event-loop (:waitp t)
-	(let* ((av-player (ns:objc (ns:alloc "AVPlayer")
-				   "initWithURL:" :pointer (ns:objc "NSURL" "fileURLWithPath:"
-								    :pointer (ns:autorelease (ns:make-ns-string (namestring path)))
-								    :pointer)
-				   :pointer))
-	       (av-player-item (ns:objc av-player "currentItem" :pointer))
-	       (player-delegate (ns:objc (ns:alloc "PlayerDelegate")
-					 "initWithID:endFn:" :int id
-					 :pointer (cffi:callback player-did-reach-end)
-					 :pointer)))
-	  (ns:objc av-player-item "addObserver:forKeyPath:options:context:"
-		   :pointer player-delegate
-		   :pointer (ns:autorelease (ns:make-ns-string "status"))
-		   :int 0
-		   :pointer (cffi:null-pointer))
-	  (let* ((player (%make-player :id id :object av-player :item av-player-item :delegate player-delegate)))
-	    (setf (gethash id *player-table*) player)
-	    (incf id)
-	    player))))))
+	(setf player (%make-player :id id :load-fn load-handle :end-fn end-fn))
+	(setf (gethash id *player-table*) player)
+	(setf (player-manager player) (ns:objc (ns:alloc "PlayerManager")
+					       "initWithID:path:handlerFn:"
+					       :int id
+					       :pointer (ns:autorelease (ns:make-ns-string (namestring path)))
+					       :pointer (cffi:callback player-handler)
+					       :pointer))
+	(incf id))
+      (when load-object
+	(sb-thread:wait-on-semaphore load-object))
+      player)))
 
 (defun release-player (player)
-  (ns:release (player-object player))
-  (ns:release (player-delegate player)))
+  (ns:release (player-manager player)))
 
-(defun status (player)
+(defmethod ready ((av-media player))
   (ns:with-event-loop (:waitp t)
-    (let* ((status (ns:objc (player-object player) "status" :int)))
-      (case status
-	(0 :unknown)
-	(1 :ready-to-play)
-	(2 :failed)))))
+    (= 1 (ns:objc (player-manager av-media) "ready" :int))))
 
 (defun play (player)
   (ns:with-event-loop nil
-    (ns:objc (player-object player) "play")))
+    (ns:objc (ns:objc (player-manager player) "player" :pointer) "play")))
 
 (defun pause (player)
   (ns:with-event-loop nil
-    (ns:objc (player-object player) "pause")))
+    (ns:objc (ns:objc (player-manager player) "player" :pointer) "pause")))
 
 (defun volume (player volume)
   (ns:with-event-loop nil
-    (ns:objc (player-object player) "setVolume:" :float (float volume 1.0))))
-
-(defun ready? (player)
-  (= 1 (ns:objc (player-delegate player) "ready" :int)))
+    (ns:objc (ns:objc (player-manager player) "player" :pointer) "setVolume:" :float (float volume 1.0))))
 
 ;; CoreMedia
 (cffi:defcstruct cm-time
@@ -180,6 +179,6 @@
 
 (defun seek-to-zero (player)
   (ns:with-event-loop nil
-    (ns:objc (player-object player) "seekToTime:"
-	     (:struct cm-time) (cffi:mem-ref (cffi:foreign-symbol-pointer "kCMTimeZero") '(:struct cm-time)) )))
+    (ns:objc (ns:objc (player-manager player) "player" :pointer) "seekToTime:"
+	     (:struct cm-time) (cffi:mem-ref (cffi:foreign-symbol-pointer "kCMTimeZero") '(:struct cm-time)))))
 
