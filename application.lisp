@@ -12,13 +12,20 @@
 
 
 (defvar *dispatch-id-map* (make-id-map))
+(defvar *launch-hooks* nil)
+(defvar *terminate-hooks* nil)
 
 (cffi:defcallback dispatch-callback :void ((id :int))
-  (let* ((task (id-map-free-object *dispatch-id-map* id)))
-    (when task
-      (handler-case (funcall task)
-	(error (c)
-	  (break (format nil "catch signal while Dispatching Event: \"~a\"" c)))))))
+  (case id
+    (-100 (dolist (hook *launch-hooks*)
+	    (funcall hook)))
+    (-200 (dolist (hook sb-ext:*exit-hooks*)
+	    (funcall hook)))
+    (t (let* ((task (id-map-free-object *dispatch-id-map* id)))
+	 (when task
+	   (handler-case (funcall task)
+	     (error (c)
+	       (break (format nil "catch signal while Dispatching Event: \"~a\"" c)))))))))
 
 (defmacro with-event-loop ((&key waitp nil) &body body)
   (alexandria:with-gensyms (result semaphore id) 
