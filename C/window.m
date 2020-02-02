@@ -71,8 +71,8 @@ static NSMutableArray* gFullscreenWindows = NULL;
 }
 
 -(void) exitFullscreen {
-  [self setFrame: mMemFrame display: YES];
   self.styleMask = mMemStyleMask;
+  [self setFrame: mMemFrame display: YES];
   self.title = mMemTitle;
   self.isFullscreen = NO;
   [gFullscreenWindows removeObject: self];
