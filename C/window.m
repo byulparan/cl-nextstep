@@ -2,11 +2,12 @@
 
 @interface LispWindow : NSWindow <NSWindowDelegate> {
   int mID;
+  NSString* mMemTitle;
   NSRect mMemFrame;
   NSWindowStyleMask mMemStyleMask;
-  bool mIsFullscreen;
   void (*mCloseFn) (int);
 }
+@property(assign, nonatomic) bool isFullscreen;
 @end
 
 static NSMutableArray* gFullscreenWindows = NULL;
@@ -25,12 +26,12 @@ static NSMutableArray* gFullscreenWindows = NULL;
   }
   mID = inID;
   mCloseFn = closeFn;
-  mIsFullscreen = NO;
+  self.isFullscreen = NO;
   return self;
 }
 
 -(void)windowWillClose:(NSNotification *)notification {
-  if(mIsFullscreen) [self exitFullscreen];
+  if(self.isFullscreen) [self exitFullscreen];
   mCloseFn(mID);
 }
 
@@ -55,13 +56,14 @@ static NSMutableArray* gFullscreenWindows = NULL;
 
 
 -(void) enterFullscreen {
+  mMemTitle = self.title;
   mMemFrame = self.frame;
   mMemStyleMask = self.styleMask;
   self.styleMask = NSWindowStyleMaskBorderless;
   [self setFrame: self.screen.frame
 	 display: YES];
-  mIsFullscreen = YES;
-
+  self.isFullscreen = YES;
+  
   [gFullscreenWindows addObject: self];
   if([gFullscreenWindows count] == 1) {
     NSApp.presentationOptions =  NSApplicationPresentationAutoHideMenuBar;
@@ -71,7 +73,8 @@ static NSMutableArray* gFullscreenWindows = NULL;
 -(void) exitFullscreen {
   [self setFrame: mMemFrame display: YES];
   self.styleMask = mMemStyleMask;
-  mIsFullscreen = NO;
+  self.title = mMemTitle;
+  self.isFullscreen = NO;
   [gFullscreenWindows removeObject: self];
   if([gFullscreenWindows count] == 0) {
     NSApp.presentationOptions =  NSApplicationPresentationDefault;
@@ -79,7 +82,7 @@ static NSMutableArray* gFullscreenWindows = NULL;
 }
 
 -(void) toggleFullscreen {
-  if(mIsFullscreen) {
+  if(self.isFullscreen) {
     [self exitFullscreen];
   } else {
     [self enterFullscreen];
