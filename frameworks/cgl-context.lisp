@@ -46,7 +46,7 @@
    (when core-profile
      (list +pfa-opengl-profile+ +opengl-profile-version3-2-core+))))
 
-(defun make-context (cgl-pixel-form)
+(defun make-context (cgl-pixel-format)
   (cffi:with-foreign-objects ((new-context :pointer))
     (let* ((err (cffi:foreign-funcall "CGLCreateContext" :pointer cgl-pixel-format
 							 :pointer (cffi:null-pointer)
