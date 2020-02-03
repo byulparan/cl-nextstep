@@ -12,13 +12,15 @@
 
 
 (defvar *dispatch-id-map* (make-id-map))
-(defvar *launch-hooks* nil)
-(defvar *terminate-hooks* nil)
+
+(defvar *startup-hooks* nil)
+;; (defvar *terminate-hooks* nil)
 
 (cffi:defcallback dispatch-callback :void ((id :int))
   (case id
-    (-100 (dolist (hook *launch-hooks*)
-	    (funcall hook)))
+    (-100 (dolist (hook *startup-hooks*)
+	    (funcall hook)
+	    (setf *startup-hooks* nil)))
     (-200 (dolist (hook sb-ext:*exit-hooks*)
 	    (funcall hook)))
     (t (let* ((task (id-map-free-object *dispatch-id-map* id)))

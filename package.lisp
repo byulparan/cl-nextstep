@@ -35,6 +35,7 @@
    #:rect-width
    #:rect-height
    ;; application.lisp
+   #:*startup-hooks*
    #:start-event-loop 
    #:with-event-loop
    #:enable-foreground
