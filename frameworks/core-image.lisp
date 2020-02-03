@@ -9,6 +9,7 @@
 	   #:extent
 	   #:draw-image-to-view
 	   #:make-filter
+	   #:active
 	   #:set-filter-param
 	   #:apply-filter))
 
@@ -95,12 +96,13 @@
 (defclass filter ()
   ((name :initarg :name :reader name)
    (params :initarg :params :reader params)
-   (cocoa-ref :initarg :cocoa-ref :reader ns::cocoa-ref)))
+   (cocoa-ref :initarg :cocoa-ref :reader ns::cocoa-ref)
+   (active :initarg :active)))
 
 (defmethod print-object ((object filter) stream)
   (format stream "#<CIFilter name: \"~a\" params: [~{\"~a\"~^ ~}]>" (name object) (params object)))
 
-(defun make-filter (name)
+(defun make-filter (name &key (active t))
   (let* ((item (cdr (assoc name *core-filter-db*)))
 	 (filter-name (car item))
 	 (params (cdr item)))
@@ -112,7 +114,12 @@
 	(ns:objc filter "setDefaults")
 	(make-instance 'filter :name filter-name
 		       :params params
+		       :active active
 		       :cocoa-ref filter)))))
+
+(defun active (filter value)
+  (with-slots (active) filter
+    (setf active value)))
 
 (defmethod set-filter-param (filter param (value number))
   (let* ((parameter (find (string-upcase param) (params filter) :test #'equalp)))
@@ -136,11 +143,13 @@
 					     :pointer (ns:autorelease (ns:make-ns-string parameter))))))))
 
 (defun apply-filter (filter ci-image)
-  (ns:with-event-loop (:waitp t)
-    (ns:objc filter "setValue:forKey:" :pointer ci-image
-				       :pointer (ns:autorelease (ns:make-ns-string "inputImage")))
-    (ns:objc filter "valueForKey:" :pointer (ns:autorelease (ns:make-ns-string "outputImage"))
-	     :pointer)))
+  (with-slots (active) filter
+    (if active (ns:with-event-loop (:waitp t)
+		   (ns:objc filter "setValue:forKey:" :pointer ci-image
+						      :pointer (ns:autorelease (ns:make-ns-string "inputImage")))
+		   (ns:objc filter "valueForKey:" :pointer (ns:autorelease (ns:make-ns-string "outputImage"))
+						  :pointer))
+      ci-image)))
 
 
 
