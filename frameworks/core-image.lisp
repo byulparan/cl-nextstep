@@ -60,7 +60,7 @@
     (unwind-protect (ns:objc "CIImage" "imageWithTexture:size:flipped:colorSpace:"
 			     :unsigned-int texture
 			     (:struct ns:size) size
-			     :bool nil
+			     :int 0
 			     :pointer color-space
 			     :pointer)
       (cg:color-space-release color-space))))
