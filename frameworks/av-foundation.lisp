@@ -7,9 +7,10 @@
 	   #:make-camera-capture
 	   #:make-screen-capture
 	   #:crop-rect
+	   #:min-frame-duration
 	   #:start-capture
 	   #:stop-capture
-
+	   
 	   #:player
 	   #:make-player
 	   #:release-player
@@ -21,6 +22,14 @@
 	   #:seek-to-zero))
 
 (in-package :av)
+
+;; CoreMedia
+(cffi:defcstruct cm-time
+  (value :int64)
+  (timescale :int)
+  (flags :unsigned-int)
+  (epoch :int64))
+
 
 (defgeneric get-delegate (av-media))
 (defgeneric ready (av-media))
@@ -118,6 +127,24 @@
 		   "objectAtIndex:" :int 0 :pointer)))
       (ns:objc input "setCropRect:" (:struct ns:rect) rect))))
 
+(defun min-frame-duration (screen-capture)
+  (ns:with-event-loop (:waitp t)
+    (let* ((input (ns:objc 
+		   (ns:objc (capture-session screen-capture) "inputs" :pointer)
+		   "objectAtIndex:" :int 0 :pointer)))
+      (ns:objc-stret cm-time input "minFrameDuration"))))
+
+(defun (setf min-frame-duration) (framerate screen-capture)
+  (ns:with-event-loop nil
+    (let* ((input (ns:objc 
+		   (ns:objc (capture-session screen-capture) "inputs" :pointer)
+		   "objectAtIndex:" :int 0 :pointer)))
+      (ns:objc input "setMinFrameDuration:"
+	       (:struct cm-time) (cffi:foreign-funcall "CMTimeMake"
+						       :int64 1
+						       :int framerate
+						       (:struct cm-time))))))
+
 (defun release-capture (capture)
   (ns:with-event-loop (:waitp t)
     (ns:release (capture-session capture))
@@ -193,13 +220,6 @@
 (defun volume (player volume)
   (ns:with-event-loop nil
     (ns:objc (ns:objc (player-manager player) "player" :pointer) "setVolume:" :float (float volume 1.0))))
-
-;; CoreMedia
-(cffi:defcstruct cm-time
-  (value :int64)
-  (timescale :int)
-  (flags :unsigned-int)
-  (epoch :int64))
 
 (defun seek-to-zero (player)
   (ns:with-event-loop nil
