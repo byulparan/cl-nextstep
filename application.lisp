@@ -65,7 +65,7 @@
 	 (float-features:with-float-traps-masked (:invalid :overflow :divide-by-zero)
 	   (let* ((pool (new "NSAutoreleasePool"))
 		  (ns-app (objc "NSApplication" "sharedApplication" :pointer)))
-	     (make-default-menubar ns-app)
+	     (objc ns-app "setActivationPolicy:" :long +nsapplicationactivationpolicyregular+)
 	     (let* ((activity-options (logior +NSActivityIdleDisplaySleepDisabled+
 					      +NSActivityIdleSystemSleepDisabled+
 					      +NSActivitySuddenTerminationDisabled+
@@ -75,12 +75,11 @@
 					      +NSActivityBackground+
 					      +NSActivityLatencyCritical+)))
 	       (set-process-activity activity-options "NONE REASON"))
-	     (objc ns-app "setActivationPolicy:" :long +nsapplicationactivationpolicyregular+)
-	     (objc ns-app "activateIgnoringOtherApps:" :bool t)
 	     (let* ((delegate (objc (alloc "LispDelegate")
 				    "initWithDispatch:" :pointer (cffi:callback delegate-callback)
 				    :pointer)))
 	       (objc ns-app "setDelegate:" :pointer delegate))
+	     (make-default-menubar ns-app)
 	     (objc ns-app "run")
 	     (release pool)))))
       :start-event-loop)))
