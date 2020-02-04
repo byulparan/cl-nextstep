@@ -5,6 +5,8 @@
 	   #:capture
 	   #:release-capture
 	   #:make-camera-capture
+	   #:make-screen-capture
+	   #:crop-rect
 	   #:start-capture
 	   #:stop-capture
 
@@ -60,6 +62,15 @@
 	  (assert (zerop code) nil "Error while make camera capture: ~a" code)
 	  input)))))
 
+(defun make-capture-screen-input (&optional crop-rect)
+  (let* ((capture (ns:objc (ns:alloc "AVCaptureScreenInput") "initWithDisplayID:"
+			   :int 2077750265 ;; kCGDirectMainDisplay
+			   :pointer)))
+    (when crop-rect
+      (ns:objc capture "setCropRect:" (:struct ns:rect) crop-rect))
+    (ns:autorelease capture)))
+
+
 (defun make-capture-video-data-output (capture-delegate)
   (let* ((video-output (ns:autorelease (ns:objc (ns:alloc "AVCaptureVideoDataOutput") "init" :pointer))))
     (ns:objc video-output "setSampleBufferDelegate:queue:"
@@ -73,8 +84,8 @@
 			       :pointer))
     video-output))
 
-(defstruct (capture (:constructor %make-capture (&key session delegate)))
-  session delegate)
+(defstruct (capture (:constructor %make-capture (&key session delegate input-type)))
+  session delegate input-type)
 
 (defmethod ready ((av-media capture))
   t)
@@ -82,22 +93,35 @@
 (defmethod get-delegate ((av-media capture))
   (capture-delegate av-media))
 
-(defun make-capture (input)
+(defun make-capture (input input-type)
   (let* ((session (ns:objc (ns:alloc "AVCaptureSession") "init" :pointer))
 	 (capture-delegate (ns:objc (ns:alloc "CaptureDelegate") "init" :pointer))
 	 (output (make-capture-video-data-output capture-delegate)))
     (ns:objc session "addInput:" :pointer input)
     (ns:objc session "addOutput:" :pointer output)
-    (%make-capture :session session :delegate capture-delegate)))
+    (%make-capture :session session :delegate capture-delegate :input-type input-type)))
+
+
+(defun make-camera-capture (index)
+  (ns:with-event-loop (:waitp t)
+    (make-capture (make-capture-camera-input index) :camera)))
+
+(defun make-screen-capture (&optional rect)
+  (ns:with-event-loop (:waitp t)
+    (make-capture (make-capture-screen-input rect) :screen)))
+
+(defun crop-rect (screen-capture rect)
+  (assert (eql :screen (capture-input-type screen-capture)) nil)
+  (ns:with-event-loop nil
+    (let* ((input (ns:objc 
+		   (ns:objc (capture-session screen-capture) "inputs" :pointer)
+		   "objectAtIndex:" :int 0 :pointer)))
+      (ns:objc input "setCropRect:" (:struct ns:rect) rect))))
 
 (defun release-capture (capture)
   (ns:with-event-loop (:waitp t)
     (ns:release (capture-session capture))
     (ns:release (capture-delegate capture))))
-
-(defun make-camera-capture (index)
-  (ns:with-event-loop (:waitp t)
-    (make-capture (make-capture-camera-input index))))
 
 (defun start-capture (capture)
   (ns:with-event-loop nil
