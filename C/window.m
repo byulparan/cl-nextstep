@@ -16,9 +16,10 @@ static NSMutableArray* gFullscreenWindows = NULL;
 
 -(id) initWithID: (int) inID
 	   frame: (NSRect) frame
+       styleMask: (int) styleMask
 	 closeFn: (void(*)(int)) closeFn {
   self = [super initWithContentRect: frame
-			  styleMask: NSWindowStyleMaskTitled | NSWindowStyleMaskClosable
+			  styleMask: styleMask
 			    backing: NSBackingStoreBuffered
 			      defer: NO];
   if(!gFullscreenWindows) {

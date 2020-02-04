@@ -15,14 +15,20 @@
    (title :initarg :title :initform "" :reader title)
    (close-fn :initarg :close-fn :initform nil :accessor close-fn)))
 
-(defmethod initialize-instance :after ((self window) &key (x 0) (y 0) (w 400) (h 200))
+(defmethod initialize-instance :after ((self window) &key (x 0) (y 0) (w 400) (h 200)
+				       style-mask (closable t) (resizable t) (miniaturizable t))
   (with-slots (cocoa-ref id g-id title close-fn) self
     (setf id g-id)
     (incf g-id)
     (setf cocoa-ref (ns:objc (ns:objc "LispWindow" "alloc" :pointer)
-			     "initWithID:frame:closeFn:"
+			     "initWithID:frame:styleMask:closeFn:"
 			     :int id
 			     (:struct rect) (make-rect x y w h)
+			     :int (if style-mask style-mask
+				    (logior (ash 1 0) ;; Titled
+					    (if closable (ash 1 1) 0)
+					    (if resizable (ash 1 3) 0)
+					    (if miniaturizable (ash 1 2) 0)))
 			     :pointer (cffi:callback window-callback)
 			     :pointer))
     (ns:objc cocoa-ref "setTitle:" :pointer (autorelease (make-ns-string title)))
