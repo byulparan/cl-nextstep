@@ -39,16 +39,19 @@
 
 
 (defun alloc (cls)
-  (ns:objc cls "alloc" :pointer))
+  (objc cls "alloc" :pointer))
+
+(defun new (cls)
+  (objc (alloc cls) "init" :pointer))
 
 (defun retain (instance)
-  (ns:objc instance "retain" :pointer))
+  (objc instance "retain" :pointer))
 
 (defun release (instance)
-  (ns:objc instance "release"))
+  (objc instance "release"))
 
 (defun autorelease (instance)
-  (ns:objc instance "autorelease" :pointer))
+  (objc instance "autorelease" :pointer))
 
 (defun cf-retain (cf-instance)
   (cffi:foreign-funcall "CFRetain" :pointer cf-instance :pointer))

@@ -1,33 +1,39 @@
 (in-package :cl-nextstep)
 
-(cffi:defcfun ("start_event_loop" %start-event-loop) :void
-  (event-callback :pointer))
+(defconstant +NSActivityIdleDisplaySleepDisabled+ (ash 1 40))
+(defconstant +NSActivityIdleSystemSleepDisabled+ (ash 1 20)) 
+(defconstant +NSActivitySuddenTerminationDisabled+ (ash 1 14)) 
+(defconstant +NSActivityAutomaticTerminationDisabled+ (ash 1 15)) 
+(defconstant +NSActivityUserInitiated+ (logior #x00FFFFFF +NSActivityIdleSystemSleepDisabled+)) 
+(defconstant +NSActivityUserInitiatedAllowingIdleSystemSleep+ (logand 
+							       +NSActivityUserInitiated+
+							       (lognot +NSActivityIdleSystemSleepDisabled+))) 
+(defconstant +NSActivityBackground+ #x000000FF) 
+(defconstant +NSActivityLatencyCritical+ #xFF00000000)
 
-(cffi:defcfun ("execute_in_event_loop_async" %execute-in-event-loop-async) :void
-  (id :int))
-
-(cffi:defcfun ("execute_in_event_loop_sync" %execute-in-event-loop-sync) :void
-  (id :int))
-
+(defconstant +NSApplicationActivationPolicyRegular+ 0)
+(defconstant +NSApplicationActivationPolicyAccessory+ 1)
+(defconstant +NSApplicationActivationPolicyProhibited+ 2)
 
 
 (defvar *dispatch-id-map* (make-id-map))
-
 (defvar *startup-hooks* nil)
-;; (defvar *terminate-hooks* nil)
 
-(cffi:defcallback dispatch-callback :void ((id :int))
+(cffi:defcallback delegate-callback :void ((id :int))
   (case id
-    (-100 (dolist (hook *startup-hooks*)
-	    (funcall hook)
-	    (setf *startup-hooks* nil)))
-    (-200 (dolist (hook sb-ext:*exit-hooks*)
-	    (funcall hook)))
-    (t (let* ((task (id-map-free-object *dispatch-id-map* id)))
-	 (when task
-	   (handler-case (funcall task)
-	     (error (c)
-	       (break (format nil "catch signal while Dispatching Event: \"~a\"" c)))))))))
+    (0 (dolist (hook *startup-hooks*)
+	 (funcall hook)))
+    (1 (dolist (hook sb-ext:*exit-hooks*)
+	 (funcall hook)))))
+
+(cffi:defcallback dispatch-callback :void ((id :pointer))
+  (let* ((id (cffi:pointer-address id)))
+    (let* ((task (id-map-free-object *dispatch-id-map* id)))
+      (when task
+	(handler-case (funcall task)
+	  (error (c)
+	    (break (format nil "catch signal while Dispatching Event: \"~a\"" c))))))))
+
 
 (defmacro with-event-loop ((&key waitp nil) &body body)
   (alexandria:with-gensyms (result semaphore id) 
@@ -36,10 +42,14 @@
 			  (,id (assign-id-map-id *dispatch-id-map*
 						 (lambda ()
 						   (setf ,result (progn ,@body))))))
-		     (%execute-in-event-loop-sync ,id)
+		     (cffi:foreign-funcall "dispatch_sync_f" :pointer (cffi:foreign-symbol-pointer "_dispatch_main_q")
+					   :pointer (cffi:make-pointer ,id)
+					   :pointer (cffi:callback dispatch-callback))
 		     ,result))
 	   (t (let* ((,id (assign-id-map-id *dispatch-id-map* (lambda () ,@body))))
-		(%execute-in-event-loop-async ,id))))))
+		(cffi:foreign-funcall "dispatch_async_f" :pointer (cffi:foreign-symbol-pointer "_dispatch_main_q")
+							 :pointer (cffi:make-pointer ,id)
+							 :pointer (cffi:callback dispatch-callback)))))))
 
 
 (let* ((running-p nil))
@@ -53,11 +63,75 @@
        (lambda ()
 	 (setf running-p t)
 	 (float-features:with-float-traps-masked (:invalid :overflow :divide-by-zero)
-	   (cffi:foreign-funcall "start_event_loop" :pointer (cffi:callback dispatch-callback)))))
+	   (let* ((pool (new "NSAutoreleasePool"))
+		  (ns-app (objc "NSApplication" "sharedApplication" :pointer)))
+	     (make-default-menubar ns-app)
+	     (let* ((activity-options (logior +NSActivityIdleDisplaySleepDisabled+
+					      +NSActivityIdleSystemSleepDisabled+
+					      +NSActivitySuddenTerminationDisabled+
+					      +NSActivityAutomaticTerminationDisabled+
+					      +NSActivityUserInitiated+
+					      +NSActivityUserInitiatedAllowingIdleSystemSleep+
+					      +NSActivityBackground+
+					      +NSActivityLatencyCritical+)))
+	       (set-process-activity activity-options "NONE REASON"))
+	     (objc ns-app "setActivationPolicy:" :long +nsapplicationactivationpolicyregular+)
+	     (objc ns-app "activateIgnoringOtherApps:" :bool t)
+	     (let* ((delegate (objc (alloc "LispDelegate")
+				    "initWithDispatch:" :pointer (cffi:callback delegate-callback)
+				    :pointer)))
+	       (objc ns-app "setDelegate:" :pointer delegate))
+	     (objc ns-app "run")
+	     (release pool)))))
       :start-event-loop)))
+
 
 (defun enable-foreground ()
   (ns:with-event-loop nil
     (ns:objc (ns:objc "NSApplication" "sharedApplication" :pointer)
 	     "activateIgnoringOtherApps:" :bool t)))
+
+(defun set-process-activity (options reason)
+  (objc
+   (objc "NSProcessInfo" "processInfo" :pointer)
+   "beginActivityWithOptions:reason:"
+   :unsigned-long-long options
+   :pointer (autorelease (ns:make-ns-string reason))))
+
+(defun make-menu-item (name &key action key)
+  (objc (alloc "NSMenuItem")
+	"initWithTitle:action:keyEquivalent:"
+	:pointer (autorelease (make-ns-string name))
+	:pointer (sel action)
+	:pointer (autorelease (make-ns-string key))
+	:pointer))
+
+(defun make-default-menubar (ns-app)
+  (let* ((menubar (autorelease (new "NSMenu")))
+	 (app-menu-item (autorelease (new "NSMenuItem")))
+	 (edit-menu-item (autorelease (new "NSMenuItem"))))
+    (objc ns-app "setMainMenu:" :pointer menubar)
+    (objc menubar "addItem:" :pointer app-menu-item)
+    (objc menubar "addItem:" :pointer edit-menu-item)
+    (let* ((app-menu (autorelease (new "NSMenu")))
+	   (quit-menu-item (autorelease (make-menu-item
+					 (ns-string-to-lisp
+					  (objc (objc "NSProcessInfo" "processInfo" :pointer)
+						"processName" :pointer))
+					 :action "terminate:"
+					 :key "q"))))
+      (objc app-menu "addItem:" :pointer quit-menu-item)
+      (objc app-menu-item "setSubmenu:" :pointer app-menu))
+    (let* ((edit-menu (autorelease (objc (alloc "NSMenu") "initWithTitle:"
+					 :pointer (autorelease (make-ns-string "Edit"))
+					 :pointer)))
+	   (close-menu-item (autorelease (make-menu-item "Close"
+							 :action "performClose:"
+							 :key "w")))
+	   (fullscreen-menu-item (autorelease (make-menu-item "ToggleFullscreen"
+							 :action "toggleFullscreen"
+							 :key "f"))))
+      (objc edit-menu "addItem:" :pointer close-menu-item)
+      (objc edit-menu "addItem:" :pointer fullscreen-menu-item)
+      (objc edit-menu-item "setSubmenu:" :pointer edit-menu))))
 
