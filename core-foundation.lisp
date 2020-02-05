@@ -31,12 +31,11 @@
     `(let* ((,object (cocoa-ref ,instance))
 	    (,selector (sel ,sel)))
        (assert (not (cffi:null-pointer-p ,object)) nil "`ns:objc` accept NullPointer with SEL: \"~a\"" ,sel)
-       (cffi:with-foreign-objects ((,result '(:pointer (:struct ,return-type))))
+       (cffi:with-foreign-objects ((,result '(:struct ,return-type)))
 	 (cffi:foreign-funcall "objc_msgSend_stret"
 			       :pointer ,result
 			       :pointer ,object :pointer ,selector ,@rest)
 	 (cffi:mem-ref ,result '(:struct ,return-type))))))
-
 
 (defun alloc (cls)
   (objc cls "alloc" :pointer))
