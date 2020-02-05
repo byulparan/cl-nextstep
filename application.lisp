@@ -64,8 +64,9 @@
 	 (setf running-p t)
 	 (float-features:with-float-traps-masked (:invalid :overflow :divide-by-zero)
 	   (let* ((pool (new "NSAutoreleasePool"))
-		  (ns-app (objc "NSApplication" "sharedApplication" :pointer)))
+		  (ns-app (objc "LispApplication" "sharedApplication" :pointer)))
 	     (objc ns-app "setActivationPolicy:" :long +nsapplicationactivationpolicyregular+)
+	     (objc ns-app "setLispApplicationDispatch:" :pointer (cffi:callback delegate-callback))
 	     (let* ((activity-options (logior +NSActivityIdleDisplaySleepDisabled+
 					      +NSActivityIdleSystemSleepDisabled+
 					      +NSActivitySuddenTerminationDisabled+
@@ -75,15 +76,11 @@
 					      +NSActivityBackground+
 					      +NSActivityLatencyCritical+)))
 	       (set-process-activity activity-options "NONE REASON"))
-	     (let* ((delegate (objc (alloc "LispDelegate")
-				    "initWithDispatch:" :pointer (cffi:callback delegate-callback)
-				    :pointer)))
-	       (objc ns-app "setDelegate:" :pointer delegate))
+	     (objc ns-app "setDelegate:" :pointer ns-app)
 	     (make-default-menubar ns-app)
 	     (objc ns-app "run")
 	     (release pool)))))
       :start-event-loop)))
-
 
 (defun enable-foreground ()
   (ns:with-event-loop nil

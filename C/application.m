@@ -1,27 +1,24 @@
 #import <Cocoa/Cocoa.h>
 
-static void (*gLispDispatch)(int task_id);
-
-
-@interface LispDelegate : NSObject <NSApplicationDelegate> {
+@interface LispApplication : NSApplication<NSApplicationDelegate> {
   void(*mLispDispatch)(int);
 }
 @end
 
-@implementation LispDelegate
+@implementation LispApplication
 
--(id) initWithDispatch: (void(*)(int)) dispatch {
-  self = [super init];
+-(void) setLispApplicationDispatch: (void(*)(int)) dispatch {
   mLispDispatch = dispatch;
-  return self;
+}
+
+-(void) terminate: (id) sender {
+  mLispDispatch(1);
+  dispatch_async(dispatch_get_main_queue(), ^{
+      [super terminate: sender];
+    });
 }
 
 -(void) applicationDidFinishLaunching:(NSNotification *)notification {
   mLispDispatch(0);
 }
-
--(void) applicationWillTerminate:(NSNotification *)notification {
-  mLispDispatch(1);
-}
-
 @end
