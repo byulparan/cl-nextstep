@@ -23,7 +23,14 @@
   (case id
     (0 (dolist (hook *startup-hooks*)
 	 (funcall hook)))
-    (1 (dolist (hook sb-ext:*exit-hooks*)
+    (1 (let* ((windows
+		(objc
+		 (objc "LispApplication" "sharedApplication" :pointer)
+		 "windows" :pointer)))
+	 (dotimes (i (objc windows "count" :int))
+	   (objc (objc windows "objectAtIndex:" :int i :pointer)
+		 "performClose:" :pointer (cffi:null-pointer)))))
+    (2 (dolist (hook sb-ext:*exit-hooks*)
 	 (funcall hook)))))
 
 (cffi:defcallback dispatch-callback :void ((id :pointer))

@@ -21,4 +21,9 @@
 -(void) applicationDidFinishLaunching:(NSNotification *)notification {
   mLispDispatch(0);
 }
+
+- (void)applicationWillTerminate:(NSNotification *)notification {
+  mLispDispatch(2);
+}
+
 @end
