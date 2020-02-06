@@ -70,12 +70,12 @@
 	   #:context-show-text-at-point
 	   
 	   #:load-image
+	   #:retain-image
+	   #:release-image
 	   #:image-width
 	   #:image-height
 	   #:image-bits-per-pixel
 	   #:image-bytes-per-row
-	   #:image-retain
-	   #:image-release
 	   #:image-bitmap-data
 	   #:image-from-screen))
 

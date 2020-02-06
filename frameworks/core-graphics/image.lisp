@@ -15,6 +15,12 @@
 		 :pointer (cffi:null-pointer)
 		 :pointer)))))
 
+(cffi:defcfun ("CGImageRetain" retain-image) :pointer
+  (cg-image :pointer))
+
+(cffi:defcfun ("CGImageRelease" release-image) :void
+  (cg-image :pointer))
+
 (cffi:defcfun ("CGImageGetWidth" image-width) :sizet
   (cg-image :pointer))
 
@@ -27,12 +33,6 @@
 (cffi:defcfun ("CGImageGetBytesPerRow" image-bytes-per-row) :sizet
   (cg-image :pointer))
 
-
-(cffi:defcfun ("CGImageRetain" image-retain) :pointer
-  (cg-image :pointer))
-
-(cffi:defcfun ("CGImageRelease" image-release) :void
-  (cg-image :pointer))
 
 
 (defun image-bitmap-data (cg-image)
