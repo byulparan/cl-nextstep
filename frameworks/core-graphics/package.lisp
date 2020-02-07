@@ -77,6 +77,12 @@
 	   #:image-bits-per-pixel
 	   #:image-bytes-per-row
 	   #:image-bitmap-data
-	   #:image-from-screen))
+	   #:image-from-screen
+
+	   #:make-bitmap-context
+	   #:bitmap-data
+	   #:bitmap-width
+	   #:bitmap-height
+	   #:release-context))
 
 

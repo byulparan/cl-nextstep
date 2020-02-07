@@ -1,5 +1,6 @@
 (in-package :cg)
 
+;; CGImage
 (defun load-image (path)
   (let* ((path (uiop:truenamize path)))
     (unless (probe-file path)
@@ -51,3 +52,29 @@
 			:int 0		; kCGNullWindowID
 			:int 16		; kCGWindowImageNominalResolution
 			:pointer))
+
+
+;; CGBitmapContext
+(defun make-bitmap-context (width height)
+  (ns:with-event-loop (:waitp t)
+    (cffi:foreign-funcall "CGBitmapContextCreate"
+			  :pointer (cffi:null-pointer)
+			  :sizet width
+			  :sizet height
+			  :sizet 8
+			  :sizet (* width 4)
+			  :pointer (cg:color-space-create :color-space-srgb)
+			  :unsigned-int 2 ;; kCGImageAlphaPremultipliedFirst
+			  :pointer)))
+
+(cffi:defcfun ("CGBitmapContextGetData" bitmap-data) :pointer
+  (context :pointer))
+
+(cffi:defcfun ("CGBitmapContextGetWidth" bitmap-width) :sizet
+  (context :pointer))
+
+(cffi:defcfun ("CGBitmapContextGetHeight" bitmap-height) :sizet
+  (context :pointer))
+
+(cffi:defcfun ("CGContextRelease" release-context) :void
+  (context :pointer))
