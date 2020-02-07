@@ -35,7 +35,6 @@
 (defgeneric image-buffer (av-media))
 (defgeneric ready (av-media))
 
-
 (defmacro with-media-data ((av-media width height data) &body body)
   (alexandria:with-gensyms (m-head)
     `(when (ready ,av-media)
@@ -48,7 +47,6 @@
 			     ,@body)
 	     (cffi:foreign-funcall "CVPixelBufferUnlockBaseAddress" :pointer ,m-head :int 0)))))))
 
-
 ;; Capture
 (defun list-camera-device ()
   (ns:with-event-loop nil
@@ -60,7 +58,6 @@
 		       (ns:ns-string-to-lisp 
 			(ns:objc (ns:objc devices "objectAtIndex:" :unsigned-int i :pointer) "localizedName"
 				 :pointer)))))))
-
 
 (defun make-capture-camera-input (index)
   (let* ((devices (ns:objc "AVCaptureDevice" "devicesWithMediaType:"
@@ -75,7 +72,6 @@
 	  (assert (zerop code) nil "Error while make camera capture: ~a" code)
 	  input)))))
 
-
 (defun make-capture-screen-input (&optional crop-rect)
   (let* ((capture (ns:objc (ns:alloc "AVCaptureScreenInput") "initWithDisplayID:"
 			   :int 2077750265 ;; kCGDirectMainDisplay
@@ -83,7 +79,6 @@
     (when crop-rect
       (ns:objc capture "setCropRect:" (:struct ns:rect) crop-rect))
     (ns:autorelease capture)))
-
 
 (defun make-capture-video-data-output (capture-delegate)
   (let* ((video-output (ns:autorelease (ns:objc (ns:alloc "AVCaptureVideoDataOutput") "init" :pointer)))
@@ -101,18 +96,14 @@
       (ns:objc video-output "setVideoSettings:" :pointer dictionary)
       video-output)))
 
-
 (defstruct (capture (:constructor %make-capture (&key session delegate input-type)))
   session delegate input-type)
-
 
 (defmethod ready ((av-media capture))
   t)
 
-
 (defmethod image-buffer ((av-media capture))
   (ns:objc (capture-delegate av-media) "getImageBuffer" :pointer))
-
 
 (defun make-capture (input input-type)
   (let* ((session (ns:objc (ns:alloc "AVCaptureSession") "init" :pointer))
@@ -122,16 +113,13 @@
     (ns:objc session "addOutput:" :pointer output)
     (%make-capture :session session :delegate capture-delegate :input-type input-type)))
 
-
 (defun make-camera-capture (index)
   (ns:with-event-loop (:waitp t)
     (make-capture (make-capture-camera-input index) :camera)))
 
-
 (defun make-screen-capture (&optional rect)
   (ns:with-event-loop (:waitp t)
     (make-capture (make-capture-screen-input rect) :screen)))
-
 
 (defun crop-rect (screen-capture rect)
   (assert (eql :screen (capture-input-type screen-capture)) nil)
@@ -141,14 +129,12 @@
 		   "objectAtIndex:" :int 0 :pointer)))
       (ns:objc input "setCropRect:" (:struct ns:rect) rect))))
 
-
 (defun min-frame-duration (screen-capture)
   (ns:with-event-loop (:waitp t)
     (let* ((input (ns:objc 
 		   (ns:objc (capture-session screen-capture) "inputs" :pointer)
 		   "objectAtIndex:" :int 0 :pointer)))
       (ns:objc-stret cm-time input "minFrameDuration"))))
-
 
 (defun (setf min-frame-duration) (framerate screen-capture)
   (ns:with-event-loop nil
@@ -161,36 +147,28 @@
 						       :int framerate
 						       (:struct cm-time))))))
 
-
 (defun release-capture (capture)
   (ns:with-event-loop (:waitp t)
     (ns:release (capture-session capture))
     (ns:release (capture-delegate capture))))
 
-
 (defun start-capture (capture)
   (ns:with-event-loop nil
     (ns:objc (capture-session capture) "startRunning")))
-
 
 (defun stop-capture (capture)
   (ns:with-event-loop nil
     (ns:objc (capture-session capture) "stopRunning")))
 
 
-
-
 ;; Player
 (defvar *player-table* (make-hash-table))
-
 
 (defstruct (player (:constructor %make-player (&key id manager load-fn end-fn)))
   id manager load-fn end-fn)
 
-
 (defmethod image-buffer ((av-media player))
   (ns:objc (player-manager av-media) "getImageBuffer" :pointer))
-
 
 (cffi:defcallback player-handler :void ((id :int) (command :int))
   (alexandria:when-let* ((player (gethash id *player-table*))
@@ -198,7 +176,6 @@
 				    (0 (player-load-fn player))
 				    (1 (player-end-fn player)))))
     (funcall handler)))
-
 
 (let* ((id 0))
   (defun make-player (path &key load-fn end-fn)
@@ -225,30 +202,24 @@
 	(sb-thread:wait-on-semaphore load-object))
       player)))
 
-
 (defun release-player (player)
   (ns:release (player-manager player)))
-
 
 (defmethod ready ((av-media player))
   (ns:with-event-loop (:waitp t)
     (= 1 (ns:objc (player-manager av-media) "ready" :int))))
 
-
 (defun play (player)
   (ns:with-event-loop nil
     (ns:objc (ns:objc (player-manager player) "player" :pointer) "play")))
-
 
 (defun pause (player)
   (ns:with-event-loop nil
     (ns:objc (ns:objc (player-manager player) "player" :pointer) "pause")))
 
-
 (defun volume (player volume)
   (ns:with-event-loop nil
     (ns:objc (ns:objc (player-manager player) "player" :pointer) "setVolume:" :float (float volume 1.0))))
-
 
 (defun seek-to-zero (player)
   (ns:with-event-loop nil
