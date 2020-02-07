@@ -81,17 +81,20 @@
 
 
 (defun make-capture-video-data-output (capture-delegate)
-  (let* ((video-output (ns:autorelease (ns:objc (ns:alloc "AVCaptureVideoDataOutput") "init" :pointer))))
-    (ns:objc video-output "setSampleBufferDelegate:queue:"
-	     :pointer capture-delegate :pointer (cffi:foreign-symbol-pointer "_dispatch_main_q"))
-    (ns:objc video-output "setVideoSettings:"
-	     :pointer (ns:objc "NSDictionary" "dictionaryWithObject:forKey:"
-			       :pointer (ns:objc "NSNumber" "numberWithInt:" :int #x00000020 ;; kCVPixelFormatType_32ARGB
-						 :pointer)
-			       :pointer (cffi:mem-ref (cffi:foreign-symbol-pointer "kCVPixelBufferPixelFormatTypeKey")
-						      :pointer)
-			       :pointer))
-    video-output))
+  (let* ((video-output (ns:autorelease (ns:objc (ns:alloc "AVCaptureVideoDataOutput") "init" :pointer)))
+	 (dictionary (ns:objc "NSMutableDictionary" "dictionaryWithCapacity:" :unsigned-int 2 :pointer)))
+    (macrolet ((ns-number (value)
+		 `(ns:objc "NSNumber" "numberWithInt:" :int ,value :pointer))
+	       (ns-key (key)
+		 `(cffi:mem-ref (cffi:foreign-symbol-pointer ,key) :pointer)))
+      (ns:objc video-output "setSampleBufferDelegate:queue:"
+	       :pointer capture-delegate :pointer (cffi:foreign-symbol-pointer "_dispatch_main_q"))
+      (ns:objc dictionary "setObject:forKey:" :pointer (ns-number #x00000020) ;; kCVPixelFormatType_32ARGB
+					      :pointer (ns-key "kCVPixelBufferPixelFormatTypeKey"))
+      (ns:objc dictionary "setObject:forKey:" :pointer (ns-number 1)
+					      :pointer (ns-key "kCVPixelBufferOpenGLCompatibilityKey"))
+      (ns:objc video-output "setVideoSettings:" :pointer dictionary)
+      video-output)))
 
 (defstruct (capture (:constructor %make-capture (&key session delegate input-type)))
   session delegate input-type)
