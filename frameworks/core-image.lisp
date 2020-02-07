@@ -1,4 +1,5 @@
-(defpackage :ci
+(defpackage :core-image
+  (:nicknames :ci)
   (:use :cl)
   (:export #:make-context
 	   #:draw-image
@@ -13,7 +14,7 @@
 	   #:set-filter-param
 	   #:apply-filter))
 
-(in-package :ci)
+(in-package :core-image)
 
 ;; ci-context
 (defun make-context (cgl-context pixel-format)

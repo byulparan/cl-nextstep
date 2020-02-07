@@ -1,4 +1,5 @@
-(defpackage :cg
+(defpackage :core-graphics
+  (:nicknames :cg)
   (:use :cl)
   (:export #:point
 	   #:make-point

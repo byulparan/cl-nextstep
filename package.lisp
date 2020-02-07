@@ -1,7 +1,7 @@
 (defpackage :cl-nextstep
+  (:nicknames :ns)
   (:use :cl :alexandria)
   #+ccl (:import-from #:ccl #:make-id-map #:assign-id-map-id #:id-map-free-object)
-  (:nicknames :ns)
   (:export
    ;; core-foundation.lisp
    #:cls

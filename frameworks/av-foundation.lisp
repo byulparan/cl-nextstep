@@ -1,4 +1,5 @@
-(defpackage :av
+(defpackage :av-foundation
+  (:nicknames :av)
   (:use :cl)
   (:export #:with-media-data
 	   #:ready
@@ -23,7 +24,7 @@
 	   #:volume
 	   #:seek-to-zero))
 
-(in-package :av)
+(in-package :av-foundation)
 
 ;; CoreMedia
 (cffi:defcstruct cm-time

@@ -1,4 +1,4 @@
-(in-package :cg)
+(in-package :core-graphics)
 
 ;; =======================================================
 ;; CoreGraphics frameworks 

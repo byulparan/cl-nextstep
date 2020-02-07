@@ -1,6 +1,5 @@
-(defpackage #:io-surface
-  (:use #:cl)
-  (:nicknames :ios)
+(defpackage :io-surface
+  (:use :cl)
   (:export #:make-surface
 	   #:decrement-use-count
 	   #:alloc-size

@@ -1,4 +1,5 @@
-(defpackage :cgl
+(defpackage :cgl-context
+  (:nicknames :cgl)
   (:use :cl)
   (:export #:make-context
 	   #:make-pixel-format
@@ -19,7 +20,7 @@
 	   #:get-current-context
 	   #:tex-image-io-surface-2d))
 
-(in-package :cgl)
+(in-package :cgl-context)
 
 (defconstant +pfa-double-buffer+ 5)
 (defconstant +pfa-accelerated+ 73)

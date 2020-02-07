@@ -1,4 +1,4 @@
-(in-package :ci)
+(in-package :core-image)
 
 (setf *core-filter-db*
   (list	'(:ci-addition-composition . ("CIAdditionCompositing" . ("inputBackgroundImage")))
