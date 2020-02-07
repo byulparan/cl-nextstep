@@ -13,7 +13,7 @@
     	  (0 (init view))
     	  (1 (draw view))
     	  (2 (reshape view))
-    	  (3 (shutdown view)))
+    	  (3 (release view)))
       (error (c) (break (format nil "catch signal while Drawing OpenGL: \"~a\"" c))))))
 
 (cffi:defcallback mouse-callback :void ((id :int) (mouse-flag :int) (event :pointer) (x :double) (y :double))
@@ -47,7 +47,7 @@
 (defmethod draw ((self base-view))
   ())
 
-(defmethod shutdown ((self base-view))
+(defmethod release ((self base-view))
   ())
 
 (defmethod mouse-down ((self base-view) event location-x location-y)

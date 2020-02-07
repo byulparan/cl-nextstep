@@ -57,7 +57,6 @@
    #:cgl-pixel-format
    #:init
    #:draw
-   #:shutdown
    #:mouse-down
    #:mouse-dragged
    #:mouse-up

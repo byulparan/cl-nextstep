@@ -46,7 +46,7 @@
 (defun retain (instance)
   (objc instance "retain" :pointer))
 
-(defun release (instance)
+(defmethod release ((instance sb-sys:system-area-pointer))
   (objc instance "release"))
 
 (defun autorelease (instance)
