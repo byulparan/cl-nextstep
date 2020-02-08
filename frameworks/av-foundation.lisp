@@ -3,6 +3,7 @@
   (:use :cl)
   (:local-nicknames (:cv :core-video))
   (:export #:with-media-data
+	   #:with-texture-cache
 	   #:ready
 	   #:pixel-buffer
 	   
@@ -48,6 +49,21 @@
 				  (,data (cv:buffer-base-address ,m-head)))
 			     ,@body)
 	     (cv:buffer-unlock-base-address ,m-head 0)))))))
+
+(defmacro with-texture-cache ((av-media texture-cache width height) &body body)
+  (alexandria:with-gensyms (m-head texture-object texture)
+    (alexandria:once-only (texture-cache)
+      `(when (ready ,av-media)
+	 (let* ((,m-head (av:pixel-buffer ,av-media)))
+	   (unless (cffi:null-pointer-p ,m-head)
+	     (let* ((,texture-object (cv:texture-cache-texture ,texture-cache ,m-head))
+		    (,texture (cv:texture-name ,texture-object))
+		    (,width (cv:buffer-width ,m-head))
+		    (,height (cv:buffer-height ,m-head)))
+	       (gl:bind-texture :texture-rectangle ,texture)
+	       ,@body
+	       (ns:cf-autorelease ,texture-object)
+	       (cv:texture-cache-flush ,texture-cache 0))))))))
 
 ;; Capture
 (defun list-camera-device ()
