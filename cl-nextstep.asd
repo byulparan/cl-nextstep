@@ -22,6 +22,7 @@
 			       (:file "context")
 			       (:file "image")))
 		 (:file "cgl-context")
+		 (:file "core-video")
 		 (:file "core-image")
 		 (:file "ci-filter-db")
 		 (:file "av-foundation")
