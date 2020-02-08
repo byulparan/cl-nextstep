@@ -24,7 +24,7 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
   return self;
 }
 
--(CVPixelBufferRef) getImageBuffer {
+-(CVPixelBufferRef) getPixelBuffer {
   return mHead;
 }
 
@@ -34,15 +34,15 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
   CVPixelBufferRef frame = CMSampleBufferGetImageBuffer(buffer);
   CVPixelBufferRef prev;
   if(frame) {
-    CVBufferRetain(frame);
+    CVPixelBufferRetain(frame);
     prev = mHead;
     mHead = frame;
-    CVBufferRelease(prev);
+    CVPixelBufferRelease(prev);
   }
 }
 
 -(void) dealloc {
-  CVBufferRelease(mHead);
+  CVPixelBufferRelease(mHead);
   [super dealloc];
 }
 
@@ -121,7 +121,7 @@ enum {
 } 
 
 
--(CVPixelBufferRef) getImageBuffer {
+-(CVPixelBufferRef) getPixelBuffer {
   CMTime presentTime = [self.output itemTimeForHostTime: CACurrentMediaTime()];
   if([self.output hasNewPixelBufferForItemTime: presentTime]) {
     CVPixelBufferRef current;
@@ -130,13 +130,13 @@ enum {
 				   itemTimeForDisplay: nil];
     prev = self.head;
     self.head = current;
-    CVBufferRelease(prev);
+    CVPixelBufferRelease(prev);
   }
   return self.head;
 }
 
 -(void) dealloc {
-  CVBufferRelease(self.head);
+  CVPixelBufferRelease(self.head);
   [super dealloc];
 }
 

@@ -3,7 +3,7 @@
   (:use :cl)
   (:export #:with-media-data
 	   #:ready
-	   #:image-buffer
+	   #:pixel-buffer
 	   
 	   #:list-camera-device
 	   #:capture
@@ -33,13 +33,13 @@
   (flags :unsigned-int)
   (epoch :int64))
 
-(defgeneric image-buffer (av-media))
+(defgeneric pixel-buffer (av-media))
 (defgeneric ready (av-media))
 
 (defmacro with-media-data ((av-media width height data) &body body)
   (alexandria:with-gensyms (m-head)
     `(when (ready ,av-media)
-       (let* ((,m-head (image-buffer ,av-media)))
+       (let* ((,m-head (pixel-buffer ,av-media)))
 	 (unless (cffi:null-pointer-p ,m-head)
 	   (cffi:foreign-funcall "CVPixelBufferLockBaseAddress" :pointer ,m-head :int 0)
 	   (unwind-protect (let* ((,width (cffi:foreign-funcall "CVPixelBufferGetWidth" :pointer ,m-head :sizet))
@@ -103,8 +103,8 @@
 (defmethod ready ((av-media capture))
   t)
 
-(defmethod image-buffer ((av-media capture))
-  (ns:objc (capture-delegate av-media) "getImageBuffer" :pointer))
+(defmethod pixel-buffer ((av-media capture))
+  (ns:objc (capture-delegate av-media) "getPixelBuffer" :pointer))
 
 (defun make-capture (input input-type)
   (let* ((session (ns:objc (ns:alloc "AVCaptureSession") "init" :pointer))
@@ -168,8 +168,8 @@
 (defstruct (player (:constructor %make-player (&key id manager load-fn end-fn)))
   id manager load-fn end-fn)
 
-(defmethod image-buffer ((av-media player))
-  (ns:objc (player-manager av-media) "getImageBuffer" :pointer))
+(defmethod pixel-buffer ((av-media player))
+  (ns:objc (player-manager av-media) "getPixelBuffer" :pointer))
 
 (cffi:defcallback player-handler :void ((id :int) (command :int))
   (alexandria:when-let* ((player (gethash id *player-table*))
