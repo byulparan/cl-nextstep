@@ -1,6 +1,7 @@
 (defpackage :av-foundation
   (:nicknames :av)
   (:use :cl)
+  (:local-nicknames (:cv :core-video))
   (:export #:with-media-data
 	   #:ready
 	   #:pixel-buffer
@@ -41,12 +42,12 @@
     `(when (ready ,av-media)
        (let* ((,m-head (pixel-buffer ,av-media)))
 	 (unless (cffi:null-pointer-p ,m-head)
-	   (cffi:foreign-funcall "CVPixelBufferLockBaseAddress" :pointer ,m-head :int 0)
-	   (unwind-protect (let* ((,width (cffi:foreign-funcall "CVPixelBufferGetWidth" :pointer ,m-head :sizet))
-				  (,height (cffi:foreign-funcall "CVPixelBufferGetHeight" :pointer ,m-head :sizet))
-				  (,data (cffi:foreign-funcall "CVPixelBufferGetBaseAddress" :pointer ,m-head :pointer)))
+	   (cv:buffer-lock-base-address ,m-head 0)
+	   (unwind-protect (let* ((,width (cv:buffer-width ,m-head))
+				  (,height (cv:buffer-height ,m-head))
+				  (,data (cv:buffer-base-address ,m-head)))
 			     ,@body)
-	     (cffi:foreign-funcall "CVPixelBufferUnlockBaseAddress" :pointer ,m-head :int 0)))))))
+	     (cv:buffer-unlock-base-address ,m-head 0)))))))
 
 ;; Capture
 (defun list-camera-device ()
