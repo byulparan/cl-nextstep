@@ -14,6 +14,7 @@
 	   #:make-screen-capture
 	   #:crop-rect
 	   #:min-frame-duration
+	   #:scale-factor
 	   #:start-capture
 	   #:stop-capture
 	   
@@ -90,12 +91,18 @@
 	  (assert (zerop code) nil "Error while make camera capture: ~a" code)
 	  input)))))
 
-(defun make-capture-screen-input (&optional crop-rect)
+(defun make-capture-screen-input (&optional crop-rect min-frame-duration)
   (let* ((capture (ns:objc (ns:alloc "AVCaptureScreenInput") "initWithDisplayID:"
 			   :int 2077750265 ;; kCGDirectMainDisplay
 			   :pointer)))
     (when crop-rect
       (ns:objc capture "setCropRect:" (:struct ns:rect) crop-rect))
+    (when min-frame-duration
+      (ns:objc capture "setMinFrameDuration:"
+	       (:struct cm-time) (cffi:foreign-funcall "CMTimeMake"
+						       :int64 1
+						       :int min-frame-duration
+						       (:struct cm-time))))
     (ns:autorelease capture)))
 
 (defun make-capture-video-data-output (capture-delegate)
@@ -135,9 +142,9 @@
   (ns:with-event-loop (:waitp t)
     (make-capture (make-capture-camera-input index) :camera)))
 
-(defun make-screen-capture (&optional rect)
+(defun make-screen-capture (&optional rect min-frame-duration)
   (ns:with-event-loop (:waitp t)
-    (make-capture (make-capture-screen-input rect) :screen)))
+    (make-capture (make-capture-screen-input rect min-frame-duration) :screen)))
 
 (defun crop-rect (screen-capture rect)
   (assert (eql :screen (capture-input-type screen-capture)) nil)
@@ -164,6 +171,21 @@
 						       :int64 1
 						       :int framerate
 						       (:struct cm-time))))))
+
+(defun scale-factor (screen-capture)
+  (ns:with-event-loop (:waitp t)
+    (let* ((input (ns:objc 
+		   (ns:objc (av::capture-session screen-capture) "inputs" :pointer)
+		   "objectAtIndex:" :int 0 :pointer)))
+      (ns:objc input "scaleFactor" :double))))
+
+(defun (setf scale-factor) (scale-factor screen-capture)
+  (ns:with-event-loop nil
+    (let* ((input (ns:objc 
+		   (ns:objc (av::capture-session screen-capture) "inputs" :pointer)
+		   "objectAtIndex:" :int 0 :pointer)))
+      (ns:objc input "setScaleFactor:" :double (float scale-factor 1.0d0)))))
+
 
 (defun release-capture (capture)
   (ns:with-event-loop (:waitp t)
