@@ -13,8 +13,17 @@
 	   #:buffer-io-sruface
 	   #:buffer-lock-base-address
 	   #:buffer-unlock-base-address
-	   #:buffer-retain
-	   #:buffer-release))
+	   #:retain-buffer
+	   #:release-buffer
+	   #:make-texture-cache
+	   #:texture-cache-texture
+	   #:texture-cache-flush
+	   #:retain-texture-cache
+	   #:release-texture-cache
+	   #:texture-name
+	   #:texture-target
+	   #:retain-texture
+	   #:release-texture))
 
 (in-package :core-video)
 
@@ -117,8 +126,57 @@
   (unlock-flags :int))
 
 ;; Retaining and Releasing Pixel Buffers
-(cffi:defcfun ("CVPixelBufferRetain" buffer-retain) :pointer
+(cffi:defcfun ("CVPixelBufferRetain" retain-buffer) :pointer
   (buffer :pointer))
 
-(cffi:defcfun ("CVPixelBufferRelease" buffer-release) :void
+(cffi:defcfun ("CVPixelBufferRelease" release-buffer) :void
   (buffer :pointer))
+
+;; =======================================================
+;; CVOpenGLTextureCache
+(defun make-texture-cache (cgl-context cgl-pixel-format)
+  (cffi:with-foreign-objects ((cache-out :pointer))
+    (cffi:foreign-funcall "CVOpenGLTextureCacheCreate"
+			  :pointer (cffi:null-pointer) ;; allocator
+			  :pointer (cffi:null-pointer) ;; cache-attributes
+			  :pointer cgl-context
+			  :pointer cgl-pixel-format
+			  :pointer (cffi:null-pointer) ;; texture-attributes
+			  :pointer cache-out
+			  :int)
+    (cffi:mem-ref cache-out :pointer)))
+
+(defun texture-cache-texture (texture-cache buffer)
+  (cffi:with-foreign-objects ((texture-out :pointer))
+    (cffi:foreign-funcall "CVOpenGLTextureCacheCreateTextureFromImage"
+			   :pointer (cffi:null-pointer)
+			   :pointer texture-cache
+			   :pointer buffer
+			   :pointer (cffi:null-pointer)
+			   :pointer texture-out
+			   :int)
+    (cffi:mem-ref texture-out :pointer)))
+
+(cffi:defcfun ("CVOpenGLTextureCacheFlush" texture-cache-flush) :void
+  (texture-cache :pointer)
+  (options :int))
+
+(cffi:defcfun ("CVOpenGLTextureCacheRetain" retain-texture-cache) :pointer
+  (texture-cache :pointer))
+
+(cffi:defcfun ("CVOpenGLTextureCacheRelease" release-texture-cache) :void
+  (texture-cache :pointer))
+
+;; =======================================================
+;; CVOpenGLTexture
+(cffi:defcfun ("CVOpenGLTextureGetName" texture-name) :unsigned-int
+  (texture :pointer))
+
+(cffi:defcfun ("CVOpenGLTextureGetTarget" texture-target) :int
+  (texture :pointer))
+
+(cffi:defcfun ("CVOpenGLTextureRetain" retain-texture) :pointer
+  (texture :pointer))
+
+(cffi:defcfun ("CVOpenGLTextureRelease" release-texture) :void
+  (texture :pointer))
