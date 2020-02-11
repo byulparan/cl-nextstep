@@ -226,8 +226,9 @@
       (assert (probe-file path) nil "can't find file: ~a" path)
       (unless (or (eql (bt:current-thread) (trivial-main-thread:find-main-thread))
 		  load-handle)
-	(setf load-object (sb-thread:make-semaphore)
-	      load-handle (lambda () (sb-thread:signal-semaphore load-object))))
+	(setf load-object #+sbcl (sb-thread:make-semaphore) #+ccl (ccl:make-semaphore)
+	      load-handle (lambda () #+sbcl(sb-thread:signal-semaphore load-object)
+				  #+ccl (ccl:signal-semaphore load-object))))
       (ns:with-event-loop (:waitp t)
 	(setf player (%make-player :id id :load-fn load-handle :end-fn end-fn))
 	(setf (gethash id *player-table*) player)
@@ -239,7 +240,8 @@
 					       :pointer))
 	(incf id))
       (when load-object
-	(sb-thread:wait-on-semaphore load-object))
+	#+sbcl (sb-thread:wait-on-semaphore load-object))
+      #+ccl (ccl:wait-on-semaphore load-object)
       player)))
 
 (defun release-player (player)

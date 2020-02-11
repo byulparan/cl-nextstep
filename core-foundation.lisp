@@ -11,7 +11,8 @@
 
 (defgeneric cocoa-ref (self))
 
-(defmethod cocoa-ref ((self t))
+(defmethod cocoa-ref ((self #+sbcl sb-sys:system-area-pointer
+			    #+ccl ccl:macptr))
   self)
 
 (defmethod cocoa-ref ((self string))
@@ -46,7 +47,8 @@
 (defun retain (instance)
   (objc instance "retain" :pointer))
 
-(defmethod release ((instance sb-sys:system-area-pointer))
+(defmethod release ((instance #+sbcl sb-sys:system-area-pointer
+			      #+ccl ccl:macptr))
   (objc instance "release"))
 
 (defun autorelease (instance)

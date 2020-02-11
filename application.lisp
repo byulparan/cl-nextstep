@@ -30,7 +30,8 @@
 	 (dotimes (i (objc windows "count" :int))
 	   (objc (objc windows "objectAtIndex:" :int i :pointer)
 		 "performClose:" :pointer (cffi:null-pointer)))))
-    (2 (dolist (hook sb-ext:*exit-hooks*)
+    (2 (dolist (hook #+sbcl sb-ext:*exit-hooks*
+		     #+ccl ccl:*lisp-cleanup-functions*)
 	 (funcall hook)))))
 
 (cffi:defcallback dispatch-callback :void ((id :pointer))
