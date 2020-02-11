@@ -32,3 +32,6 @@
 	       (:file "view")
 	       (:file "opengl-view")
 	       (:file "widget")))
+
+(pushnew :cl-nextstep *features*)
+
