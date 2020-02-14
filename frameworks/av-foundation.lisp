@@ -93,7 +93,8 @@
 
 (defun make-capture-screen-input (&optional crop-rect min-frame-duration)
   (let* ((capture (ns:objc (ns:alloc "AVCaptureScreenInput") "initWithDisplayID:"
-			   :int 2077750265 ;; kCGDirectMainDisplay
+			   :unsigned-int (cffi:foreign-funcall "CGMainDisplayID"
+							       :unsigned-int)
 			   :pointer)))
     (when crop-rect
       (ns:objc capture "setCropRect:" (:struct ns:rect) crop-rect))
