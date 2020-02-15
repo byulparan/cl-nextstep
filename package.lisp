@@ -36,7 +36,8 @@
    #:rect-height
    ;; application.lisp
    #:*startup-hooks*
-   #:start-event-loop 
+   #:start-event-loop
+   #:queue-for-event-loop
    #:with-event-loop
    #:enable-foreground
    ;; timer.lisp

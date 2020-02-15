@@ -43,6 +43,13 @@
 	    (break (format nil "catch signal while Dispatching Event: \"~a\"" c))))))))
 
 
+
+(defun queue-for-event-loop (thunk)
+  (let* ((id (assign-id-map-id *dispatch-id-map* thunk)))
+    (cffi:foreign-funcall "dispatch_async_f" :pointer (cffi:foreign-symbol-pointer "_dispatch_main_q")
+					     :pointer (cffi:make-pointer id)
+					     :pointer (cffi:callback dispatch-callback))))
+
 (defmacro with-event-loop ((&key waitp nil) &body body)
   (alexandria:with-gensyms (result semaphore id) 
     `(cond ((eql (trivial-main-thread:find-main-thread) (bt:current-thread)) (progn ,@body))
@@ -54,10 +61,7 @@
 					   :pointer (cffi:make-pointer ,id)
 					   :pointer (cffi:callback dispatch-callback))
 		     ,result))
-	   (t (let* ((,id (assign-id-map-id *dispatch-id-map* (lambda () ,@body))))
-		(cffi:foreign-funcall "dispatch_async_f" :pointer (cffi:foreign-symbol-pointer "_dispatch_main_q")
-							 :pointer (cffi:make-pointer ,id)
-							 :pointer (cffi:callback dispatch-callback)))))))
+	   (t (queue-for-event-loop (lambda () ,@body))))))
 
 
 (let* ((running-p nil))
