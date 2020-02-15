@@ -62,9 +62,9 @@
 		    (,width (cv:buffer-width ,m-head))
 		    (,height (cv:buffer-height ,m-head)))
 	       (gl:bind-texture :texture-rectangle ,texture)
-	       ,@body
-	       (ns:cf-autorelease ,texture-object)
-	       (cv:texture-cache-flush ,texture-cache 0))))))))
+	       (prog1 (progn ,@body)
+		 (ns:cf-autorelease ,texture-object)
+		 (cv:texture-cache-flush ,texture-cache 0)))))))))
 
 ;; Capture
 (defun list-camera-device ()
