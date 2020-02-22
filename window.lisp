@@ -15,7 +15,17 @@
    (title :initarg :title :initform "" :reader title)
    (close-fn :initarg :close-fn :initform nil :accessor close-fn)))
 
-(defmethod initialize-instance :after ((self window) &key (x 0) (y 0) (w 400) (h 200)
+(defun in-screen-rect (rect)
+  (let* ((screen
+	     (ns:objc-stret ns:rect  (ns:objc "NSScreen" "mainScreen" :pointer) "frame")))
+      (let* ((in-x (- (ns:rect-width screen) (ns:rect-width rect)))
+	     (in-y (- (ns:rect-height screen) (ns:rect-height rect))))
+	(ns:make-rect (clamp (ns:rect-x rect) 0 in-x)
+		      (clamp (ns:rect-y rect) 0 in-y)
+		      (ns:rect-width rect)
+		      (ns:rect-height rect)))))
+
+(defmethod initialize-instance :after ((self window) &key rect (x 0) (y 0) (w 400) (h 200)
 				       style-mask (closable t) (resizable t) (miniaturizable t))
   (with-slots (cocoa-ref id g-id title close-fn) self
     (setf id g-id)
@@ -23,7 +33,7 @@
     (setf cocoa-ref (ns:objc (ns:objc "LispWindow" "alloc" :pointer)
 			     "initWithID:frame:styleMask:closeFn:"
 			     :int id
-			     (:struct rect) (make-rect x y w h)
+			     (:struct rect) (if rect rect (ns:make-rect x y w h))
 			     :int (if style-mask style-mask
 				    (logior (ash 1 0) ;; Titled
 					    (if closable (ash 1 1) 0)

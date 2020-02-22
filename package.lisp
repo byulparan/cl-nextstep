@@ -51,6 +51,7 @@
    #:content-view
    #:add-subviews
    #:set-always-on-top
+   #:in-screen-rect
    ;; view.lisp
    #:width
    #:height
