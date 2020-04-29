@@ -9,7 +9,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 				    CVOptionFlags* flagsOut, void* displayLinkContext);
 
 
-static NSMutableDictionary* sDrawingTable = NULL;
+static NSMutableDictionary* sDrawingState = NULL;
 
 @interface LispOpenGLView : NSOpenGLView {
   CGLContextObj mCGLContext;
@@ -34,8 +34,8 @@ static NSMutableDictionary* sDrawingTable = NULL;
 	 mouseFn: (MouseFn) mouseFn {
   self = [super initWithFrame: frame
 		  pixelFormat: [[NSOpenGLPixelFormat alloc] initWithCGLPixelFormatObj: pixelFormat]];
-  if (!sDrawingTable) {
-    sDrawingTable = [[NSMutableDictionary alloc] init];
+  if (!sDrawingState) {
+    sDrawingState = [[NSMutableDictionary alloc] init];
   }
   self.mID = inID;
   mDisplayLinkThread = NULL;
@@ -57,7 +57,7 @@ static NSMutableDictionary* sDrawingTable = NULL;
   [context flushBuffer];
 
   if(mIsAnimate) {
-    sDrawingTable[ [NSNumber numberWithInt: self.mID] ] = @1;
+    sDrawingState[ [NSNumber numberWithInt: self.mID] ] = @1;
     GLint swapInt = 1;
     [[self openGLContext] setValues:&swapInt forParameter:  NSOpenGLContextParameterSwapInterval];
     CVDisplayLinkCreateWithActiveCGDisplays(&mLink);
@@ -87,7 +87,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
   int mID = view.mID;
   dispatch_async(dispatch_get_main_queue(),
 		 ^{
-		   if ([sDrawingTable[ [NSNumber numberWithInt: mID] ] intValue]) {
+		   if ([sDrawingState[ [NSNumber numberWithInt: mID] ] intValue]) {
 		     [view setNeedsDisplayInRect: [view frame]];
 		   }
 		 });
@@ -103,7 +103,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 
 -(void) dealloc {
   if (mIsAnimate) {
-    sDrawingTable[ [NSNumber numberWithInt: self.mID] ] = @0;
+    sDrawingState[ [NSNumber numberWithInt: self.mID] ] = @0;
     CVDisplayLinkStop(mLink);
     pthread_join(mDisplayLinkThread, NULL);
     CVDisplayLinkRelease(mLink);
