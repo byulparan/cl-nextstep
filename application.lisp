@@ -138,7 +138,11 @@
 							 :key "w")))
 	   (fullscreen-menu-item (autorelease (make-menu-item "ToggleFullscreen"
 							 :action "toggleFullscreen"
-							 :key "f"))))
+							 :key "f")))
+	   (hide-menu-item (autorelease (make-menu-item "Hide"
+							 :action "hide:"
+							 :key "h"))))
+      (objc edit-menu "addItem:" :pointer hide-menu-item)
       (objc edit-menu "addItem:" :pointer close-menu-item)
       (objc edit-menu "addItem:" :pointer fullscreen-menu-item)
       (objc edit-menu-item "setSubmenu:" :pointer edit-menu))))
