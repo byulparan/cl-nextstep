@@ -9,8 +9,9 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 				    CVOptionFlags* flagsOut, void* displayLinkContext);
 
 
+static NSMutableDictionary* sDrawingTable = NULL;
+
 @interface LispOpenGLView : NSOpenGLView {
-  int mID;
   CGLContextObj mCGLContext;
   CGLPixelFormatObj mCGLPixelFormat;
   CVDisplayLinkRef mLink;
@@ -19,6 +20,8 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
   DrawFn mDrawFn;
   MouseFn mMouseFn;
 }
+
+@property(nonatomic) int mID;
 @end
 
 @implementation LispOpenGLView
@@ -31,7 +34,10 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 	 mouseFn: (MouseFn) mouseFn {
   self = [super initWithFrame: frame
 		  pixelFormat: [[NSOpenGLPixelFormat alloc] initWithCGLPixelFormatObj: pixelFormat]];
-  mID = inID;
+  if (!sDrawingTable) {
+    sDrawingTable = [[NSMutableDictionary alloc] init];
+  }
+  self.mID = inID;
   mDisplayLinkThread = NULL;
   mIsAnimate = isAnimate;
   mDrawFn = drawFn;
@@ -47,10 +53,11 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
   NSOpenGLContext* context = [self openGLContext];
   [context makeCurrentContext];
   NSRect r = [self bounds];
-  mDrawFn(mID, INIT, mCGLContext, mCGLPixelFormat, r.size.width, r.size.height);
+  mDrawFn(self.mID, INIT, mCGLContext, mCGLPixelFormat, r.size.width, r.size.height);
   [context flushBuffer];
 
   if(mIsAnimate) {
+    sDrawingTable[ [NSNumber numberWithInt: self.mID] ] = @1;
     GLint swapInt = 1;
     [[self openGLContext] setValues:&swapInt forParameter:  NSOpenGLContextParameterSwapInterval];
     CVDisplayLinkCreateWithActiveCGDisplays(&mLink);
@@ -68,7 +75,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
   NSOpenGLContext* context = [self openGLContext];
   [context makeCurrentContext];
   NSRect r = [self bounds];
-  mDrawFn(mID, RESHAPE, mCGLContext, mCGLPixelFormat, r.size.width, r.size.height);
+  mDrawFn(self.mID, RESHAPE, mCGLContext, mCGLPixelFormat, r.size.width, r.size.height);
   [context flushBuffer];
 }
 
@@ -77,20 +84,26 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 
   LispOpenGLView* view = (LispOpenGLView*)displayLinkContext;
   view->mDisplayLinkThread = pthread_self();
+  int mID = view.mID;
   dispatch_async(dispatch_get_main_queue(),
-		 ^{ [view setNeedsDisplayInRect: [view frame]]; });
+		 ^{
+		   if ([sDrawingTable[ [NSNumber numberWithInt: mID] ] intValue]) {
+		     [view setNeedsDisplayInRect: [view frame]];
+		   }
+		 });
   return kCVReturnSuccess;
 }
 
 -(void) drawRect: (NSRect) rect {
   NSOpenGLContext* context = [self openGLContext];
   [context makeCurrentContext];
-  mDrawFn(mID, DRAW, mCGLContext, mCGLPixelFormat, rect.size.width, rect.size.height);
+  mDrawFn(self.mID, DRAW, mCGLContext, mCGLPixelFormat, rect.size.width, rect.size.height);
   [context flushBuffer];
 }
 
 -(void) dealloc {
   if (mIsAnimate) {
+    sDrawingTable[ [NSNumber numberWithInt: self.mID] ] = @0;
     CVDisplayLinkStop(mLink);
     pthread_join(mDisplayLinkThread, NULL);
     CVDisplayLinkRelease(mLink);
@@ -99,40 +112,39 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
   NSOpenGLContext* context = [self openGLContext];
   [context makeCurrentContext];
   NSRect r = [self bounds];
-  mDrawFn(mID, SHUTDOWN, mCGLContext, mCGLPixelFormat, r.size.width, r.size.height);
-  [context flushBuffer];
+  mDrawFn(self.mID, SHUTDOWN, mCGLContext, mCGLPixelFormat, r.size.width, r.size.height);
   [super dealloc];
 }
 
 -(void) mouseDown:(NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];
-  mMouseFn(mID, DOWN, event, point.x, point.y);
+  mMouseFn(self.mID, DOWN, event, point.x, point.y);
 }
 
 -(void) mouseDragged:(NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];
-  mMouseFn(mID, DRAGGED, event, point.x, point.y);
+  mMouseFn(self.mID, DRAGGED, event, point.x, point.y);
 }
 
 -(void) mouseUp:(NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];
-  mMouseFn(mID, UP, event, point.x, point.y);
+  mMouseFn(self.mID, UP, event, point.x, point.y);
 }
 
 -(void) mouseMoved: (NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];
-  mMouseFn(mID, MOVED, event, point.x, point.y);
+  mMouseFn(self.mID, MOVED, event, point.x, point.y);
 }
 
 
 -(void) scrollWheel:(NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];
-  mMouseFn(mID, SCROLLWHEEL, event, point.x, point.y);
+  mMouseFn(self.mID, SCROLLWHEEL, event, point.x, point.y);
 }
 
 
