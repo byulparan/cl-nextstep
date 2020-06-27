@@ -77,7 +77,6 @@
 	 (float-features:with-float-traps-masked (:invalid :overflow :divide-by-zero)
 	   (let* ((pool (new "NSAutoreleasePool"))
 		  (ns-app (objc "LispApplication" "sharedApplication" :pointer)))
-	     (objc ns-app "setActivationPolicy:" :long +nsapplicationactivationpolicyregular+)
 	     (objc ns-app "setLispApplicationDispatch:" :pointer (cffi:callback delegate-callback))
 	     (let* ((activity-options (logior +NSActivityIdleDisplaySleepDisabled+
 					      +NSActivityIdleSystemSleepDisabled+
