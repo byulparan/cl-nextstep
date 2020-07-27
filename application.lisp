@@ -94,6 +94,11 @@
 	     (release pool)))))
       :start-event-loop)))
 
+
+(defun quit ()
+  (ns:with-event-loop nil
+    (ns:objc (ns:objc "NSApplication" "sharedApplication" :pointer) "terminate:" :pointer (cffi:null-pointer))))
+
 (defun enable-foreground ()
   (ns:with-event-loop nil
     (ns:objc (ns:objc "NSApplication" "sharedApplication" :pointer)

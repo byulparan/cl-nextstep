@@ -37,6 +37,7 @@
    ;; application.lisp
    #:*startup-hooks*
    #:start-event-loop
+   #:quit
    #:queue-for-event-loop
    #:with-event-loop
    #:enable-foreground
