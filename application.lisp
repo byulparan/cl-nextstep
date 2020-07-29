@@ -97,11 +97,11 @@
 
 (defun quit ()
   (ns:with-event-loop nil
-    (ns:objc (ns:objc "NSApplication" "sharedApplication" :pointer) "terminate:" :pointer (cffi:null-pointer))))
+    (ns:objc (ns:objc "LispApplication" "sharedApplication" :pointer) "terminate:" :pointer (cffi:null-pointer))))
 
 (defun enable-foreground ()
   (ns:with-event-loop nil
-    (ns:objc (ns:objc "NSApplication" "sharedApplication" :pointer)
+    (ns:objc (ns:objc "LispApplication" "sharedApplication" :pointer)
 	     "activateIgnoringOtherApps:" :bool t)))
 
 (defun set-process-activity (options reason)
