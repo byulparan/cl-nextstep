@@ -50,7 +50,7 @@
 					     :pointer (cffi:make-pointer id)
 					     :pointer (cffi:callback dispatch-callback))))
 
-(defmacro with-event-loop ((&key waitp nil) &body body)
+(defmacro with-event-loop ((&key (waitp nil)) &body body)
   (alexandria:with-gensyms (result semaphore id) 
     `(cond ((eql (trivial-main-thread:find-main-thread) (bt:current-thread)) (progn ,@body))
 	   (,waitp (let* ((,result nil)
