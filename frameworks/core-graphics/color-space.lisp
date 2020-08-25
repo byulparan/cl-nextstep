@@ -1,4 +1,4 @@
-(in-package :core-graphics)
+(in-package :cg)
 
 (defun color-space-create (name)
   (let* ((name (case name

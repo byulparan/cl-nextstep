@@ -12,7 +12,8 @@
 (defgeneric cocoa-ref (self))
 
 (defmethod cocoa-ref ((self #+sbcl sb-sys:system-area-pointer
-			    #+ccl ccl:macptr))
+			    #+ccl ccl:macptr
+			    #+lispworks flii:pointer))
   self)
 
 (defmethod cocoa-ref ((self string))
@@ -48,7 +49,8 @@
   (objc instance "retain" :pointer))
 
 (defmethod release ((instance #+sbcl sb-sys:system-area-pointer
-			      #+ccl ccl:macptr))
+			      #+ccl ccl:macptr
+			      #+lispworks flii:pointer))
   (objc instance "release"))
 
 (defun autorelease (instance)

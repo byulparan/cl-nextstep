@@ -1,7 +1,6 @@
 (defpackage :av-foundation
   (:nicknames :av)
   (:use :cl)
-  (:local-nicknames (:cv :core-video))
   (:export #:with-media-data
 	   #:with-texture-cache
 	   #:ready
@@ -44,12 +43,12 @@
     `(when (ready ,av-media)
        (let* ((,m-head (pixel-buffer ,av-media)))
 	 (unless (cffi:null-pointer-p ,m-head)
-	   (cv:buffer-lock-base-address ,m-head 0)
-	   (unwind-protect (let* ((,width (cv:buffer-width ,m-head))
-				  (,height (cv:buffer-height ,m-head))
-				  (,data (cv:buffer-base-address ,m-head)))
+	   (core-video:buffer-lock-base-address ,m-head 0)
+	   (unwind-protect (let* ((,width (core-video:buffer-width ,m-head))
+				  (,height (core-video:buffer-height ,m-head))
+				  (,data (core-video:buffer-base-address ,m-head)))
 			     ,@body)
-	     (cv:buffer-unlock-base-address ,m-head 0)))))))
+	     (core-video:buffer-unlock-base-address ,m-head 0)))))))
 
 (defmacro with-texture-cache ((av-media texture-cache width height) &body body)
   (alexandria:with-gensyms (m-head texture-object texture)
@@ -57,14 +56,14 @@
       `(when (ready ,av-media)
 	 (let* ((,m-head (av:pixel-buffer ,av-media)))
 	   (unless (cffi:null-pointer-p ,m-head)
-	     (let* ((,texture-object (cv:texture-cache-texture ,texture-cache ,m-head))
-		    (,texture (cv:texture-name ,texture-object))
-		    (,width (cv:buffer-width ,m-head))
-		    (,height (cv:buffer-height ,m-head)))
+	     (let* ((,texture-object (core-video:texture-cache-texture ,texture-cache ,m-head))
+		    (,texture (core-video:texture-name ,texture-object))
+		    (,width (core-video:buffer-width ,m-head))
+		    (,height (core-video:buffer-height ,m-head)))
 	       (gl:bind-texture :texture-rectangle ,texture)
 	       (prog1 (progn ,@body)
 		 (ns:cf-autorelease ,texture-object)
-		 (cv:texture-cache-flush ,texture-cache 0)))))))))
+		 (core-video:texture-cache-flush ,texture-cache 0)))))))))
 
 ;; Capture
 (defun list-camera-device ()
@@ -227,9 +226,10 @@
       (assert (probe-file path) nil "can't find file: ~a" path)
       (unless (or (eql (bt:current-thread) (trivial-main-thread:find-main-thread))
 		  load-handle)
-	(setf load-object #+sbcl (sb-thread:make-semaphore) #+ccl (ccl:make-semaphore)
+	(setf load-object #+sbcl (sb-thread:make-semaphore) #+ccl (ccl:make-semaphore) #+lispworks (mp:make-semaphore)
 	      load-handle (lambda () #+sbcl(sb-thread:signal-semaphore load-object)
-				  #+ccl (ccl:signal-semaphore load-object))))
+				  #+ccl (ccl:signal-semaphore load-object)
+				  #+lispworks (mp:semaphore-release load-object))))
       (ns:with-event-loop (:waitp t)
 	(setf player (%make-player :id id :load-fn load-handle :end-fn end-fn))
 	(setf (gethash id *player-table*) player)
@@ -243,6 +243,7 @@
       (when load-object
 	#+sbcl (sb-thread:wait-on-semaphore load-object))
       #+ccl (ccl:wait-on-semaphore load-object)
+      #+lispworks (mp:semaphore-acquire load-object)
       player)))
 
 (defun release-player (player)

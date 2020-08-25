@@ -1,4 +1,5 @@
-(defpackage :core-graphics
+(defpackage #-lispworks :core-graphics
+	    #+lispworks :next-core-graphics
   (:nicknames :cg)
   (:use :cl)
   (:export #:color-create-generic-rgb

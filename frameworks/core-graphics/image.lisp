@@ -1,4 +1,4 @@
-(in-package :core-graphics)
+(in-package :cg)
 
 ;; CGImage
 (defun load-image (path)
