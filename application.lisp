@@ -64,6 +64,14 @@
 		     ,result))
 	   (t (queue-for-event-loop (lambda () ,@body))))))
 
+#+ccl
+(progn
+  (defclass appkit-process (ccl:process)
+    ())
+  (defmethod ccl:process-interrupt ((ccl:process appkit-process) function &rest args)
+    (if (eql ccl:*current-process* ccl:process)
+	(apply function args)
+      (queue-for-event-loop (lambda () (apply function args))))))
 
 (let* ((running-p nil))
   (defun start-event-loop ()
@@ -103,6 +111,7 @@
 	   (let* ((pool (new "NSAutoreleasePool"))
 		  (ns-app (objc "LispApplication" "sharedApplication" :pointer)))
 	     (enable-foreground)
+	     #+ccl (change-class ccl::*initial-process* 'appkit-process)
 	     (objc ns-app "setLispApplicationDispatch:" :pointer (cffi:callback delegate-callback))
 	     (let* ((activity-options (logior +NSActivityIdleDisplaySleepDisabled+
 					      +NSActivityIdleSystemSleepDisabled+
