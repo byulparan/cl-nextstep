@@ -12,7 +12,6 @@
 }
 
 -(void) terminate: (id) sender {
-  mLispDispatch(1);
   dispatch_async(dispatch_get_main_queue(), ^{
       [super terminate: sender];
     });
