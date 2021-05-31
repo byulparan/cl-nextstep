@@ -5,6 +5,7 @@
   int mID;
   DrawFn mDrawFn;
   MouseFn mMouseFn;
+  NSTrackingArea* trackingArea;
 }
 @end
 
@@ -20,6 +21,12 @@
   mDrawFn = drawFn;
   mMouseFn = mouseFn;
   mDrawFn(mID, INIT, NULL, NULL, frame.size.width, frame.size.height);
+  int opts = (NSTrackingActiveAlways | NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved | NSTrackingInVisibleRect);
+  trackingArea = [ [NSTrackingArea alloc] initWithRect:[self bounds]
+                                        options:opts
+                                        owner:self
+                                        userInfo:nil];
+  [self addTrackingArea: trackingArea];
   return self;
 }
 
@@ -30,7 +37,24 @@
 -(void) dealloc {
   NSRect frame = [self bounds];
   mDrawFn(mID, SHUTDOWN, NULL, NULL, frame.size.width, frame.size.height);
+  if(trackingArea != nil) {
+    [self removeTrackingArea:trackingArea];
+    [trackingArea release];
+  }
   [super dealloc];
+}
+
+-(void) updateTrackingAreas {
+  if(trackingArea != nil) {
+    [self removeTrackingArea:trackingArea];
+    [trackingArea release];
+  }
+  int opts = (NSTrackingActiveAlways | NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved | NSTrackingInVisibleRect);
+  trackingArea = [ [NSTrackingArea alloc] initWithRect:[self bounds]
+					       options:opts
+						 owner:self
+					      userInfo:nil];
+  [self addTrackingArea:trackingArea];
 }
 
 -(void) mouseDown:(NSEvent*) event {

@@ -19,6 +19,7 @@ static NSMutableDictionary* sDrawingState = NULL;
   bool mIsAnimate;
   DrawFn mDrawFn;
   MouseFn mMouseFn;
+  NSTrackingArea* trackingArea;
 }
 
 @property(nonatomic) int mID;
@@ -42,6 +43,13 @@ static NSMutableDictionary* sDrawingState = NULL;
   mIsAnimate = isAnimate;
   mDrawFn = drawFn;
   mMouseFn = mouseFn;
+  int opts = (NSTrackingActiveAlways | NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved | NSTrackingInVisibleRect);
+  trackingArea = [ [NSTrackingArea alloc] initWithRect:[self bounds]
+                                        options:opts
+                                        owner:self
+                                        userInfo:nil];
+  [self addTrackingArea: trackingArea];
+  
   return self;
 }
 
@@ -113,8 +121,27 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
   [context makeCurrentContext];
   NSRect r = [self bounds];
   mDrawFn(self.mID, SHUTDOWN, mCGLContext, mCGLPixelFormat, r.size.width, r.size.height);
+  if(trackingArea != nil) {
+    [self removeTrackingArea:trackingArea];
+    [trackingArea release];
+  }
   [super dealloc];
 }
+
+
+-(void) updateTrackingAreas {
+  if(trackingArea != nil) {
+    [self removeTrackingArea:trackingArea];
+    [trackingArea release];
+  }
+    int opts = (NSTrackingActiveAlways | NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved | NSTrackingInVisibleRect);
+  trackingArea = [ [NSTrackingArea alloc] initWithRect:[self bounds]
+					       options:opts
+						 owner:self
+					      userInfo:nil];
+  [self addTrackingArea:trackingArea];
+}
+
 
 -(void) mouseDown:(NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
