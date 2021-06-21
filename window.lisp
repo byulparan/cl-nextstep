@@ -17,7 +17,9 @@
 
 (defun in-screen-rect (rect)
   (let* ((screen
-	     (ns:objc-stret ns:rect  (ns:objc "NSScreen" "mainScreen" :pointer) "frame")))
+	   #+x86-64 (ns:objc-stret ns:rect  (ns:objc "NSScreen" "mainScreen" :pointer) "frame")
+	   #+arm64 (ns:objc (ns:objc "NSScreen" "mainScreen" :pointer) "frame" (:struct ns:rect))
+	   ))
       (let* ((in-x (- (ns:rect-width screen) (ns:rect-width rect)))
 	     (in-y (- (ns:rect-height screen) (ns:rect-height rect))))
 	(ns:make-rect (clamp (ns:rect-x rect) 0 in-x)

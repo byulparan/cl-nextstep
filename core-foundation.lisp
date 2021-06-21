@@ -28,6 +28,7 @@
        (assert (not (cffi:null-pointer-p ,object)) nil "`ns:objc` accept NullPointer with SEL: \"~a\"" ,sel)
        (cffi:foreign-funcall "objc_msgSend" :pointer ,object :pointer ,selector ,@rest))))
 
+#+x86-64
 (defmacro objc-stret (return-type instance sel &rest rest)
   (with-gensyms (object selector result)
     `(let* ((,object (cocoa-ref ,instance))

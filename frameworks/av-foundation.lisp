@@ -159,7 +159,8 @@
     (let* ((input (ns:objc 
 		   (ns:objc (capture-session screen-capture) "inputs" :pointer)
 		   "objectAtIndex:" :int 0 :pointer)))
-      (ns:objc-stret cm-time input "minFrameDuration"))))
+      #+x86-64 (ns:objc-stret cm-time input "minFrameDuration")
+      #+arm64 (ns:objc input "minFrameDuration" (:struct cm-time)))))
 
 (defun (setf min-frame-duration) (framerate screen-capture)
   (ns:with-event-loop nil

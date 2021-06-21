@@ -7,7 +7,7 @@
    #:cls
    #:sel
    #:objc
-   #:objc-stret
+   #+x86-64 #:objc-stret
    #:alloc
    #:retain
    #:release
