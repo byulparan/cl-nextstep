@@ -1,7 +1,7 @@
 
 
 (let ((lisp-app-path
-	"/Users/byul/quicklisp/local-projects/lib/cl-nextstep/Lisp.app/Contents/MacOS/Lisp"))
+	"/Users/byul/quicklisp/local-projects/lib/cl-nextstep/sbcl.app/Contents/MacOS/sbcl"))
   #+sbcl (sb-posix:setenv "CFProcessPath" lisp-app-path 1)
   #+ccl (ccl:setenv "CFProcessPath" lisp-app-path 1)
   #+ecl (si:setenv  "CFProcessPath" lisp-app-path))

@@ -3,7 +3,7 @@
 <plist version="1.0">
   <dict>
     <key>CFBundleExecutable</key>
-    <string>Lisp</string>
+    <string>sbcl</string>
     <key>NSPrincipalClass</key>
     <string>LispApplication</string>
     <key>CFBundleIconFile</key>
