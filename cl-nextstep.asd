@@ -1,5 +1,4 @@
 
-
 (let ((lisp-app-path
 	"/Users/byul/quicklisp/local-projects/lib/cl-nextstep/sbcl.app/Contents/MacOS/sbcl"))
   #+sbcl (sb-posix:setenv "CFProcessPath" lisp-app-path 1)
@@ -10,7 +9,6 @@
   :depends-on (:alexandria
 	       :cffi
 	       :cffi-libffi
-	       :cffi-shared-lib
 	       :float-features
 	       :bordeaux-threads
 	       :trivial-main-thread
