@@ -11,8 +11,9 @@
 	   #:+pfa-stencil-size+ 
 	   #:+pfa-sample-buffers+ 
 	   #:+pfa-samples+ 
-	   #:+pfa-no-recovery+ 
-	   #:+pfa-opengl-profile+ 
+	   #:+pfa-no-recovery+
+	   #:+pfa-multisample+
+	   #:+pfa-profile+ 
 	   #:+opengl-profile-version3-2-core+ 
 	   #:destroy-context
 	   #:destroy-pixel-format
@@ -30,7 +31,9 @@
 (defconstant +pfa-sample-buffers+ 55)
 (defconstant +pfa-samples+ 56)
 (defconstant +pfa-no-recovery+ 72)
-(defconstant +pfa-opengl-profile+ 99)
+(defconstant +pfa-multisample+ 59)
+(defconstant +pfa-profile+ 99)
+
 (defconstant +opengl-profile-version3-2-core+ 12800)
 
 (defun make-attributes (&key (core-profile t))
@@ -45,7 +48,7 @@
     +pfa-samples+ 4
     +pfa-no-recovery+)
    (when core-profile
-     (list +pfa-opengl-profile+ +opengl-profile-version3-2-core+))))
+     (list +pfa-profile+ +opengl-profile-version3-2-core+))))
 
 (defun make-context (cgl-pixel-format)
   (cffi:with-foreign-objects ((new-context :pointer))
