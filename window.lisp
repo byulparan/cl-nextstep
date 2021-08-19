@@ -50,6 +50,9 @@
 (defun window-show (window)
   (ns:objc window "makeKeyAndOrderFront:" :pointer (cffi:null-pointer)))
 
+(defun window-close (window)
+  (ns:objc window "performClose:" :pointer (cffi:null-pointer)))
+
 (defun toggle-fullscreen (window)
   (ns:objc window "toggleFullscreen"))
 

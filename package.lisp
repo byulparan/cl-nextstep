@@ -47,6 +47,7 @@
    ;; window.lisp
    #:window
    #:window-show
+   #:window-close
    #:close-fn
    #:toggle-fullscreen
    #:content-view
