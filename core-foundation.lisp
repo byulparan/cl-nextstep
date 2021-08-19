@@ -13,7 +13,8 @@
 
 (defmethod cocoa-ref ((self #+sbcl sb-sys:system-area-pointer
 			    #+ccl ccl:macptr
-			    #+lispworks flii:pointer))
+			    #+lispworks flii:pointer
+			    #+ecl si:foreign-data))
   self)
 
 (defmethod cocoa-ref ((self string))
@@ -51,7 +52,8 @@
 
 (defmethod release ((instance #+sbcl sb-sys:system-area-pointer
 			      #+ccl ccl:macptr
-			      #+lispworks flii:pointer))
+			      #+lispworks flii:pointer
+			      #+ecl si:foreign-data))
   (objc instance "release"))
 
 (defun autorelease (instance)

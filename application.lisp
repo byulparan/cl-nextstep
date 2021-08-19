@@ -32,7 +32,8 @@
 		 "performClose:" :pointer (cffi:null-pointer)))))
     (2 (dolist (hook #+sbcl sb-ext:*exit-hooks*
 		     #+ccl ccl:*lisp-cleanup-functions*
-		     #+lispworks (lispworks:execute-actions ("Confirm when quitting image")))
+		     #+lispworks (lispworks:execute-actions ("Confirm when quitting image"))
+		     #+ecl si:*exit-hooks*)
 	 (funcall hook)))))
 
 (cffi:defcallback dispatch-callback :void ((id :pointer))
