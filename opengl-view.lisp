@@ -25,3 +25,6 @@
 				 :pointer))
       (cgl:destroy-pixel-format pixel-format))))
 
+
+(defun set-best-resolution (opengl-view setup)
+  (ns:objc (cocoa-ref opengl-view) "setWantsBestResolutionOpenGLSurface:" :bool setup))
