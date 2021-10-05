@@ -17,4 +17,4 @@ set(SRC_FILES
 
 set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
 add_library(cl_nextstep SHARED ${SRC_FILES})
-target_link_libraries(cl_nextstep "-framework Cocoa" "-framework QuartzCore" "-framework AVFoundation" "-framework CoreMedia")
+target_link_libraries(cl_nextstep "-framework Cocoa" "-framework QuartzCore" "-framework AVFoundation" "-framework CoreMedia" "-framework OpenGL")
