@@ -5,48 +5,6 @@
 #import <pthread.h>
 #import <OpenGL/gl.h>
 
-
-void init_fbo(int framebuffer, int colorbuffer,int depthbuffer, int target, int width, int height) {
-  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-  glBindTexture(target, colorbuffer);
-  glTexImage2D(target, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glBindTexture(target, 0);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, colorbuffer, 0);	
-  glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthbuffer);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void init_mssa_fbo(int framebuffer, int colorbuffer,int depthbuffer,  int width, int height) {
-  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
-  glBindRenderbuffer(GL_RENDERBUFFER, colorbuffer);
-  glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGB8, width, height);
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorbuffer);
-  
-  glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
-  glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, width, height);
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthbuffer);
-
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void bind_framebuffer(int framebuffer) {
-  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-}
-
-
-void blit_framebuffer(int width, int height) {
-  glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-}
-
-
 static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now,
 				    const CVTimeStamp* outputTime, CVOptionFlags flagsIn,
 				    CVOptionFlags* flagsOut, void* displayLinkContext);
