@@ -14,7 +14,7 @@
     	  (1 (draw view))
     	  (2 (reshape view))
     	  (3 (release view)))
-      (error (c) (break (format nil "catch signal while Drawing OpenGL: \"~a\"" c))))))
+      (error (c) (break (format nil "catch signal while Drawing view: \"~a\"" c))))))
 
 (cffi:defcallback mouse-callback :void ((id :int) (mouse-flag :int) (event :pointer) (x :double) (y :double))
   (let* ((view (gethash id *view-table*)))
