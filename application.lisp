@@ -140,11 +140,13 @@
 	     "activateIgnoringOtherApps:" :bool t)))
 
 (defun set-process-activity (options reason)
-  (objc
-   (objc "NSProcessInfo" "processInfo" :pointer)
-   "beginActivityWithOptions:reason:"
-   :unsigned-long-long options
-   :pointer (autorelease (ns:make-ns-string reason))))
+  (retain
+   (objc
+    (objc "NSProcessInfo" "processInfo" :pointer)
+    "beginActivityWithOptions:reason:"
+    :unsigned-long-long options
+    :pointer (autorelease (ns:make-ns-string reason))
+    :pointer)))
 
 (defun make-menu-item (name &key action key)
   (objc (alloc "NSMenuItem")
