@@ -2,8 +2,11 @@
 
 (defclass opengl-view (base-view)
   ((core-profile :initarg :core-profile
-		 :initform t
-		 :reader core-profile)))
+		 :initform nil
+		 :reader core-profile)
+   (animate :initarg :animate
+	    :initform nil
+	    :reader animate)))
 
 (defmethod reshape ((self opengl-view))
   ())
@@ -19,7 +22,7 @@
 				 :int (id self)
 				 (:struct ns:rect) (ns:make-rect x y w h)
 				 :pointer pixel-format
-				 :unsigned-char 1
+				 :unsigned-char (if (animate self) 1 0)
 				 :pointer (cffi:callback draw-callback)
 				 :pointer (cffi:callback mouse-callback)
 				 :pointer))
