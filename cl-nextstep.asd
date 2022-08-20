@@ -1,3 +1,11 @@
+
+(asdf/driver:with-current-directory nil
+  (let* ((process-path (concatenate 'string
+				(namestring *default-pathname-defaults*)
+				"sbcl.app/Contents/MacOS/sbcl") ))
+    #+sbcl
+    (sb-posix:setenv "CFProcessPath" process-path 1)))
+
 (asdf:defsystem :cl-nextstep
   :depends-on (:alexandria
 	       :cffi

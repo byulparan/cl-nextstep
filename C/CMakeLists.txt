@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 
 project(cl-nextstep)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "~/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/../")
 
 set(CMAKE_INSTALL_NAME_DIR @rpath)
 set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR ON)
