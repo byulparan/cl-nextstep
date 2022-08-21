@@ -7,6 +7,7 @@
   MouseFn mMouseFn;
   NSTrackingArea* trackingArea;
 }
+-(int) getID;
 @end
 
 @implementation LispView
@@ -28,6 +29,10 @@
                                         userInfo:nil];
   [self addTrackingArea: trackingArea];
   return self;
+}
+
+-(int) getID {
+  return mID;
 }
 
 -(void) drawRect:(NSRect) frame {

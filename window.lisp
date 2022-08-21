@@ -57,7 +57,7 @@
   (ns:objc window "toggleFullscreen"))
 
 (defun content-view (window)
-  (ns:objc window "contentView" :pointer))
+  (gethash (ns:objc (ns:objc window "contentView" :pointer) "getID" :int) *view-table*))
 
 (defun (setf content-view) (view window)
   (ns:objc window "setContentView:" :pointer (ns:objc view "autorelease" :pointer)))
