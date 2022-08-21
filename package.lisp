@@ -76,7 +76,7 @@
    ;; opengl-view.lisp
    #:opengl-view
    #:reshape
-   #:set-best-resolution
+   #:set-gl-best-resolution
    ;; widget.lisp
    #:text-field))
 
