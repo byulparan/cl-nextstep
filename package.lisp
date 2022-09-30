@@ -78,5 +78,9 @@
    #:reshape
    #:set-gl-best-resolution
    ;; widget.lisp
-   #:text-field))
+   #:text-field
+   ;;wk-webview.lisp
+   #:wk-webview
+   #:reload
+   #:url))
 

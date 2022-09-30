@@ -38,7 +38,8 @@
 	       (:file "window")
 	       (:file "view")
 	       (:file "opengl-view")
-	       (:file "widget")))
+	       (:file "widget")
+	       (:file "wk-webview")))
 
 (pushnew :cl-nextstep *features*)
 

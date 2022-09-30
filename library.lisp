@@ -6,3 +6,9 @@
 	      "libcl-nextstep.dylib"))
 
 
+(cffi:define-foreign-library webkit
+  (:darwin (:framework "WebKit")))
+
+(cffi:use-foreign-library webkit)
+
+
