@@ -57,15 +57,18 @@
 ;; CGBitmapContext
 (defun make-bitmap-context (width height)
   (ns:with-event-loop (:waitp t)
-    (cffi:foreign-funcall "CGBitmapContextCreate"
-			  :pointer (cffi:null-pointer)
-			  :sizet width
-			  :sizet height
-			  :sizet 8
-			  :sizet (* width 4)
-			  :pointer (cg:color-space-create :color-space-srgb)
-			  :unsigned-int 2 ;; kCGImageAlphaPremultipliedFirst
-			  :pointer)))
+    (let* ((color-space (cg:color-space-create :color-space-srgb)))
+      (prog1
+	  (cffi:foreign-funcall "CGBitmapContextCreate"
+				:pointer (cffi:null-pointer)
+				:sizet width
+				:sizet height
+				:sizet 8
+				:sizet (* width 4)
+				:pointer color-space 
+				:unsigned-int 1
+				:pointer)
+	(cg:color-space-release color-space)))))
 
 (cffi:defcfun ("CGBitmapContextGetData" bitmap-data) :pointer
   (context :pointer))
