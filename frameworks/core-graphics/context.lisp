@@ -8,21 +8,21 @@
   `(float ,x 1.0d0))
 
 ;; Graphics state
-(defun context-save-gstate (context)
+(defun save-gstate (context)
   (cffi:foreign-funcall "CGContextSaveGState" :pointer context))
 
-(defun context-restore-gstate (context)
+(defun restore-gstate (context)
   (cffi:foreign-funcall "CGContextRestoreGState" :pointer context))
 
 
 ;; Coordinate space transformations
-(defun context-scale-ctm (context sx sy)
+(defun scale-ctm (context sx sy)
   (cffi:foreign-funcall "CGContextScaleCTM" :pointer context :double (cgfloat sx) :double (cgfloat sy)))
 
-(defun context-translate-ctm (context tx ty)
+(defun translate-ctm (context tx ty)
   (cffi:foreign-funcall "CGContextTranslateCTM" :pointer context :double (cgfloat tx) :double (cgfloat ty)))
 
-(defun context-rotate-ctm (context radians)
+(defun rotate-ctm (context radians)
   (cffi:foreign-funcall "CGContextRotateCTM" :pointer context :double (cgfloat radians)))
 
 
@@ -37,10 +37,10 @@
 
 
 ;;; Drawing attribute functions
-(defun context-set-line-width (context width)
+(defun set-line-width (context width)
   (cffi:foreign-funcall "CGContextSetLineWidth" :pointer context :double (cgfloat width)))
 
-(defun context-set-line-cap (context cap)
+(defun set-line-cap (context cap)
   (let ((code (case cap
                 (:butt 0) ;; kCGLineCapButt
                 (:square 2) ;; kCGLineCapSquare
@@ -48,7 +48,7 @@
                 (otherwise cap))))
     (cffi:foreign-funcall "CGContextSetLineCap" :pointer context :int code)))
 
-(defun context-set-line-join (context join)
+(defun set-line-join (context join)
   (let ((code (ecase join
                 (:miter 0) ;; kCGLineJoinMiter
                 (:round 1) ;; kCGLineJoinRound
@@ -56,7 +56,7 @@
                 (otherwise join))))
     (cffi:foreign-funcall "CGContextSetLineJoin" :pointer context :int code)))
 
-(defun context-set-miter-limit (context limit)
+(defun set-miter-limit (context limit)
   (cffi:foreign-funcall "CGContextSetMiterLimit" :pointer context :double (cgfloat limit)))
 
 ;; (defun context-set-line-dash (context phase lengths)
@@ -66,10 +66,10 @@
 ;;         (setf (paref p (:array #>CGFloat) i) (cgfloat (elt lengths i))))
 ;;       (#_CGContextSetLineDash context (cgfloat phase) p n))))
 
-(defun context-set-flatness (context flatness)
+(defun set-flatness (context flatness)
   (cffi:foreign-funcall "CGContextSetFlatness" :pointer context :double (cgfloat flatness)))
 
-(defun context-set-alpha (context alpha)
+(defun set-alpha (context alpha)
   (cffi:foreign-funcall "CGContextSetAlpha" :pointer context :double (cgfloat alpha)))
 
 (defparameter *blend-mode-alist*
@@ -102,31 +102,31 @@
     (:plus-darker . 26)
     (:plus-lighter . 27)))
 
-(defun context-set-blend-mode (context mode)
+(defun set-blend-mode (context mode)
   (let ((code (or (cdr (assoc mode *blend-mode-alist*))
                   mode)))
     (cffi:foreign-funcall "CGContextSetBlendMode" :pointer context :int code)))
 
 
 ;;; Path construction functions
-(defun context-begin-path (context)
+(defun begin-path (context)
   (cffi:foreign-funcall "CGContextBeginPath" :pointer context))
 
-(defun context-move-to-point (context x y)
+(defun move-to-point (context x y)
   (cffi:foreign-funcall "CGContextMoveToPoint" :pointer context :double (cgfloat x) :double (cgfloat y)))
 
-(defun context-add-line-to-point (context x y)
+(defun add-line-to-point (context x y)
   (cffi:foreign-funcall "CGContextAddLineToPoint" :pointer context :double (cgfloat x) :double (cgfloat y)))
 
-(defun context-add-curve-to-point (context cp1x cp1y cp2x cp2y x y)
+(defun add-curve-to-point (context cp1x cp1y cp2x cp2y x y)
   (cffi:foreign-funcall "CGContextAddCurveToPoint" :pointer context :double (cgfloat cp1x) :double (cgfloat cp1y)
 			:double (cgfloat cp2x) :double (cgfloat cp2y) :double (cgfloat x) :double (cgfloat y)))
 
-(defun context-add-quad-curve-to-point (context cpx cpy x y)
+(defun add-quad-curve-to-point (context cpx cpy x y)
   (cffi:foreign-funcall "CGContextAddQuadCurveToPoint" :pointer context :double (cgfloat cpx) :double (cgfloat cpy)
 			:double (cgfloat x) :double (cgfloat y)))
 
-(defun context-close-path (context)
+(defun close-path (context)
   (cffi:foreign-funcall "CGContextClosePath" :pointer context))
 
 ;;; Path construction convenience functions
@@ -137,7 +137,7 @@ CGContextAddLines
 CGContextAddEllipseInRect
 |#
 
-(defun context-add-arc (context x y radius start-angle end-angle clockwise)
+(defun add-arc (context x y radius start-angle end-angle clockwise)
   (cffi:foreign-funcall "CGContextAddArc" :pointer context :double (cgfloat x) :double (cgfloat y)
 			:double (cgfloat radius) :double (cgfloat start-angle) :double (cgfloat end-angle)
 			:int clockwise))
@@ -162,7 +162,7 @@ CGContextPathContainsPoint
 |#
 
 ;;; Path drawing functions
-(defun context-draw-path (context mode)
+(defun draw-path (context mode)
   (let ((code (case mode
                 (:fill 0) ;; kCGPathFill
                 (:eofill 1) ;; kCGPathEOFill
@@ -174,34 +174,34 @@ CGContextPathContainsPoint
 
 
 ;;; Path drawing convenience functions
-(defun context-fill-path (context)
+(defun fill-path (context)
   (cffi:foreign-funcall "CGContextFillPath" :pointer context))
 
-(defun context-eo-fill-path (context)
+(defun eo-fill-path (context)
   (cffi:foreign-funcall "CGContextEOFillPath" :pointer context))
 
-(defun context-stroke-path (context)
+(defun stroke-path (context)
   (cffi:foreign-funcall "CGContextStrokePath" :pointer context))
 
-(defun context-fill-rect (context rect)
+(defun fill-rect (context rect)
   (cffi:foreign-funcall "CGContextFillRect" :pointer context (:struct ns:rect) rect))
 
 ;; (defun fill-rects (context rects count)
 ;;   (cffi:foreign-funcall "CGContextFillRects" :pointer context (:struct cg:rect) rects :int count))
 
-(defun context-stroke-rect (context rect)
+(defun stroke-rect (context rect)
   (cffi:foreign-funcall "CGContextStrokeRect" :pointer context (:struct ns:rect) rect))
 
-(defun context-stroke-rect-with-width (context rect width)
+(defun stroke-rect-with-width (context rect width)
   (cffi:foreign-funcall "CGContextStrokeRectWithWidth" :pointer context (:struct ns:rect) rect :double (cgfloat width)))
 
-(defun context-clear-rect (context rect)
+(defun clear-rect (context rect)
   (cffi:foreign-funcall "CGContextClearRect" :pointer context (:struct ns:rect) rect))
 
-(defun context-fill-ellipse-in-rect (context rect)
+(defun fill-ellipse-in-rect (context rect)
   (cffi:foreign-funcall "CGContextFillEllipseInRect" :pointer context (:struct ns:rect) rect))
 
-(defun context-stroke-ellipse-in-rect (context rect)
+(defun stroke-ellipse-in-rect (context rect)
   (cffi:foreign-funcall "CGContextStrokeEllipseInRect" :pointer context (:struct ns:rect) rect))
 
 ;; (defun stroke-line-segments (context points count)
@@ -223,17 +223,17 @@ CGContextClipToRects
 |#
 
 ;;; Primitive color functions
-(defun context-set-fill-color-with-color (context color)
+(defun set-fill-color-with-color (context color)
   (cffi:foreign-funcall "CGContextSetFillColorWithColor" :pointer context :pointer color))
 
-(defun context-set-stroke-color-with-color (context color)
+(defun set-stroke-color-with-color (context color)
   (cffi:foreign-funcall "CGContextSetStrokeColorWithColor" :pointer context :pointer color))
 
 ;;; Color space functions
-(defun context-set-fill-color-space (context space)
+(defun set-fill-color-space (context space)
   (cffi:foreign-funcall "CGContextSetFillColorSpace" :pointer context :pointer space))
 
-(defun context-set-stroke-color-space (context space)
+(defun set-stroke-color-space (context space)
   (cffi:foreign-funcall "CGContextSetStrokeColorSpace" :pointer context :pointer space))
 
 ;;; Color functions
@@ -250,32 +250,32 @@ CGContextSetPatternPhase
 |#
 
 ;;; Color convenience functions
-(defun context-set-gray-fill-color (context gray &optional (alpha 1))
+(defun set-gray-fill-color (context gray &optional (alpha 1))
   (cffi:foreign-funcall "CGContextSetGrayFillColor" :pointer context :double (cgfloat gray) :double (cgfloat alpha)))
 
-(defun context-set-gray-stroke-color (context gray &optional (alpha 1))
+(defun set-gray-stroke-color (context gray &optional (alpha 1))
   (cffi:foreign-funcall "CGContextSetGrayStrokeColor" :pointer context :double (cgfloat gray) :double (cgfloat alpha)))
 
 
-(defun context-set-rgb-fill-color (context red green blue &optional (alpha 1))
+(defun set-rgb-fill-color (context red green blue &optional (alpha 1))
   (cffi:foreign-funcall "CGContextSetRGBFillColor" :pointer context
 						   :double (float red 1.0d0)
 						   :double (float green 1.0d0)
 						   :double (float blue 1.0d0)
 						   :double (float alpha 1.0d0)))
 
-(defun context-set-rgb-stroke-color (context red green blue &optional (alpha 1))
+(defun set-rgb-stroke-color (context red green blue &optional (alpha 1))
   (cffi:foreign-funcall "CGContextSetRGBStrokeColor" :pointer context
 						   :double (float red 1.0d0)
 						   :double (float green 1.0d0)
 						   :double (float blue 1.0d0)
 						   :double (float alpha 1.0d0)))
 
-(defun context-set-cmyk-fill-color (context cyan magenta yellow black &optional (alpha 1))
+(defun set-cmyk-fill-color (context cyan magenta yellow black &optional (alpha 1))
   (cffi:foreign-funcall "CGContextSetCMYKFillColor" :pointer context :double (cgfloat cyan) :double (cgfloat magenta)
 			:double (cgfloat yellow) :double  (cgfloat black) :double (cgfloat alpha)))
 
-(defun context-set-cmyk-stroke-color (context cyan magenta yellow black &optional(alpha 1))
+(defun set-cmyk-stroke-color (context cyan magenta yellow black &optional(alpha 1))
   (cffi:foreign-funcall "CGContextSetCMYKStrokeColor" :pointer context :double (cgfloat cyan) :double (cgfloat magenta)
 			:double (cgfloat yellow) :double (cgfloat black) :double (cgfloat alpha)))
 
@@ -291,7 +291,7 @@ CGContextDrawTiledImage
 CGInterpolationQuality
 CGContextSetInterpolationQuality
 |#
-(defun context-draw-image (context rect cg-image)
+(defun draw-image (context rect cg-image)
   (cffi:foreign-funcall "CGContextDrawImage" :pointer context
 			(:struct ns:rect) rect
 			:pointer cg-image))
@@ -314,10 +314,10 @@ CGContextDrawShading
 |#
 
 ;;; Text functions
-(defun context-set-character-spacing (context spacing)
+(defun set-character-spacing (context spacing)
   (cffi:foreign-funcall "CGContextSetCharacterSpacing" :pointer context :double (cgfloat spacing)))
 
-(defun context-set-text-position (context x y)
+(defun set-text-position (context x y)
   (cffi:foreign-funcall "CGContextSetTextPosition" :pointer context :double (cgfloat x) :double (cgfloat y)))
 
 ;; (defun context-get-text-position (context)
@@ -328,7 +328,7 @@ CGContextDrawShading
 CGContextSetTextMatrix
 CGContextGetTextMatrix
 |#
-(defun context-set-text-drawing-mode (context mode)
+(defun set-text-drawing-mode (context mode)
   (let ((code (case mode
                 (:fill 0) ;; kCGTextFill
                 (:stroke 1) ;; kCGTextStroke
@@ -348,14 +348,14 @@ CGContextGetTextMatrix
 ;; 					  :pointer)
 ;;       (ns:cf-release cf-name))))
 
-(defun context-set-font (context font)
+(defun set-font (context font)
   (cffi:foreign-funcall "CGContextSetFont" :pointer context :pointer font))
 
-(defun context-set-font-size (context size)
+(defun set-font-size (context size)
   (cffi:foreign-funcall "CGContextSetFontSize" :pointer context :double (cgfloat size)))
 
 
-(defun context-select-font (context font-name size encoding)
+(defun select-font (context font-name size encoding)
   (let ((code (case encoding
 		(:macroman 1) ;; #$kCGEncodingMacRoman
 		(:font-specific 0) ;; #$kCGEncodingFontSpecific
@@ -366,11 +366,11 @@ CGContextGetTextMatrix
 ;; |#
 
 ;; ;;; Text convenience functions
-(defun context-show-text (context string)
+(defun show-text (context string)
   (let ((n (length (babel:string-to-octets string))))
     (cffi:foreign-funcall "CGContextShowText" :pointer context :string string :int n)))
 
-(defun context-show-text-at-point (context x y string)
+(defun show-text-at-point (context x y string)
   (let ((n (length (babel:string-to-octets string))))
     (cffi:foreign-funcall "CGContextShowTextAtPoint" :pointer context :double (cgfloat x) 
 			  :double (cgfloat y) :string string :int n)))
