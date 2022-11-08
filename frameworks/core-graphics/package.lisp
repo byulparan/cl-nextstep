@@ -34,7 +34,7 @@
 	   #:stroke-rect-with-width
 	   #:clear-rect
 	   #:fill-ellipse-in-rect
-	   #:ellipse-in-rect
+	   #:stroke-ellipse-in-rect
 	   #:set-fill-color-with-color
 	   #:set-stroke-color-with-color
 	   #:set-fill-color-space
