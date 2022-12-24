@@ -78,9 +78,7 @@
   (not (zerop (logand (ns:objc event "modifierFlags" :unsigned-int) (ash 1 19)))))
 
 (defun redisplay (view)
-  (ns:objc view "setNeedsDisplayInRect:" (:struct ns:rect)
-	   #+arm64 (ns:objc view "frame" (:struct ns:rect))
-	   #+x86-64 (ns:objc-stret ns:rect view "frame")))
+  (ns:objc view "setNeedsDisplayInRect:" (:struct ns:rect) (ns:make-rect 0 0 (ns:width view) (ns:height view))))
 
 ;; view
 (defclass view (base-view)
