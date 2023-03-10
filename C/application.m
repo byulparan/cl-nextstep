@@ -1,14 +1,14 @@
 #import <Cocoa/Cocoa.h>
 
 @interface LispApplication : NSApplication<NSApplicationDelegate> {
-  void(*mLispDispatch)(int);
+  void(*mLispDelegateCallback)(int);
 }
 @end
 
 @implementation LispApplication
 
--(void) setLispApplicationDispatch: (void(*)(int)) dispatch {
-  mLispDispatch = dispatch;
+-(void) setLispDelegateCallback: (void(*)(int)) delegateCallback {
+  mLispDelegateCallback = delegateCallback;
 }
 
 -(void) terminate: (id) sender {
@@ -18,11 +18,11 @@
 }
 
 -(void) applicationDidFinishLaunching:(NSNotification *)notification {
-  mLispDispatch(0);
+  mLispDelegateCallback(0);
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification {
-  mLispDispatch(2);
+  mLispDelegateCallback(2);
 }
 
 @end

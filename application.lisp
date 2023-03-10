@@ -90,7 +90,7 @@
 		(ns-app (objc "LispApplication" "sharedApplication" :pointer)))
 	   (enable-foreground)
 	   ;;(objc ns-app "setActivationPolicy:" :unsigned-int +nsapplicationactivationpolicyregular+)
-	   (objc ns-app "setLispApplicationDispatch:" :pointer (cffi:callback delegate-callback))
+	   (objc ns-app "setLispDelegateCallback:" :pointer (cffi:callback delegate-callback))
 	   (let* ((activity-options (logior +NSActivityIdleDisplaySleepDisabled+
 					    +NSActivityIdleSystemSleepDisabled+
 					    +NSActivitySuddenTerminationDisabled+
@@ -113,7 +113,7 @@
 		  (ns-app (objc "LispApplication" "sharedApplication" :pointer)))
 	     (enable-foreground)
 	     #+ccl (change-class ccl::*initial-process* 'appkit-process)
-	     (objc ns-app "setLispApplicationDispatch:" :pointer (cffi:callback delegate-callback))
+	     (objc ns-app "setLispDelegateCallback:" :pointer (cffi:callback delegate-callback))
 	     (let* ((activity-options (logior +NSActivityIdleDisplaySleepDisabled+
 					      +NSActivityIdleSystemSleepDisabled+
 					      +NSActivitySuddenTerminationDisabled+
