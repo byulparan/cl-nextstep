@@ -100,12 +100,12 @@
 
 ;; =======================================================
 ;; color
-(defun make-color (&key (red 0.0) (green 0.0) (blue 0.0) (alpha 1.0))
+(defun make-color (&key (r 0.0) (g 0.0) (b 0.0) (a 1.0))
   (ns:objc "NSColor" "colorWithCalibratedRed:green:blue:alpha:"
-	   :double (float red 1.0d0)
-	   :double (float green 1.0d0)
-	   :double (float blue 1.0d0)
-	   :double (float alpha 1.0d0)
+	   :double (float r 1.0d0)
+	   :double (float g 1.0d0)
+	   :double (float b 1.0d0)
+	   :double (float a 1.0d0)
 	   :pointer))
 
 
