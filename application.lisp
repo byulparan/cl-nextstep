@@ -17,6 +17,8 @@
 
 
 (defvar *dispatch-id-map* (make-id-map))
+(defvar *widget-id-map* (make-hash-table))
+
 (defvar *startup-hooks* nil)
 
 (cffi:defcallback delegate-callback :void ((id :int))
@@ -35,6 +37,15 @@
 		     #+lispworks (lispworks:execute-actions ("Confirm when quitting image"))
 		     #+ecl si:*exit-hooks*)
 	 (funcall hook)))))
+
+
+(cffi:defcallback widget-callback :void ((id :pointer))
+  (let* ((task (gethash (cffi:pointer-address id) *widget-id-map*)))
+    (when task
+      (handler-case (funcall task id)
+	(error (c)
+	  (break (format nil "catch signal while handle Widget Callback: \"~a\"" c)))))))
+
 
 (cffi:defcallback dispatch-callback :void ((id :pointer))
   (let* ((id (cffi:pointer-address id)))
@@ -91,6 +102,7 @@
 	   (enable-foreground)
 	   ;;(objc ns-app "setActivationPolicy:" :unsigned-int +nsapplicationactivationpolicyregular+)
 	   (objc ns-app "setLispDelegateCallback:" :pointer (cffi:callback delegate-callback))
+	   (objc ns-app "setLispWidgetCallback:" :pointer (cffi:callback widget-callback))
 	   (let* ((activity-options (logior +NSActivityIdleDisplaySleepDisabled+
 					    +NSActivityIdleSystemSleepDisabled+
 					    +NSActivitySuddenTerminationDisabled+
@@ -114,6 +126,7 @@
 	     (enable-foreground)
 	     #+ccl (change-class ccl::*initial-process* 'appkit-process)
 	     (objc ns-app "setLispDelegateCallback:" :pointer (cffi:callback delegate-callback))
+	     (objc ns-app "setLispWidgetCallback:" :pointer (cffi:callback widget-callback))
 	     (let* ((activity-options (logior +NSActivityIdleDisplaySleepDisabled+
 					      +NSActivityIdleSystemSleepDisabled+
 					      +NSActivitySuddenTerminationDisabled+

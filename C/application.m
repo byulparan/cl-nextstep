@@ -2,6 +2,7 @@
 
 @interface LispApplication : NSApplication<NSApplicationDelegate> {
   void(*mLispDelegateCallback)(int);
+  void(*mLispWidgetCallback)(id);
 }
 @end
 
@@ -9,6 +10,10 @@
 
 -(void) setLispDelegateCallback: (void(*)(int)) delegateCallback {
   mLispDelegateCallback = delegateCallback;
+}
+
+-(void) setLispWidgetCallback: (void(*)(id)) widgetCallback {
+  mLispWidgetCallback = widgetCallback;
 }
 
 -(void) terminate: (id) sender {
@@ -21,8 +26,12 @@
   mLispDelegateCallback(0);
 }
 
-- (void)applicationWillTerminate:(NSNotification *)notification {
+-(void)applicationWillTerminate:(NSNotification *)notification {
   mLispDelegateCallback(2);
+}
+
+-(IBAction) lispWidgetHandle:(id)sender {
+  mLispWidgetCallback(sender);
 }
 
 @end
