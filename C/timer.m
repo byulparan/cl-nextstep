@@ -17,11 +17,16 @@ typedef void(*TimerFn)(int);
   self = [super init];
   mID = inID;
   mTimerFn = timerFn;
-  mTimer = [NSTimer scheduledTimerWithTimeInterval: interval
-					    target: self
-					  selector: @selector(timerHandle:)
-					  userInfo: nil
-					   repeats: YES];
+  
+  mTimer = [NSTimer timerWithTimeInterval: interval
+				   target: self
+				 selector: @selector(timerHandle:)
+				 userInfo: nil
+				  repeats: YES];
+  [[NSRunLoop mainRunLoop] addTimer: mTimer
+			    forMode: NSRunLoopCommonModes];
+
+  
   return self;
 }
 
