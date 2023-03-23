@@ -1,6 +1,13 @@
 (defpackage :core-video
   (:use :cl :alexandria)
-  (:export #:make-buffer
+  (:export #:+pixel-format-type-24-rgb+
+	   #:+pixel-format-type-24-bgr+
+	   #:+pixel-format-type-32-argb+
+	   #:+pixel-format-type-32-rgba+
+	   #:+pixel-format-type-32-bgra+
+	   #:+pixel-format-type-32-abgr+
+	   
+	   #:make-buffer
 	   #:make-buffer-with-bytes
 	   #:make-buffer-with-io-surface
 	   #:buffer-base-address
@@ -8,7 +15,7 @@
 	   #:buffer-height
 	   #:buffer-width
 	   #:buffer-data-size
-	   #:buffer-pixel-format
+	   #:buffer-pixel-format-type
 	   #:buffer-io-surface
 	   #:buffer-lock-base-address
 	   #:buffer-unlock-base-address
@@ -25,6 +32,15 @@
 	   #:release-texture))
 
 (in-package :core-video)
+
+
+;; CVPixelFormatType
+(defconstant +pixel-format-type-24-rgb+ #x00000018)
+(defconstant +pixel-format-type-24-bgr+ 842285639)
+(defconstant +pixel-format-type-32-argb+ #x00000020)
+(defconstant +pixel-format-type-32-rgba+ 1380401729)
+(defconstant +pixel-format-type-32-bgra+ 1111970369)
+(defconstant +pixel-format-type-32-abgr+ 1094862674)
 
 ;; =======================================================
 ;; CVBuffer
@@ -49,26 +65,25 @@
   (pixel-format-attributes :pointer)
   (out-buffer :pointer))
 
-(defun make-buffer (width height &optional (pixel-format "ARGB"))
-  (flet ((encode-type (type)
-	   (assert (= 4 (length type)) nil "~s's size is not 4" type)
-	   (cond ((string= pixel-format "ARGB") 32)
-		 (t (let ((codes (map 'list #'char-code type)))
-		      (+ (ash (nth 0 codes) 24)
-			 (ash (nth 1 codes) 16)
-			 (ash (nth 2 codes)  8)
-			 (nth 3 codes)))))))
-    (cffi:with-foreign-objects ((buffer :pointer))
-      (let* ((result (buffer-create (cffi:null-pointer) width height (encode-type pixel-format)
-				    (cffi:null-pointer) buffer)))
-	(assert (zerop result) nil "can't make CVPixelBuffer. err: ~d" result)
-	(cffi:mem-ref buffer :pointer)))))
+(defun make-buffer (width height &optional (pixel-format-type :argb))
+  (cffi:with-foreign-objects ((buffer :pointer))
+    (let* ((result (buffer-create (cffi:null-pointer) width height (case pixel-format-type
+								     (:rgb +pixel-format-type-24-rgb+)
+								     (:bgr +pixel-format-type-24-bgr+)
+								     (:argb +pixel-format-type-32-argb+)
+								     (:rgba +pixel-format-type-32-rgba+)
+								     (:bgra +pixel-format-type-32-bgra+)
+								     (:abgr +pixel-format-type-32-abgr+)
+								     (t pixel-format-type))
+				  (cffi:null-pointer) buffer)))
+      (assert (zerop result) nil "can't make CVPixelBuffer. err: ~d" result)
+      (cffi:mem-ref buffer :pointer))))
 
 (cffi:defcfun ("CVPixelBufferCreateWithBytes" make-buffer-with-bytes) :int
   (allocator :pointer)
   (width :sizet)
   (height :sizet)
-  (pixel-format-type :pointer)
+  (pixel-format-type :unsigned-int)
   (base-address :pointer)
   (bytes-per-row :sizet)
   (release-callback :pointer)
@@ -98,18 +113,10 @@
 (cffi:defcfun ("CVPixelBufferGetDataSize" buffer-data-size) :sizet
   (buffer :pointer))
 
-(defun buffer-pixel-format (buffer)
-  (flet ((decode-type (type)
-	   (cond ((= type 32) "ARGB")
-		 (t (map 'string #'code-char
-			 (list (ash type -24)
-			       (logand (ash type -16) #xff)
-			       (logand (ash type -8) #xff)
-			       (logand type #xff)))))))
-    (decode-type
-     (cffi:foreign-funcall "CVPixelBufferGetPixelFormatType"
-			   :pointer buffer
-			   :unsigned-int))))
+
+(cffi:defcfun ("CVPixelBufferGetPixelFormatType" buffer-pixel-format-type) :unsigned-int
+  (buffer :pointer))
+
 
 (cffi:defcfun ("CVPixelBufferGetIOSurface" buffer-io-surface) :pointer
   (buffer :pointer))
