@@ -5,8 +5,8 @@
 	   #:draw-image
 	   #:render-to-bitmap
 	   #:load-image
-	   #:image-from-texture
-	   #:image-from-cg-image
+	   #:make-image-from-texture
+	   #:make-image-from-cg-image
 	   #:extent
 	   #:draw-image-to-view
 	   #:make-filter
@@ -18,7 +18,7 @@
 
 ;; ci-context
 (defun make-context (cgl-context pixel-format)
-  (let* ((color-space (cg:color-space-create :color-space-srgb))
+  (let* ((color-space (cg:make-color-space :color-space-srgb))
 	 (ci-context (ns:objc
 		      (ns:objc "CIContext" "contextWithCGLContext:pixelFormat:colorSpace:options:"
 			       :pointer cgl-context
@@ -27,7 +27,7 @@
 			       :pointer (cffi:null-pointer)
 			       :pointer)
 		      "retain" :pointer)))
-    (cg:color-space-release color-space)
+    (cg:release-color-space color-space)
     ci-context))
 
 (defun draw-image (ci-context ci-image in-rect from-rect)
@@ -57,17 +57,17 @@
 	(ns:objc (ns:objc "CIImage" "alloc" :pointer)
 		 "initWithContentsOfURL:" :pointer url :pointer)))))
 
-(defun image-from-texture (texture size)
-  (let* ((color-space (cg:color-space-create :color-space-srgb)))
+(defun make-image-from-texture (texture size)
+  (let* ((color-space (cg:make-color-space :color-space-srgb)))
     (unwind-protect (ns:objc "CIImage" "imageWithTexture:size:flipped:colorSpace:"
 			     :unsigned-int texture
 			     (:struct ns:size) size
 			     :int 0
 			     :pointer color-space
 			     :pointer)
-      (cg:color-space-release color-space))))
+      (cg:release-color-space color-space))))
 
-(defun image-from-cg-image (cg-image)
+(defun make-image-from-cg-image (cg-image)
   (ns:objc "CIImage" "imageWithCGImage:" :pointer cg-image :pointer))
 
 (defun extent (ci-image)

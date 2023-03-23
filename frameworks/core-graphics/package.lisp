@@ -2,9 +2,9 @@
 	    #+lispworks :next-core-graphics
   (:nicknames :cg)
   (:use :cl)
-  (:export #:color-create-generic-rgb
-	   #:color-space-create
-	   #:color-space-release
+  (:export #:make-color-generic-rgb
+	   #:make-color-space
+	   #:release-color-space
 	   
 	   #:save-gstate
 	   #:restore-gstate
@@ -56,19 +56,21 @@
 	   #:show-text-at-point
 	   
 	   #:load-image
+	   #:make-image-from-context
+	   #:make-image-from-screen
 	   #:retain-image
 	   #:release-image
 	   #:image-width
 	   #:image-height
 	   #:image-bits-per-pixel
 	   #:image-bytes-per-row
-	   #:image-bitmap-data
-	   #:image-from-screen
+	   #:image-data
+	   
 
 	   #:make-bitmap-context
-	   #:bitmap-data
-	   #:bitmap-width
-	   #:bitmap-height
+	   #:context-data
+	   #:context-width
+	   #:context-height
 	   #:release-context))
 
 

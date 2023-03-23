@@ -16,6 +16,19 @@
 		 :pointer (cffi:null-pointer)
 		 :pointer)))))
 
+
+(defun make-image-from-screen (rect)
+  (cffi:foreign-funcall "CGWindowListCreateImage"
+			(:struct ns:rect) rect
+			:int 12 	; kCGWindowListOptionIncludingWindow | kCGWindowListOptionOnScreenBelowWindow
+			:int 0		; kCGNullWindowID
+			:int 16		; kCGWindowImageNominalResolution
+			:pointer))
+
+
+(cffi:defcfun ("CGBitmapContextCreateImage" make-image-from-context) :pointer
+  (bitmap-context :pointer))
+
 (cffi:defcfun ("CGImageRetain" retain-image) :pointer
   (cg-image :pointer))
 
@@ -34,9 +47,7 @@
 (cffi:defcfun ("CGImageGetBytesPerRow" image-bytes-per-row) :sizet
   (cg-image :pointer))
 
-
-
-(defun image-bitmap-data (cg-image)
+(defun image-data (cg-image)
   "this function should be call in EventLoop"
   (let* ((ns-bitmap (ns:autorelease (ns:objc (ns:objc "NSBitmapImageRep" "alloc" :pointer)
 					     "initWithCGImage:"
@@ -45,22 +56,14 @@
     (ns:objc ns-bitmap "bitmapData" :pointer)))
 
 
-(defun image-from-screen (rect)
-  (cffi:foreign-funcall "CGWindowListCreateImage"
-			(:struct ns:rect) rect
-			:int 12 	; kCGWindowListOptionIncludingWindow | kCGWindowListOptionOnScreenBelowWindow
-			:int 0		; kCGNullWindowID
-			:int 16		; kCGWindowImageNominalResolution
-			:pointer))
-
 
 ;; CGBitmapContext
-(defun make-bitmap-context (width height)
+(defun make-bitmap-context (width height &key (data (cffi:null-pointer)) (color-space :color-space-srgb))
   (ns:with-event-loop (:waitp t)
-    (let* ((color-space (cg:color-space-create :color-space-srgb)))
+    (let* ((color-space (cg:make-color-space color-space)))
       (prog1
 	  (cffi:foreign-funcall "CGBitmapContextCreate"
-				:pointer (cffi:null-pointer)
+				:pointer data
 				:sizet width
 				:sizet height
 				:sizet 8
@@ -68,15 +71,15 @@
 				:pointer color-space 
 				:unsigned-int 1
 				:pointer)
-	(cg:color-space-release color-space)))))
+	(cg:release-color-space color-space)))))
 
-(cffi:defcfun ("CGBitmapContextGetData" bitmap-data) :pointer
+(cffi:defcfun ("CGBitmapContextGetData" context-data) :pointer
   (context :pointer))
 
-(cffi:defcfun ("CGBitmapContextGetWidth" bitmap-width) :sizet
+(cffi:defcfun ("CGBitmapContextGetWidth" context-width) :sizet
   (context :pointer))
 
-(cffi:defcfun ("CGBitmapContextGetHeight" bitmap-height) :sizet
+(cffi:defcfun ("CGBitmapContextGetHeight" context-height) :sizet
   (context :pointer))
 
 (cffi:defcfun ("CGContextRelease" release-context) :void

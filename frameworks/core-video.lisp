@@ -1,16 +1,15 @@
 (defpackage :core-video
   (:use :cl :alexandria)
   (:export #:make-buffer
-	   #:buffer-create
-	   #:buffer-create-bytes
-	   #:buffer-create-io-surface
+	   #:make-buffer-with-bytes
+	   #:make-buffer-with-io-surface
 	   #:buffer-base-address
 	   #:buffer-bytes-per-row
 	   #:buffer-height
 	   #:buffer-width
 	   #:buffer-data-size
 	   #:buffer-pixel-format
-	   #:buffer-io-sruface
+	   #:buffer-io-surface
 	   #:buffer-lock-base-address
 	   #:buffer-unlock-base-address
 	   #:retain-buffer
@@ -61,11 +60,11 @@
 			 (nth 3 codes)))))))
     (cffi:with-foreign-objects ((buffer :pointer))
       (let* ((result (buffer-create (cffi:null-pointer) width height (encode-type pixel-format)
-				   (cffi:null-pointer) buffer)))
+				    (cffi:null-pointer) buffer)))
 	(assert (zerop result) nil "can't make CVPixelBuffer. err: ~d" result)
 	(cffi:mem-ref buffer :pointer)))))
 
-(cffi:defcfun ("CVPixelBufferCreateWithBytes" buffer-create-bytes) :int
+(cffi:defcfun ("CVPixelBufferCreateWithBytes" make-buffer-with-bytes) :int
   (allocator :pointer)
   (width :sizet)
   (height :sizet)
@@ -77,7 +76,7 @@
   (pixel-buffer-attributes :pointer)
   (out-buffer :pointer))
 
-(cffi:defcfun ("CVPixelBufferCreateWithIOSurface" buffer-create-io-surface) :int
+(cffi:defcfun ("CVPixelBufferCreateWithIOSurface" make-buffer-with-io-surface) :int
   (allocator :pointer)
   (surface :pointer)
   (pixel-buffer-attributes :pointer)
