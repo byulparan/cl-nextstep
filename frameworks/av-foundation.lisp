@@ -105,7 +105,7 @@
 						       (:struct cm-time))))
     (ns:autorelease capture)))
 
-(defun make-capture-video-data-output (capture-delegate)
+(defun make-capture-video-data-output (capture-delegate pixel-format-type)
   (let* ((video-output (ns:autorelease (ns:objc (ns:alloc "AVCaptureVideoDataOutput") "init" :pointer)))
 	 (dictionary (ns:objc "NSMutableDictionary" "dictionaryWithCapacity:" :unsigned-int 2 :pointer)))
     (macrolet ((ns-number (value)
@@ -114,7 +114,14 @@
 		 `(cffi:mem-ref (cffi:foreign-symbol-pointer ,key) :pointer)))
       (ns:objc video-output "setSampleBufferDelegate:queue:"
 	       :pointer capture-delegate :pointer (cffi:foreign-symbol-pointer "_dispatch_main_q"))
-      (ns:objc dictionary "setObject:forKey:" :pointer (ns-number #x00000020) ;; kCVPixelFormatType_32ARGB
+      (ns:objc dictionary "setObject:forKey:" :pointer (ns-number (case pixel-format-type
+								    (:bgr core-video:+pixel-format-type-24-bgr+)
+								    (:rgb core-video:+pixel-format-type-24-rgb+)
+								    (:abgr core-video:+pixel-format-type-32-abgr+)
+								    (:argb core-video:+pixel-format-type-32-argb+)
+								    (:bgra core-video:+pixel-format-type-32-bgra+)
+								    (:rgba core-video:+pixel-format-type-32-rgba+)
+								    (t pixel-format-type)))
 					      :pointer (ns-key "kCVPixelBufferPixelFormatTypeKey"))
       (ns:objc dictionary "setObject:forKey:" :pointer (ns-number 1)
 					      :pointer (ns-key "kCVPixelBufferOpenGLCompatibilityKey"))
@@ -130,21 +137,23 @@
 (defmethod pixel-buffer ((av-media capture))
   (ns:objc (capture-delegate av-media) "getPixelBuffer" :pointer))
 
-(defun make-capture (input input-type)
+(defun make-capture (input input-type pixel-format-type)
   (let* ((session (ns:objc (ns:alloc "AVCaptureSession") "init" :pointer))
 	 (capture-delegate (ns:objc (ns:alloc "CaptureDelegate") "init" :pointer))
-	 (output (make-capture-video-data-output capture-delegate)))
+	 (output (make-capture-video-data-output capture-delegate pixel-format-type)))
     (ns:objc session "addInput:" :pointer input)
     (ns:objc session "addOutput:" :pointer output)
+    
+
     (%make-capture :session session :delegate capture-delegate :input-type input-type)))
 
-(defun make-camera-capture (index)
+(defun make-camera-capture (index &optional (pixel-format-type :argb))
   (ns:with-event-loop (:waitp t)
-    (make-capture (make-capture-camera-input index) :camera)))
+    (make-capture (make-capture-camera-input index) :camera pixel-format-type)))
 
-(defun make-screen-capture (&optional rect min-frame-duration)
+(defun make-screen-capture (&optional rect min-frame-duration (pixel-format-type :argb))
   (ns:with-event-loop (:waitp t)
-    (make-capture (make-capture-screen-input rect min-frame-duration) :screen)))
+    (make-capture (make-capture-screen-input rect min-frame-duration) :screen pixel-format-type)))
 
 (defun crop-rect (screen-capture rect)
   (assert (eql :screen (capture-input-type screen-capture)) nil)
