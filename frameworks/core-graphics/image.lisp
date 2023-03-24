@@ -58,7 +58,7 @@
 
 
 ;; CGBitmapContext
-(defun make-bitmap-context (width height &key (data (cffi:null-pointer)) (color-space :color-space-srgb))
+(defun make-bitmap-context (width height &key (data (cffi:null-pointer)) (color-space :color-space-srgb) (alpha-info :last) (bitmap-info :order-default))
   (ns:with-event-loop (:waitp t)
     (let* ((color-space (cg:make-color-space color-space)))
       (prog1
@@ -69,9 +69,16 @@
 				:sizet 8
 				:sizet (* width 4)
 				:pointer color-space 
-				:unsigned-int 1
+				:unsigned-int (logior (ecase bitmap-info
+							(:order-default 0)
+							(:order-little 8192)
+							(:order-big 16384))
+						      (ecase alpha-info
+							(:last 1)
+							(:first 2)))
 				:pointer)
 	(cg:release-color-space color-space)))))
+      
 
 (cffi:defcfun ("CGBitmapContextGetData" context-data) :pointer
   (context :pointer))
