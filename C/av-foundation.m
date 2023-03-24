@@ -52,7 +52,7 @@ didOutputSampleBuffer: (CMSampleBufferRef) buffer
 // AVFoundation Player 
 
 enum {
-      LOAD_FN = 0,
+      READY_FN = 0,
       END_FN = 1
 };
 
@@ -79,6 +79,7 @@ enum {
 
 -(id) initWithID: (int) inID
 	    path: (NSString*) path
+     requestSize: (NSSize) size
        handlerFn: (void(*)(int,int)) handlerFn {
   self = [super init];
   mID = inID;
@@ -87,10 +88,16 @@ enum {
   self.head = NULL;
   self.player = [[AVPlayer alloc] initWithURL: [NSURL fileURLWithPath: path]];
   self.playerItem = [self.player currentItem];
-  NSDictionary* options = @{
-			    (NSString*) kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32ARGB),
-			    (NSString*) kCVPixelBufferOpenGLCompatibilityKey: @YES
-  };
+  NSMutableDictionary* options = [NSMutableDictionary dictionaryWithCapacity: (NSUInteger)10];
+
+  [options setValue: @(kCVPixelFormatType_32ARGB) forKey: (NSString*)kCVPixelBufferPixelFormatTypeKey];
+  [options setValue: @(YES) forKey: (NSString*)kCVPixelBufferOpenGLCompatibilityKey];
+
+  if(size.width > 0 && size.height > 0) {
+    [options setValue: [NSNumber numberWithDouble: size.width] forKey: (NSString*)kCVPixelBufferWidthKey];
+    [options setValue: [NSNumber numberWithDouble: size.height] forKey: (NSString*)kCVPixelBufferHeightKey];
+  }
+  
   self.output = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes: options];
   [self.playerItem addObserver: self
 		    forKeyPath: @"status"
@@ -112,7 +119,7 @@ enum {
 						 name: AVPlayerItemDidPlayToEndTimeNotification
 					       object: object];
     self.ready = YES;
-    mHandlerFn(mID, LOAD_FN);
+    mHandlerFn(mID, READY_FN);
   }
 }
 

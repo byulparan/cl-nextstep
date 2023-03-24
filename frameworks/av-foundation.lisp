@@ -105,28 +105,34 @@
 						       (:struct cm-time))))
     (ns:autorelease capture)))
 
-(defun make-capture-video-data-output (capture-delegate pixel-format-type)
+(defun make-capture-video-data-output (capture-delegate pixel-format-type request-size)
   (let* ((video-output (ns:autorelease (ns:objc (ns:alloc "AVCaptureVideoDataOutput") "init" :pointer)))
-	 (dictionary (ns:objc "NSMutableDictionary" "dictionaryWithCapacity:" :unsigned-int 2 :pointer)))
-    (macrolet ((ns-number (value)
+	 (dictionary (ns:objc "NSMutableDictionary" "dictionaryWithCapacity:" :unsigned-int 10 :pointer)))
+    (ns:objc video-output "setSampleBufferDelegate:queue:"
+	     :pointer capture-delegate :pointer (cffi:foreign-symbol-pointer "_dispatch_main_q"))
+    (macrolet ((ns-number-int (value)
 		 `(ns:objc "NSNumber" "numberWithInt:" :int ,value :pointer))
+	       (ns-number-double (value)
+		 `(ns:objc "NSNumber" "numberWithDouble:" :double (float ,value 1.0d0) :pointer))
 	       (ns-key (key)
-		 `(cffi:mem-ref (cffi:foreign-symbol-pointer ,key) :pointer)))
-      (ns:objc video-output "setSampleBufferDelegate:queue:"
-	       :pointer capture-delegate :pointer (cffi:foreign-symbol-pointer "_dispatch_main_q"))
-      (ns:objc dictionary "setObject:forKey:" :pointer (ns-number (case pixel-format-type
+		 `(cffi:mem-ref (cffi:foreign-symbol-pointer ,key) :pointer))
+	       (set-option (key value)
+		 `(ns:objc dictionary "setObject:forKey:" :pointer ,value
+							  :pointer (ns-key ,key))))
+      (set-option "kCVPixelBufferPixelFormatTypeKey" (ns-number-int (case pixel-format-type
 								    (:bgr core-video:+pixel-format-type-24-bgr+)
 								    (:rgb core-video:+pixel-format-type-24-rgb+)
 								    (:abgr core-video:+pixel-format-type-32-abgr+)
 								    (:argb core-video:+pixel-format-type-32-argb+)
 								    (:bgra core-video:+pixel-format-type-32-bgra+)
 								    (:rgba core-video:+pixel-format-type-32-rgba+)
-								    (t pixel-format-type)))
-					      :pointer (ns-key "kCVPixelBufferPixelFormatTypeKey"))
-      (ns:objc dictionary "setObject:forKey:" :pointer (ns-number 1)
-					      :pointer (ns-key "kCVPixelBufferOpenGLCompatibilityKey"))
-      (ns:objc video-output "setVideoSettings:" :pointer dictionary)
-      video-output)))
+								    (t pixel-format-type))))
+      (set-option "kCVPixelBufferOpenGLCompatibilityKey" (ns-number-int 1))
+      (when request-size
+	(set-option "kCVPixelBufferWidthKey" (ns-number-double (first request-size)))
+	(set-option "kCVPixelBufferHeightKey" (ns-number-double (second request-size)))))
+    (ns:objc video-output "setVideoSettings:" :pointer dictionary)
+    video-output))
 
 (defstruct (capture (:constructor %make-capture (&key session delegate input-type)))
   session delegate input-type)
@@ -137,23 +143,24 @@
 (defmethod pixel-buffer ((av-media capture))
   (ns:objc (capture-delegate av-media) "getPixelBuffer" :pointer))
 
-(defun make-capture (input input-type pixel-format-type)
+(defun make-capture (input input-type pixel-format-type request-size)
   (let* ((session (ns:objc (ns:alloc "AVCaptureSession") "init" :pointer))
 	 (capture-delegate (ns:objc (ns:alloc "CaptureDelegate") "init" :pointer))
-	 (output (make-capture-video-data-output capture-delegate pixel-format-type)))
+	 (output (make-capture-video-data-output capture-delegate pixel-format-type request-size)))
     (ns:objc session "addInput:" :pointer input)
     (ns:objc session "addOutput:" :pointer output)
     
 
     (%make-capture :session session :delegate capture-delegate :input-type input-type)))
 
-(defun make-camera-capture (index &optional (pixel-format-type :argb))
+(defun make-camera-capture (index &key (pixel-format-type :argb) request-size)
   (ns:with-event-loop (:waitp t)
-    (make-capture (make-capture-camera-input index) :camera pixel-format-type)))
+    (make-capture (make-capture-camera-input index) :camera pixel-format-type request-size)))
 
-(defun make-screen-capture (&optional rect min-frame-duration (pixel-format-type :argb))
+(defun make-screen-capture (&key crop-rect min-frame-duration (pixel-format-type :argb) request-size)
   (ns:with-event-loop (:waitp t)
-    (make-capture (make-capture-screen-input rect min-frame-duration) :screen pixel-format-type)))
+    (make-capture (make-capture-screen-input crop-rect min-frame-duration)
+		  :screen pixel-format-type request-size)))
 
 (defun crop-rect (screen-capture rect)
   (assert (eql :screen (capture-input-type screen-capture)) nil)
@@ -214,8 +221,8 @@
 ;; Player
 (defvar *player-table* (make-hash-table))
 
-(defstruct (player (:constructor %make-player (&key id manager load-fn end-fn)))
-  id manager load-fn end-fn)
+(defstruct (player (:constructor %make-player (&key id manager ready-fn end-fn)))
+  id manager ready-fn end-fn)
 
 (defmethod pixel-buffer ((av-media player))
   (ns:objc (player-manager av-media) "getPixelBuffer" :pointer))
@@ -223,44 +230,46 @@
 (cffi:defcallback player-handler :void ((id :int) (command :int))
   (alexandria:when-let* ((player (gethash id *player-table*))
 			 (handler (case command
-				    (0 (player-load-fn player))
+				    (0 (player-ready-fn player))
 				    (1 (player-end-fn player)))))
     (funcall handler)))
 
 (let* ((id 0))
-  (defun make-player (path &key load-fn end-fn)
+  (defun make-player (path &key ready-fn end-fn request-size)
     (let* ((path (uiop:truenamize path))
 	   (player nil)
-	   (load-object nil)
-	   (load-handle load-fn))
+	   (ready-object nil)
+	   (ready-handle ready-fn))
       (assert (probe-file path) nil "can't find file: ~a" path)
       (unless (or (eql (bt:current-thread) (trivial-main-thread:find-main-thread))
-		  load-handle)
-	(setf load-object
+		  ready-handle)
+	(setf ready-object
 	  #+sbcl (sb-thread:make-semaphore)
 	  #+ccl (ccl:make-semaphore)
 	  #+lispworks (mp:make-semaphore)
 	  #+ecl (mp:make-semaphore)
-	  load-handle (lambda ()
-			#+sbcl(sb-thread:signal-semaphore load-object)
-			#+ccl (ccl:signal-semaphore load-object)
-			#+lispworks (mp:semaphore-release load-object)
-			#+ecl (mp:signal-semaphore load-object))))
+	  ready-handle (lambda ()
+			#+sbcl(sb-thread:signal-semaphore ready-object)
+			#+ccl (ccl:signal-semaphore ready-object)
+			#+lispworks (mp:semaphore-release ready-object)
+			#+ecl (mp:signal-semaphore ready-object))))
       (ns:with-event-loop (:waitp t)
-	(setf player (%make-player :id id :load-fn load-handle :end-fn end-fn))
+	(setf player (%make-player :id id :ready-fn ready-handle :end-fn end-fn))
 	(setf (gethash id *player-table*) player)
 	(setf (player-manager player) (ns:objc (ns:alloc "PlayerManager")
-					       "initWithID:path:handlerFn:"
+					       "initWithID:path:requestSize:handlerFn:"
 					       :int id
 					       :pointer (ns:autorelease (ns:make-ns-string (namestring path)))
+					       (:struct ns:size) (if request-size (ns:make-size (first request-size) (second request-size))
+								   (ns:make-size -1 -1))
 					       :pointer (cffi:callback player-handler)
 					       :pointer))
 	(incf id))
-      (when load-object
-	#+sbcl (sb-thread:wait-on-semaphore load-object))
-      #+ccl (ccl:wait-on-semaphore load-object)
-      #+lispworks (mp:semaphore-acquire load-object)
-      #+ecl (mp:wait-on-semaphore load-object)
+      (when ready-object
+	#+sbcl (sb-thread:wait-on-semaphore ready-object))
+      #+ccl (ccl:wait-on-semaphore ready-object)
+      #+lispworks (mp:semaphore-acquire ready-object)
+      #+ecl (mp:wait-on-semaphore ready-object)
       player)))
 
 (defun release-player (player)
