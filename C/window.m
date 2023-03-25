@@ -37,10 +37,11 @@ static NSMutableArray* gFullscreenWindows = NULL;
 }
 
 
+// for AudioUnit view resize
 -(void) detectChangedViewSize: (NSNotification*) notification {
   [[NSNotificationCenter defaultCenter] removeObserver: self
-					    name: NSViewFrameDidChangeNotification
-					  object: [notification object]];
+						  name: NSViewFrameDidChangeNotification
+						object: [notification object]];
   NSRect frame = [self frame];
   NSRect contentRect = [self frameRectForContentRect: [[notification object] frame]];
   
@@ -50,9 +51,9 @@ static NSMutableArray* gFullscreenWindows = NULL;
   [self setFrame: newRect display: YES];
 
   [[NSNotificationCenter defaultCenter] addObserver: self
-				     selector: @selector(detectChangedViewSize:)
-					 name: NSViewFrameDidChangeNotification
-				       object: [notification object]];
+					   selector: @selector(detectChangedViewSize:)
+					       name: NSViewFrameDidChangeNotification
+					     object: [notification object]];
 }
 
 
