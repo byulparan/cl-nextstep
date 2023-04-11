@@ -2,13 +2,14 @@
   (:nicknames :ci)
   (:use :cl)
   (:export #:make-context
+	   #:make-context-from-cg-context
 	   #:draw-image
 	   #:render-to-bitmap
 	   #:load-image
 	   #:make-image-from-texture
 	   #:make-image-from-cg-image
 	   #:extent
-	   #:draw-image-to-view
+	   #:draw-image-to-current-context
 	   #:make-filter
 	   #:active
 	   #:set-filter-param
@@ -16,21 +17,30 @@
 
 (in-package :core-image)
 
-;; ci-context
+
 (defun make-context (cgl-context pixel-format)
+  "Creating a Context for GPU-Based Rendering with OpenGL. When end of lifetime you should be call `ns:release` explictly."
   (let* ((color-space (cg:make-color-space :color-space-srgb))
-	 (ci-context (ns:objc
-		      (ns:objc "CIContext" "contextWithCGLContext:pixelFormat:colorSpace:options:"
+	 (ci-context (ns:objc "CIContext" "contextWithCGLContext:pixelFormat:colorSpace:options:"
 			       :pointer cgl-context
 			       :pointer pixel-format
 			       :pointer color-space
 			       :pointer (cffi:null-pointer)
-			       :pointer)
-		      "retain" :pointer)))
+			       :pointer)))
     (cg:release-color-space color-space)
-    ci-context))
+    (ns:retain ci-context)))
+
+(defun make-context-from-cg-context (cg-context &key (options (cffi:null-pointer)))
+  "Creating a Context for CPU-Based Rendering. This object will release automatically when end of lifetime."
+  (ns:retain
+   (ns:objc "CIContext" "contextWithCGContext:options:"
+	    :pointer cg-context
+	    :pointer options
+	    :pointer)))
+
 
 (defun draw-image (ci-context ci-image in-rect from-rect)
+  "Renders a region of an image to a rectangle in the context destination."
   (ns:objc ci-context "drawImage:inRect:fromRect:"
 	   :pointer ci-image
 	   (:struct ns:rect) in-rect
@@ -74,9 +84,10 @@
   #+x86-64 (ns:objc-stret ns:rect ci-image "extent")
   #+arm64 (ns:objc ci-image "extent" (:struct ns:rect)))
 
-(defun draw-image-to-view (ci-image rect from-rect operation delta)
+(defun draw-image-to-current-context (ci-image in-rect from-rect operation delta)
+  "Draws all or part of the image in the specified rectangle in the current coordinate system."
   (ns:objc ci-image "drawInRect:fromRect:operation:fraction:"
-	   (:struct ns:rect) rect
+	   (:struct ns:rect) in-rect
 	   (:struct ns:rect) from-rect
 	   :int (case operation
 		  (:clear 0)
