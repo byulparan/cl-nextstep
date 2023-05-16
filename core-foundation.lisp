@@ -44,6 +44,12 @@
 (defun alloc (cls)
   (objc cls "alloc" :pointer))
 
+(defmethod init ((instance #+sbcl sb-sys:system-area-pointer
+			      #+ccl ccl:macptr
+			      #+lispworks flii:pointer
+			      #+ecl si:foreign-data))
+  (objc instance "init" :pointer))
+
 (defun new (cls)
   (objc (alloc cls) "init" :pointer))
 
@@ -67,6 +73,9 @@
 
 (defun cf-autorelease (cf-instance)
   (cffi:foreign-funcall "CFAutorelease" :pointer cf-instance :pointer))
+
+(defun retain-count (instance)
+  (objc instance "retainCount" :unsigned-int))
 
 
 

@@ -9,12 +9,16 @@
    #:objc
    #+x86-64 #:objc-stret
    #:alloc
+   #:init
+   #:new
    #:retain
    #:release
    #:autorelease
    #:cf-retain
    #:cf-release
    #:cf-autorelease
+   #:retain-count
+   
    #:make-ns-string
    #:ns-string-to-lisp
    #:make-cf-string
@@ -56,7 +60,6 @@
    #:height
    #:cgl-context
    #:cgl-pixel-format
-   #:init
    #:draw
    #:mouse-down
    #:mouse-dragged
