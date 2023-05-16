@@ -126,6 +126,16 @@
 (defun device (mtk-view)
   (%device mtk-view))
 
+
+(defun color-pixel-format (mtk-view)
+  (objc mtk-view "colorPixelFormat" :int))
+
+(defun depth-stencil-pixel-format (mtk-view)
+  (objc mtk-view "depthStencilPixelFormat" :int))
+
+(defun set-depth-stencil-pixel-format (mtk-view pixel-format)
+  (objc mtk-view "setDepthStencilPixelFormat:" :int pixel-format))
+
 (defun current-drawable (mtk-view)
   (objc mtk-view "currentDrawable" :pointer))
 
