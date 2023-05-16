@@ -13,8 +13,10 @@ set(SRC_FILES
   window.m
   view.m
   opengl-view.m
-  av-foundation.m)
+  av-foundation.m
+  metal-view.m
+)
 
 set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
 add_library(cl-nextstep SHARED ${SRC_FILES})
-target_link_libraries(cl-nextstep "-framework Cocoa" "-framework QuartzCore" "-framework AVFoundation" "-framework CoreMedia" "-framework OpenGL")
+target_link_libraries(cl-nextstep "-framework Cocoa" "-framework QuartzCore" "-framework AVFoundation" "-framework CoreMedia" "-framework OpenGL -framework Metal -framework MetalKit")

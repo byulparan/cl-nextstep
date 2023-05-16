@@ -39,7 +39,8 @@
 	       (:file "view")
 	       (:file "opengl-view")
 	       (:file "widget")
-	       (:file "wk-webview")))
+	       (:file "wk-webview")
+	       (:file "metal")))
 
 (pushnew :cl-nextstep *features*)
 

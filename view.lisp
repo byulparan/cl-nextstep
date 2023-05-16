@@ -97,3 +97,37 @@
   (let* ((graphic-context (ns:objc "NSGraphicsContext" "currentContext" :pointer)))
     (if (cffi:null-pointer-p graphic-context) graphic-context
       (ns:objc graphic-context "CGContext" :pointer))))
+
+
+
+;; mtk-view
+(defclass mtk-view (base-view)
+  ((%device :accessor %device)))
+
+(defmethod reshape ((self mtk-view))
+  ())
+
+(defmethod initialize-instance :after ((self mtk-view) &key (x 0) (y 0) (w 400) (h 200))
+  (let* ((device (cffi:foreign-funcall "MTLCreateSystemDefaultDevice" :pointer))
+	 (view (objc
+		(objc "LispMTKView" "alloc" :pointer)
+		"initWithFrame:device:id:drawFn:mouseFn:"
+		(:struct rect) (rect x y w h)
+		:pointer device
+		:int (id self)
+		:pointer (cffi:callback draw-callback)
+		:pointer (cffi:callback mouse-callback)
+		:pointer)))
+    (setf (%device self) device)
+    (objc view "setDelegate:" :pointer view)
+    (setf (cocoa-ref self) view)
+    (init self)))
+
+(defun device (mtk-view)
+  (%device mtk-view))
+
+(defun current-drawable (mtk-view)
+  (objc mtk-view "currentDrawable" :pointer))
+
+(defun current-render-pass-descriptor (mtk-view)
+  (objc mtk-view "currentRenderPassDescriptor" :pointer))

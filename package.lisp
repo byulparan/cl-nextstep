@@ -73,6 +73,10 @@
    #:redisplay
    #:view
    #:current-cg-context
+   
+   #:device
+   #:current-drawable
+   #:current-render-pass-descriptor
    ;; opengl-view.lisp
    #:opengl-view
    #:reshape
@@ -83,5 +87,48 @@
    ;;wk-webview.lisp
    #:wk-webview
    #:reload
-   #:url))
+   #:url
+   #:mtk-view))
 
+
+(defpackage #:mtl
+  (:use #:cl)
+  (:export
+   #:make-command-queue
+   #:get-command-buffer
+   #:get-render-command-encoder
+   
+   #:present-drawable
+   #:commit
+   
+   #:set-render-pipeline-state
+   #:set-vertex-buffer
+   #:set-fragment-buffer
+   #:draw-primitives
+   #:end-encoding
+
+   #:make-buffer
+
+   #:make-library
+   #:make-function
+   #:make-render-pipeline-descriptor
+   #:set-vertex-function
+   #:set-vertex-descriptor
+   #:set-fragment-function
+   #:set-color-attachment-pixel-format
+   #:make-vertex-descriptor
+   #:set-vertex-descriptor-attribute
+   #:set-vertex-descriptor-layout
+   #:make-render-pipeline-state
+
+   #:get-texture2d-descriptor
+   #:make-texture
+   #:replace-region
+   
+   #:clear-color
+   #:origin
+   #:size
+   #:region
+   #:make-orign
+   #:make-size
+   #:make-region))
