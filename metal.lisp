@@ -253,6 +253,13 @@
      (export ',name)))
 
 
+;; primitive-type
+(define-constant +primitive-type-point+ 0)
+(define-constant +primitive-type-line+ 1)
+(define-constant +primitive-type-line-strip+ 2)
+(define-constant +primitive-type-triangle+ 3)
+(define-constant +primitive-type-triangle-strip+ 4)
+
 
 ;; ResourceOptions
 (define-constant +resource-cpu-cache-mode-default-cache+ 0)
