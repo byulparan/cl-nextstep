@@ -8,12 +8,12 @@
   (z :unsigned-long))
 
 (defstruct (origin 
-	    (:constructor make-origin (x y z)))
+	    (:constructor origin (x y z)))
   x y z)
 
 (defmethod cffi:translate-from-foreign (p (type %origin))
   (cffi:with-foreign-slots ((x y z) p (:struct origin))
-    (make-origin x y z)))
+    (origin x y z)))
 
 (defmethod cffi:translate-into-foreign-memory (origin (type %origin) p)
   (cffi:with-foreign-slots ((x y z) p (:struct origin))
@@ -28,12 +28,12 @@
   (depth :unsigned-long))
 
 (defstruct (size
-	    (:constructor make-size (width height depth)))
+	    (:constructor size (width height depth)))
   width height depth)
 
 (defmethod cffi:translate-from-foreign (p (type %size))
   (cffi:with-foreign-slots ((width height depth) p (:struct size))
-    (make-size width height depth)))
+    (size width height depth)))
 
 (defmethod cffi:translate-into-foreign-memory (size (type %size) p)
   (cffi:with-foreign-slots ((width height depth) p (:struct size))
@@ -46,17 +46,17 @@
   (size (:struct size)))
 
 (defstruct (region
-	    (:constructor make-region (x y z width height depth)))
+	    (:constructor region (x y z width height depth)))
   x y z width height depth)
 
 (defmethod cffi:translate-from-foreign (p (type %region))
   (cffi:with-foreign-slots ((origin size) p (:struct region))
-    (make-region (origin-x origin)
-		 (origin-y origin)
-		 (origin-z origin)
-		 (size-width size)
-		 (size-height size)
-		 (size-depth size))))
+    (region (origin-x origin)
+	    (origin-y origin)
+	    (origin-z origin)
+	    (size-width size)
+	    (size-height size)
+	    (size-depth size))))
 
 (defmethod cffi:translate-into-foreign-memory (region (type %region) p)
   (let* ((origin (cffi:foreign-slot-pointer p '(:struct region) 'origin))
@@ -327,11 +327,5 @@
 (define-constant +compare-function-greater+ 4)
 (define-constant +compare-function-not-equal+ 5)
 (define-constant +compare-function-greater-equal+ 6)
-
-
-
-
-
-
 
 

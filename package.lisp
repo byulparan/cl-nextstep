@@ -139,7 +139,4 @@
    #:clear-color
    #:origin
    #:size
-   #:region
-   #:make-orign
-   #:make-size
-   #:make-region))
+   #:region))
