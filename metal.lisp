@@ -96,6 +96,9 @@
 (defun set-render-pipeline-state (command-encoder pipeline-state)
   (ns:objc command-encoder "setRenderPipelineState:" :pointer pipeline-state))
 
+(defun set-depth-stencil-state (command-encoder depth-stencil-state)
+  (ns:objc command-encoder "setDepthStencilState:" :pointer depth-stencil-state))
+
 (defun set-vertex-buffer (command-encoder buffer &key (offset 0) index)
   (ns:objc command-encoder "setVertexBuffer:offset:atIndex:" :pointer buffer
 							     :int offset
@@ -154,6 +157,9 @@
 		    "objectAtIndexedSubscript:" :int index :pointer)))
     (ns:objc color-attachment "setPixelFormat:" :int pixel-format)))
 
+(defun set-depth-attachment-pixel-format (render-pipeline-descriptor pixel-format)
+  (ns:objc render-pipeline-descriptor "setDepthAttachmentPixelFormat:" :unsigned-int pixel-format))
+
 
 (defun make-vertex-descriptor ()
   (ns::new "MTLVertexDescriptor"))
@@ -177,6 +183,20 @@
 	   :pointer render-pipeline-descriptor
 	   :pointer (cffi:null-pointer)
 	   :pointer))
+
+
+(defun make-depth-stencil-descriptor ()
+  (ns:new "MTLDepthStencilDescriptor"))
+
+(defun set-depth-compare-function (depth-stencil-descriptor compare)
+  (ns:objc depth-stencil-descriptor "setDepthCompareFunction:" :unsigned-int compare))
+
+(defun set-depth-write-enabled (depth-stencil-descriptor enabled)
+  (ns:objc depth-stencil-descriptor "setDepthWriteEnabled:" :bool enabled))
+
+(defun make-depth-stencil-state (device depth-stencil-descriptor)
+  (ns:objc device "newDepthStencilStateWithDescriptor:" :pointer depth-stencil-descriptor :pointer))
+
 
 
 ;; MTLTexture
@@ -223,4 +243,74 @@
 
 (defun clear-color (mtk-view red green blue alpha)
   (ns:objc mtk-view "setClearColor:" (:struct clear-color) (make-clear-color red green blue alpha)))
+
+
+;; constants
+(defmacro define-constant (name value)
+  `(progn
+     (defconstant ,name ,value)
+     (export ',name)))
+
+
+
+;; Ordinary 8-Bit Pixel Formats
+(define-constant +pixel-format-a8-unorm+ 1)
+(define-constant +pixel-format-r8-unorm+ 10)
+(define-constant +pixel-format-r8-unorm-srgb+ 11)
+(define-constant +pixel-format-r8-snorm+ 12)
+(define-constant +pixel-format-r8-uint+ 13)
+(define-constant +pixel-format-r8-sint+ 14)
+
+;; Ordinary 16-Bit Pixel Formats
+(define-constant +pixel-format-r16-unorm+ 20)
+(define-constant +pixel-format-r16-snorm+ 22)
+(define-constant +pixel-format-r16-uint+ 23)
+(define-constant +pixel-format-r16-sint+ 24)
+(define-constant +pixel-format-r16-float+ 25)
+(define-constant +pixel-format-rg8-unorm+ 30)
+(define-constant +pixel-format-rg8-unorm-srgb+ 31)
+(define-constant +pixel-format-rg8-snorm+ 32)
+(define-constant +pixel-format-rg8-uint+ 33)
+(define-constant +pixel-format-rg8-sint+ 34)
+
+;; Packed 16-Bit Pixel Formats
+(define-constant +pixel-format-b5g6r5-unorm+ 40)
+(define-constant +pixel-format-a1bgr5-unorm+ 41)
+(define-constant +pixel-format-abgr4-unorm+ 42)
+(define-constant +pixel-format-bgr5a1-unorm+ 43)
+
+
+;; Ordinary 32-Bit Pixel Formats
+(define-constant +pixel-format-r32-uint+ 53)
+(define-constant +pixel-format-r32-sint+ 54)
+(define-constant +pixel-format-r32-float+ 55)
+(define-constant +pixel-format-rg16-unorm+ 60)
+(define-constant +pixel-format-rg16-snorm+ 62)
+(define-constant +pixel-format-rg16-uint+ 63)
+(define-constant +pixel-format-rg16-sint+ 64)
+(define-constant +pixel-format-rg16-float+ 65)
+(define-constant +pixel-format-rgba8-unorm+ 70)
+(define-constant +pixel-format-rgba8-unorm-srgb+ 71)
+(define-constant +pixel-format-rgba8-snorm+ 72)
+(define-constant +pixel-format-rgba8-uint+ 73)
+(define-constant +pixel-format-rgba8-sint+ 74)
+(define-constant +pixel-format-bgra8-unorm+ 80)
+(define-constant +pixel-format-bgra8-unorm-srgb+ 81)
+
+
+;; Depth and Stencil Pixel Formats
+(define-constant +pixel-format-depth16-unorm+ 250)
+(define-constant +pixel-format-depth32-float+ 252)
+(define-constant +pixel-format-stencil8+ 253)
+(define-constant +pixel-format-depth24-unorm-stencil8+ 255)
+(define-constant +pixel-format-depth32-float-stencil8+ 260)
+(define-constant +pixel-format-x32-stencil8+ 261)
+(define-constant +pixel-format-x24-stencil8+ 262)
+
+
+
+
+
+
+
 

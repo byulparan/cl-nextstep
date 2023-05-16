@@ -73,8 +73,12 @@
    #:redisplay
    #:view
    #:current-cg-context
-   
+
+   #:mtk-view
    #:device
+   #:color-pixel-format
+   #:depth-stencil-pixel-format
+   #:set-depth-stencil-pixel-format
    #:current-drawable
    #:current-render-pass-descriptor
    ;; opengl-view.lisp
@@ -87,8 +91,7 @@
    ;;wk-webview.lisp
    #:wk-webview
    #:reload
-   #:url
-   #:mtk-view))
+   #:url))
 
 
 (defpackage #:mtl
@@ -102,6 +105,7 @@
    #:commit
    
    #:set-render-pipeline-state
+   #:set-depth-stencil-state
    #:set-vertex-buffer
    #:set-fragment-buffer
    #:draw-primitives
@@ -116,11 +120,18 @@
    #:set-vertex-descriptor
    #:set-fragment-function
    #:set-color-attachment-pixel-format
+   #:set-depth-attachment-pixel-format
    #:make-vertex-descriptor
    #:set-vertex-descriptor-attribute
    #:set-vertex-descriptor-layout
    #:make-render-pipeline-state
 
+   #:make-depth-stencil-descriptor
+   #:set-depth-compare-function
+   #:set-depth-write-enabled
+   #:make-depth-stencil-state
+
+   
    #:get-texture2d-descriptor
    #:make-texture
    #:replace-region
