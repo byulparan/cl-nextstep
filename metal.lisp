@@ -253,6 +253,7 @@
      (export ',name)))
 
 
+
 ;; ResourceOptions
 (define-constant +resource-cpu-cache-mode-default-cache+ 0)
 (define-constant +resource-cpu-cache-mode-write-combined+ 1)
@@ -263,7 +264,6 @@
 
 
 ;; PixelFormat
-
 ;; Ordinary 8-Bit Pixel Formats
 (define-constant +pixel-format-a8-unorm+ 1)
 (define-constant +pixel-format-r8-unorm+ 10)
@@ -317,6 +317,16 @@
 (define-constant +pixel-format-depth32-float-stencil8+ 260)
 (define-constant +pixel-format-x32-stencil8+ 261)
 (define-constant +pixel-format-x24-stencil8+ 262)
+
+
+;; compare-function
+(define-constant +compare-function-never+ 0)
+(define-constant +compare-function-less+ 1)
+(define-constant +compare-function-equal+ 2)
+(define-constant +compare-function-less-equal+ 3)
+(define-constant +compare-function-greater+ 4)
+(define-constant +compare-function-not-equal+ 5)
+(define-constant +compare-function-greater-equal+ 6)
 
 
 
