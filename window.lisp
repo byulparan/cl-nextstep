@@ -22,7 +22,7 @@
 	   ))
       (let* ((in-x (- (ns:rect-width screen) (ns:rect-width rect)))
 	     (in-y (- (ns:rect-height screen) (ns:rect-height rect))))
-	(ns:make-rect (clamp (ns:rect-x rect) 0 in-x)
+	(ns:rect (clamp (ns:rect-x rect) 0 in-x)
 		      (clamp (ns:rect-y rect) 0 in-y)
 		      (ns:rect-width rect)
 		      (ns:rect-height rect)))))
@@ -35,7 +35,7 @@
     (setf cocoa-ref (ns:objc (ns:objc "LispWindow" "alloc" :pointer)
 			     "initWithID:frame:styleMask:closeFn:"
 			     :int id
-			     (:struct rect) (if rect rect (ns:make-rect x y w h))
+			     (:struct rect) (if rect rect (ns:rect x y w h))
 			     :int (if style-mask style-mask
 				    (logior (ash 1 0) ;; Titled
 					    (if closable (ash 1 1) 0)

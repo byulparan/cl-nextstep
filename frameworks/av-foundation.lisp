@@ -260,8 +260,8 @@
 					       "initWithID:path:requestSize:handlerFn:"
 					       :int id
 					       :pointer (ns:autorelease (ns:make-ns-string (namestring path)))
-					       (:struct ns:size) (if request-size (ns:make-size (first request-size) (second request-size))
-								   (ns:make-size -1 -1))
+					       (:struct ns:size) (if request-size (ns:size (first request-size) (second request-size))
+								   (ns:size -1 -1))
 					       :pointer (cffi:callback player-handler)
 					       :pointer))
 	(incf id))

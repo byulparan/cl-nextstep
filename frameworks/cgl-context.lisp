@@ -3,7 +3,7 @@
   (:use :cl)
   (:export #:make-context
 	   #:make-pixel-format
-	   #:make-attributes
+	   #:list-attributes
 	   #:+pfa-double-buffer+
 	   #:+pfa-accelerated+
 	   #:+pfa-color-size+ 
@@ -36,7 +36,7 @@
 
 (defconstant +opengl-profile-version3-2-core+ 12800)
 
-(defun make-attributes (&key (core-profile t))
+(defun list-attributes (&key (core-profile t))
   (append 
    (list
     +pfa-double-buffer+

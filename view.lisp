@@ -78,7 +78,7 @@
   (not (zerop (logand (ns:objc event "modifierFlags" :unsigned-int) (ash 1 19)))))
 
 (defun redisplay (view)
-  (ns:objc view "setNeedsDisplayInRect:" (:struct ns:rect) (ns:make-rect 0 0 (ns:width view) (ns:height view))))
+  (ns:objc view "setNeedsDisplayInRect:" (:struct ns:rect) (ns:rect 0 0 (ns:width view) (ns:height view))))
 
 ;; view
 (defclass view (base-view)
@@ -88,7 +88,7 @@
   (setf (cocoa-ref self) (ns:objc (ns:objc "LispView" "alloc" :pointer)
 				  "initWithID:frame:drawFn:mouseFn:"
 				  :int (id self)
-				  (:struct rect) (make-rect x y w h)
+				  (:struct rect) (rect x y w h)
 				  :pointer (cffi:callback draw-callback)
 				  :pointer (cffi:callback mouse-callback)
 				  :pointer)))

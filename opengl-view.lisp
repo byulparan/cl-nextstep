@@ -16,13 +16,13 @@
 
 
 (defmethod initialize-instance :after ((self opengl-view) &key (x 0) (y 0) (w 400) (h 200))
-  (let* ((pixel-format (cgl:make-pixel-format (cgl:make-attributes
+  (let* ((pixel-format (cgl:make-pixel-format (cgl:list-attributes
 					       :core-profile (core-profile self)))))
     (unwind-protect (let* ((gl-view (ns:objc
 				     (ns:objc "LispOpenGLView" "alloc" :pointer)
 				     "initWithID:frame:pixelFormat:isAnimate:drawFn:mouseFn:"
 				     :int (id self)
-				     (:struct ns:rect) (ns:make-rect x y w h)
+				     (:struct ns:rect) (ns:rect x y w h)
 				     :pointer pixel-format
 				     :unsigned-char (if (animate self) 1 0)
 				     :pointer (cffi:callback draw-callback)

@@ -4,7 +4,7 @@
   ((cocoa-ref :accessor cocoa-ref)))
 
 (defmethod initialize-instance :after ((self text-field) &key (x 0) (y 0) (w 10) (h 10) editable text back-color fore-color)
-  (let* ((ref (objc (alloc "NSTextField") "initWithFrame:" (:struct rect) (make-rect x y w h)
+  (let* ((ref (objc (alloc "NSTextField") "initWithFrame:" (:struct rect) (rect x y w h)
 		    :pointer)))
     (objc ref "setEditable:" :bool editable)
     (when back-color (objc ref "setBackgroundColor:" :pointer back-color))
@@ -18,7 +18,7 @@
 
 
 (defmethod initialize-instance :after ((self slider) &key (x 0) (y 0) (w 10) (h 10) action value color)
-  (let* ((ref (objc (alloc "NSSlider") "initWithFrame:" (:struct rect) (make-rect x y w h)
+  (let* ((ref (objc (alloc "NSSlider") "initWithFrame:" (:struct rect) (rect x y w h)
 		    :pointer)))
     (setf (gethash (cffi:pointer-address ref) *widget-id-map*) action)
     (when value

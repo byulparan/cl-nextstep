@@ -6,8 +6,8 @@
 	   #:draw-image
 	   #:render-to-bitmap
 	   #:load-image
-	   #:make-image-from-texture
-	   #:make-image-from-cg-image
+	   #:image-from-texture
+	   #:image-from-cg-image
 	   #:extent
 	   #:draw-image-to-current-context
 	   #:make-filter
@@ -31,7 +31,7 @@
     (ns:retain ci-context)))
 
 (defun make-context-from-cg-context (cg-context &key (options (cffi:null-pointer)))
-  "Creating a Context for CPU-Based Rendering. This object will release automatically when end of lifetime."
+  "Creating a Context for CPU-Based Rendering. When end of lifetime you should be call `ns:release` explictly."
   (ns:retain
    (ns:objc "CIContext" "contextWithCGContext:options:"
 	    :pointer cg-context
@@ -67,7 +67,7 @@
 	(ns:objc (ns:objc "CIImage" "alloc" :pointer)
 		 "initWithContentsOfURL:" :pointer url :pointer)))))
 
-(defun make-image-from-texture (texture size)
+(defun image-from-texture (texture size)
   (let* ((color-space (cg:make-color-space :color-space-srgb)))
     (unwind-protect (ns:objc "CIImage" "imageWithTexture:size:flipped:colorSpace:"
 			     :unsigned-int texture
@@ -77,7 +77,7 @@
 			     :pointer)
       (cg:release-color-space color-space))))
 
-(defun make-image-from-cg-image (cg-image)
+(defun image-from-cg-image (cg-image)
   (ns:objc "CIImage" "imageWithCGImage:" :pointer cg-image :pointer))
 
 (defun extent (ci-image)

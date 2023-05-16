@@ -8,7 +8,7 @@
 (defmethod initialize-instance :after ((self wk-webview) &key (x 0) (y 0) (w 400) (h 200) (url ""))
   (let* ((config (ns:objc (ns:alloc "WKWebViewConfiguration") "init" :pointer))
 	 (cocoa-ref (ns:objc (ns:alloc "WKWebView") "initWithFrame:configuration:"
-			(:struct ns:rect) (ns:make-rect x y w h)
+			(:struct ns:rect) (ns:rect x y w h)
 			:pointer config
 			:pointer)))
     (setf (cocoa-ref self) cocoa-ref)
