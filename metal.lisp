@@ -119,13 +119,6 @@
 (defun end-encoding (command-encoder)
   (ns:objc command-encoder "endEncoding"))
 
-;; MTLBuffer
-(defun make-buffer (device data length options)
-  (ns:objc device "newBufferWithBytes:length:options:"
-	   :pointer data
-	   :int length
-	   :int options
-	   :pointer))
 
 
 ;; Pipeline
@@ -198,6 +191,14 @@
   (ns:objc device "newDepthStencilStateWithDescriptor:" :pointer depth-stencil-descriptor :pointer))
 
 
+;; MTLBuffer
+(defun make-buffer (device data length &optional (options +resource-cpu-cache-mode-default-cache+))
+  (ns:objc device "newBufferWithBytes:length:options:"
+	   :pointer data
+	   :int length
+	   :int options
+	   :pointer))
+
 
 ;; MTLTexture
 (defun get-texture2d-descriptor (pixel-format width height mipmap)
@@ -252,6 +253,16 @@
      (export ',name)))
 
 
+;; ResourceOptions
+(define-constant +resource-cpu-cache-mode-default-cache+ 0)
+(define-constant +resource-cpu-cache-mode-write-combined+ 1)
+(define-constant +resource-storage-mode-shared+ 0)
+(define-constant +resource-storage-mode-managed+ 16)
+(define-constant +resource-storage-mode-private+ 32)
+(define-constant +resource-storage-mode-memoryless+ 48)
+
+
+;; PixelFormat
 
 ;; Ordinary 8-Bit Pixel Formats
 (define-constant +pixel-format-a8-unorm+ 1)
