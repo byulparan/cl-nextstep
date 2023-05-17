@@ -246,22 +246,26 @@
   (ns:objc mtk-view "setClearColor:" (:struct clear-color) (make-clear-color red green blue alpha)))
 
 
+
+;; ================================================================================
 ;; constants
+;; ================================================================================
+
 (defmacro define-constant (name value)
   `(progn
      (defconstant ,name ,value)
      (export ',name)))
 
 
-;; primitive-type
+
+;; primitive-type ================================================================================
 (define-constant +primitive-type-point+ 0)
 (define-constant +primitive-type-line+ 1)
 (define-constant +primitive-type-line-strip+ 2)
 (define-constant +primitive-type-triangle+ 3)
 (define-constant +primitive-type-triangle-strip+ 4)
 
-
-;; ResourceOptions
+;; ResourceOptions ================================================================================
 (define-constant +resource-cpu-cache-mode-default-cache+ 0)
 (define-constant +resource-cpu-cache-mode-write-combined+ 1)
 (define-constant +resource-storage-mode-shared+ 0)
@@ -269,8 +273,76 @@
 (define-constant +resource-storage-mode-private+ 32)
 (define-constant +resource-storage-mode-memoryless+ 48)
 
+;; vertex-format ================================================================================
+(define-constant +vertex-format-invalid+ 0)
 
-;; PixelFormat
+(define-constant +vertex-format-uchar+ 45)
+(define-constant +vertex-format-uchar2+ 1)
+(define-constant +vertex-format-uchar3+ 2)
+(define-constant +vertex-format-uchar4+ 3)
+
+(define-constant +vertex-format-char+ 46)
+(define-constant +vertex-format-char2+ 4)
+(define-constant +vertex-format-char3+ 5)
+(define-constant +vertex-format-char4+ 6)
+
+(define-constant +vertex-format-ushort+ 49)
+(define-constant +vertex-format-ushort2+ 13)
+(define-constant +vertex-format-ushort3+ 14)
+(define-constant +vertex-format-ushort4+ 15)
+
+(define-constant +vertex-format-short+ 50)
+(define-constant +vertex-format-short2+ 16)
+(define-constant +vertex-format-short3+ 17)
+(define-constant +vertex-format-short4+ 18)
+
+(define-constant +vertex-format-short+ 50)
+(define-constant +vertex-format-short2+ 16)
+(define-constant +vertex-format-short3+ 17)
+(define-constant +vertex-format-short4+ 18)
+
+(define-constant +vertex-format-half+ 53)
+(define-constant +vertex-format-half2+ 25)
+(define-constant +vertex-format-half3+ 26)
+(define-constant +vertex-format-half4+ 27)
+
+(define-constant +vertex-format-float+ 28)
+(define-constant +vertex-format-float2+ 29)
+(define-constant +vertex-format-float3+ 30)
+(define-constant +vertex-format-float4+ 31)
+
+(define-constant +vertex-format-uint+ 36)
+(define-constant +vertex-format-uint2+ 37)
+(define-constant +vertex-format-uint3+ 38)
+(define-constant +vertex-format-uint4+ 39)
+
+(define-constant +vertex-format-int+ 32)
+(define-constant +vertex-format-int2+ 33)
+(define-constant +vertex-format-int3+ 34)
+(define-constant +vertex-format-int4+ 35)
+
+
+;; vertex- ================================================================================
+(define-constant +vertex-step-function-constant+ 0)
+(define-constant +vertex-step-function-per-vertex+ 1)
+(define-constant +vertex-step-function-per-instance+ 2)
+(define-constant +vertex-step-function-per-patch+ 3)
+(define-constant +vertex-step-function-per-patch-control-point+ 4)
+
+
+
+
+;; compare-function ================================================================================
+(define-constant +compare-function-never+ 0)
+(define-constant +compare-function-less+ 1)
+(define-constant +compare-function-equal+ 2)
+(define-constant +compare-function-less-equal+ 3)
+(define-constant +compare-function-greater+ 4)
+(define-constant +compare-function-not-equal+ 5)
+(define-constant +compare-function-greater-equal+ 6)
+
+
+;; PixelFormat ================================================================================
 ;; Ordinary 8-Bit Pixel Formats
 (define-constant +pixel-format-a8-unorm+ 1)
 (define-constant +pixel-format-r8-unorm+ 10)
@@ -325,14 +397,5 @@
 (define-constant +pixel-format-x32-stencil8+ 261)
 (define-constant +pixel-format-x24-stencil8+ 262)
 
-
-;; compare-function
-(define-constant +compare-function-never+ 0)
-(define-constant +compare-function-less+ 1)
-(define-constant +compare-function-equal+ 2)
-(define-constant +compare-function-less-equal+ 3)
-(define-constant +compare-function-greater+ 4)
-(define-constant +compare-function-not-equal+ 5)
-(define-constant +compare-function-greater-equal+ 6)
 
 
