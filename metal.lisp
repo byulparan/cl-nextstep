@@ -71,9 +71,6 @@
 	      height (floor (region-height region))
 	      depth (floor (region-depth region)))))))
 
-
-
-
 (cffi:defcstruct (viewport :class %viewport)
   (x :double)
   (y :double)
@@ -140,11 +137,23 @@
 							       :int offset
 							       :int index))
 
-(defun draw-primitives (command-encoder primitive start count &optional (instance-count 1))
+(defun set-fragment-texture (command-encoder texture &key index)
+  (ns:objc command-encoder "setFragmentTexture:atIndex:" :pointer texture :int index))
+
+(defun draw-primitives (command-encoder primitive start count &key (instance-count 1))
   (ns:objc command-encoder "drawPrimitives:vertexStart:vertexCount:instanceCount:"
 	   :int primitive
 	   :int start
 	   :int count
+	   :int instance-count))
+
+(defun draw-indexed-primitives (command-encoder primitive count type buffer &key (offset 0) (instance-count 1))
+  (ns:objc command-encoder "drawIndexedPrimitives:indexCount:indexType:indexBuffer:indexBufferOffset:instanceCount:"
+	   :int primitive
+	   :int count
+	   :int type
+	   :pointer buffer
+	   :int offset
 	   :int instance-count))
 
 (defun end-encoding (command-encoder)
@@ -230,6 +239,9 @@
 	   :int options
 	   :pointer))
 
+(defun buffer-contents (buffer)
+  (ns:objc buffer "contents" :pointer))
+
 
 ;; MTLTexture
 (defun get-texture2d-descriptor (pixel-format width height mipmap)
@@ -288,13 +300,18 @@
      (export ',name)))
 
 
-
 ;; primitive-type ================================================================================
 (define-constant +primitive-type-point+ 0)
 (define-constant +primitive-type-line+ 1)
 (define-constant +primitive-type-line-strip+ 2)
 (define-constant +primitive-type-triangle+ 3)
 (define-constant +primitive-type-triangle-strip+ 4)
+
+
+;; index-type ================================================================================
+(define-constant +index-type-uint16+ 0)
+(define-constant +index-type-uint32+ 1)
+
 
 ;; ResourceOptions ================================================================================
 (define-constant +resource-cpu-cache-mode-default-cache+ 0)

@@ -110,11 +110,14 @@
    #:set-depth-stencil-state
    #:set-vertex-buffer
    #:set-fragment-buffer
+   #:set-fragment-texture
    #:draw-primitives
+   #:draw-indexed-primitives
    #:end-encoding
 
    #:make-buffer
-
+   #:buffer-contents
+   
    #:make-library
    #:make-function
    #:make-render-pipeline-descriptor
