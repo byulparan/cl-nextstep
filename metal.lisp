@@ -41,6 +41,7 @@
 	  height (floor (size-height size))
 	  depth (floor (msize-depth size)))))
 
+
 (cffi:defcstruct (region :class %region)
   (origin (:struct origin))
   (size (:struct size)))
@@ -73,6 +74,33 @@
 
 
 
+(cffi:defcstruct (viewport :class %viewport)
+  (x :double)
+  (y :double)
+  (width :double)
+  (height :double)
+  (near :double)
+  (far :double))
+
+(defstruct (viewport
+	    (:constructor viewport (x y width height near far)))
+  x y width height near far)
+
+(defmethod cffi:translate-from-foreign (p (type %viewport))
+  (cffi:with-foreign-slots ((x y width height near far) p (:struct viewport))
+    (viewport x y width height near far)))
+
+(defmethod cffi:translate-into-foreign-memory (viewport (type %viewport) p)
+  (cffi:with-foreign-slots ((x y width height near far) p (:struct viewport))
+    (setf x (coerce (viewport-x viewport) 'double-float)
+	  y (coerce (viewport-y viewport) 'double-float)
+	  width (coerce (viewport-width viewport) 'double-float)
+	  height (coerce (viewport-height viewport) 'double-float)
+	  near (coerce (viewport-near viewport) 'double-float)
+	  far (coerce (viewport-far viewport) 'double-float))))
+
+
+
 
 ;; CommandQueue
 (defun make-command-queue (device)
@@ -93,6 +121,9 @@
 
 
 ;; CommandEncoder
+(defun set-viewport (command-encoder viewport)
+  (ns:objc command-encoder "setViewport:" (:struct viewport) viewport))
+
 (defun set-render-pipeline-state (command-encoder pipeline-state)
   (ns:objc command-encoder "setRenderPipelineState:" :pointer pipeline-state))
 

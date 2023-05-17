@@ -103,7 +103,8 @@
    
    #:present-drawable
    #:commit
-   
+
+   #:set-viewport
    #:set-render-pipeline-state
    #:set-depth-stencil-state
    #:set-vertex-buffer
@@ -139,4 +140,5 @@
    #:clear-color
    #:origin
    #:size
-   #:region))
+   #:region
+   #:viewport))
