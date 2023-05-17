@@ -79,6 +79,7 @@
    #:color-pixel-format
    #:depth-stencil-pixel-format
    #:set-depth-stencil-pixel-format
+   #:drawable-size
    #:current-drawable
    #:current-render-pass-descriptor
    ;; opengl-view.lisp

@@ -136,6 +136,13 @@
 (defun set-depth-stencil-pixel-format (mtk-view pixel-format)
   (objc mtk-view "setDepthStencilPixelFormat:" :int pixel-format))
 
+(defun drawable-size (mtk-view)
+  (objc mtk-view "drawableSize" (:struct size)))
+
+(defun (setf drawable-size) (size mtk-view)
+  (objc mtk-view "setDrawableSize:" (:struct size) size))
+
+
 (defun current-drawable (mtk-view)
   (objc mtk-view "currentDrawable" :pointer))
 
