@@ -24,7 +24,8 @@
 	  (1 (mouse-dragged view event x y))
 	  (2 (mouse-up view event x y))
 	  (3 (mouse-moved view event x y))
-	  (4 (mouse-wheel view event x y)))
+	  (4 (mouse-wheel view event x y))
+	  (5 (key-down view event (char-code (aref (ns-string-to-lisp (ns:objc event "characters" :pointer)) 0)))))
       (error (c) (break (format nil "catch signal while Handling Mouse: \"~a\"" c))))))
 
 (defclass base-view ()
@@ -49,6 +50,10 @@
 
 (defmethod release ((self base-view))
   ())
+
+
+(defmethod key-down ((self base-view) event key-code)
+  (declare (ignorable event key-code)))
 
 (defmethod mouse-down ((self base-view) event location-x location-y)
   (declare (ignorable event location-x location-y)))

@@ -148,6 +148,16 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 }
 
 
+
+-(BOOL) acceptsFirstResponder {
+  return YES;
+}
+
+-(void) keyDown:(NSEvent*) event {
+  mEventFn(mID, KEY_DOWN, event, 0, 0);
+}
+
+
 -(void) mouseDown:(NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];

@@ -61,6 +61,7 @@
    #:cgl-context
    #:cgl-pixel-format
    #:draw
+   #:key-down
    #:mouse-down
    #:mouse-dragged
    #:mouse-up

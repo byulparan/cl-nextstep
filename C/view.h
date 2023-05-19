@@ -15,6 +15,7 @@ enum {
   DRAGGED,
   UP,
   MOVED,
-  SCROLLWHEEL
+  SCROLLWHEEL,
+  KEY_DOWN
 };
 
