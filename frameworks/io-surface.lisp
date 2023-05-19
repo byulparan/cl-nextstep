@@ -14,7 +14,10 @@
 	   #:use-count
 	   #:width
 	   #:increment-use-count
-	   #:lookup))
+	   #:lookup
+	   #:seed
+	   #:lock
+	   #:unlock))
 
 (in-package :io-surface)
 
@@ -100,8 +103,20 @@
 (cffi:defcfun ("IOSurfaceLookup" lookup) :pointer
   (csid :unsigned-int))
 
+(cffi:defcfun ("IOSurfaceGetSeed" seed) :unsigned-int
+  (buffer :pointer))
 
 
+(defun lock (buffer &optional (options 0))
+  (cffi:with-foreign-object (seed :unsigned-int)
+    (cffi:foreign-funcall "IOSurfaceLock" :pointer buffer
+					  :int options
+					  :pointer seed)
+    (cffi:mem-ref seed :unsigned-int)))
 
-
-
+(defun unlock (buffer &optional (options 0))
+  (cffi:with-foreign-object (seed :unsigned-int)
+    (cffi:foreign-funcall "IOSurfaceUnlock" :pointer buffer
+					  :int options
+					  :pointer seed)
+    (cffi:mem-ref seed :unsigned-int)))
