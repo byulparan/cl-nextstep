@@ -2,12 +2,13 @@
 #import <Cocoa/Cocoa.h>
 
 @interface LispView : NSView {
-  int mID;
   DrawFn mDrawFn;
   EventFn mEventFn;
   NSTrackingArea* trackingArea;
 }
--(int) getID;
+
+@property(readonly, nonatomic) int id;
+
 @end
 
 @implementation LispView
@@ -18,10 +19,10 @@
 	 eventFn: (EventFn) eventFn 
 {
   self = [super initWithFrame: frame];
-  mID = inID;
+  _id = inID;
   mDrawFn = drawFn;
   mEventFn = eventFn;
-  mDrawFn(mID, INIT, NULL, NULL, frame.size.width, frame.size.height);
+  mDrawFn(self.id, INIT, NULL, NULL, frame.size.width, frame.size.height);
   int opts = (NSTrackingActiveAlways | NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved | NSTrackingInVisibleRect);
   trackingArea = [ [NSTrackingArea alloc] initWithRect:[self bounds]
                                         options:opts
@@ -31,17 +32,13 @@
   return self;
 }
 
--(int) getID {
-  return mID;
-}
-
 -(void) drawRect:(NSRect) frame {
-  mDrawFn(mID, DRAW, NULL, NULL, frame.size.width, frame.size.height);
+  mDrawFn(self.id, DRAW, NULL, NULL, frame.size.width, frame.size.height);
 }
 
 -(void) dealloc {
   NSRect frame = [self bounds];
-  mDrawFn(mID, SHUTDOWN, NULL, NULL, frame.size.width, frame.size.height);
+  mDrawFn(self.id, SHUTDOWN, NULL, NULL, frame.size.width, frame.size.height);
   if(trackingArea != nil) {
     [self removeTrackingArea:trackingArea];
     [trackingArea release];
@@ -68,39 +65,39 @@
 }
 
 -(void) keyDown:(NSEvent*) event {
-  mEventFn(mID, KEY_DOWN, event, 0, 0);
+  mEventFn(self.id, KEY_DOWN, event, 0, 0);
 }
 
 
 -(void) mouseDown:(NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];
-  mEventFn(mID, DOWN, event, point.x, point.y);
+  mEventFn(self.id, DOWN, event, point.x, point.y);
 }
 
 -(void) mouseDragged:(NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];
-  mEventFn(mID, DRAGGED, event, point.x, point.y);
+  mEventFn(self.id, DRAGGED, event, point.x, point.y);
 }
 
 -(void) mouseUp:(NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];
-  mEventFn(mID, UP, event, point.x, point.y);
+  mEventFn(self.id, UP, event, point.x, point.y);
 }
 
 -(void) mouseMoved: (NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];
-  mEventFn(mID, MOVED, event, point.x, point.y);
+  mEventFn(self.id, MOVED, event, point.x, point.y);
 }
 
 
 -(void) scrollWheel:(NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];
-  mEventFn(mID, SCROLLWHEEL, event, point.x, point.y);
+  mEventFn(self.id, SCROLLWHEEL, event, point.x, point.y);
 }
 
 @end

@@ -5,11 +5,10 @@
 
 
 @interface LispMTKView<MTKViewDelegate> : MTKView {
-  int mID;
   DrawFn mDrawFn;
   EventFn mEventFn;
 }
-
+@property(readonly, nonatomic) int id;
 @end
 
 @implementation LispMTKView
@@ -21,22 +20,22 @@
 	    eventFn:(EventFn) eventFn {
   self = [super initWithFrame: inFrameRect
 		       device: inDevice];
-  mID = inID;
+  _id = inID;
   mDrawFn = drawFn;
   mEventFn = eventFn;
   return self;
 }
 
 -(void) mtkView:(MTKView *)view drawableSizeWillChange:(CGSize)size {
-  mDrawFn(mID, RESHAPE, NULL, NULL, size.width, size.height);
+  mDrawFn(self.id, RESHAPE, NULL, NULL, size.width, size.height);
 }
 
 -(void) drawInMTKView:(MTKView *)view {
-  mDrawFn(mID, DRAW, NULL, NULL, view.bounds.size.width, view.bounds.size.height);
+  mDrawFn(self.id, DRAW, NULL, NULL, view.bounds.size.width, view.bounds.size.height);
 }
 
 -(void) dealloc {
-  mDrawFn(mID, SHUTDOWN, NULL, NULL, self.bounds.size.width, self.bounds.size.height);
+  mDrawFn(self.id, SHUTDOWN, NULL, NULL, self.bounds.size.width, self.bounds.size.height);
   [super dealloc];
 }
 
