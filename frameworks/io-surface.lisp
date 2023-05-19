@@ -18,7 +18,8 @@
 
 (in-package :io-surface)
 
-(defun make-surface (width height &optional (pixel-format "ARGB"))
+(defun make-surface (width height &key (pixel-format "ARGB") global-p)
+  "Creates a brand new IOSurface object. If you want this object system widely, then global-p argument should be T"
   (flet ((encode-type (type)
 	   (let ((codes (map 'list #'char-code type)))
 	     (+ (ash (nth 0 codes) 24)
@@ -33,35 +34,22 @@
 					     :pointer))
 	   (bytes-per-element 4)
 	   (kCFNumberSInt32Type 3))
-      (cffi:with-foreign-objects ((%bytes-per-row :int) 
-				  (%bytes-per-element :int)
-				  (%width :int)
-				  (%height :int)
-				  (%pixel-format :int)
-				  (%size :int))
-	(setf (cffi:mem-ref %bytes-per-row :int) (* width bytes-per-element)
-	      (cffi:mem-ref %bytes-per-element :int) bytes-per-element
-	      (cffi:mem-ref %width :int) width
-	      (cffi:mem-ref %height :int) height
-	      (cffi:mem-ref %pixel-format :int) (encode-type pixel-format)
-	      (cffi:mem-ref %size :int) (* width height bytes-per-element))
-	(macrolet ((cf-dict-set (key value)
-		     `(cffi:foreign-funcall "CFDictionarySetValue"
-					    :pointer dictionary
-					    :pointer (cffi:mem-ref (cffi:foreign-symbol-pointer ,key) :pointer)
-					    :pointer (ns:cf-autorelease
-						      (cffi:foreign-funcall "CFNumberCreate"
-									    :pointer (cffi:null-pointer)
-									    :long kCFNumberSInt32Type
-									    :pointer ,value
-									    :pointer)))))
-	  (cf-dict-set "kIOSurfaceBytesPerRow" %bytes-per-row)
-	  (cf-dict-set "kIOSurfaceBytesPerElement" %bytes-per-element)
-	  (cf-dict-set "kIOSurfaceWidth" %width)
-	  (cf-dict-set "kIOSurfaceHeight" %height)
-	  (cf-dict-set "kIOSurfacePixelFormat" %pixel-format)
-	  (cf-dict-set "kIOSurfaceAllocSize" %size)
-	  (cffi:foreign-funcall "IOSurfaceCreate" :pointer dictionary :pointer))))))
+      ;; "kIOSurfaceIsGlobal" is deprecated. but steel work.
+      (cffi:foreign-funcall "CFDictionarySetValue" :pointer dictionary
+						   :pointer (cffi:mem-ref (cffi:foreign-symbol-pointer "kIOSurfaceIsGlobal") :pointer)
+						   :pointer (ns:autorelease (ns:objc "NSNumber" "numberWithBool:" :bool global-p :pointer)))
+      (macrolet ((cf-dict-set (key value)
+		   `(cffi:foreign-funcall "CFDictionarySetValue"
+					  :pointer dictionary
+					  :pointer (cffi:mem-ref (cffi:foreign-symbol-pointer ,key) :pointer)
+					  :pointer (ns:autorelease (ns:objc "NSNumber" "numberWithInt:" :int ,value :pointer)))))
+	(cf-dict-set "kIOSurfaceBytesPerRow" (* width bytes-per-element))
+	(cf-dict-set "kIOSurfaceBytesPerElement" bytes-per-element)
+	(cf-dict-set "kIOSurfaceWidth" width)
+	(cf-dict-set "kIOSurfaceHeight" height)
+	(cf-dict-set "kIOSurfacePixelFormat" (encode-type pixel-format))
+	(cf-dict-set "kIOSurfaceAllocSize" (* width height bytes-per-element)))
+      (cffi:foreign-funcall "IOSurfaceCreate" :pointer dictionary :pointer))))
 
 (cffi:defcfun ("IOSurfaceDecrementUseCount" decrement-use-count) :void
   (buffer :pointer))
