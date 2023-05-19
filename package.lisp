@@ -55,6 +55,11 @@
    #:add-subviews
    #:set-always-on-top
    #:in-screen-rect
+   #:window-screen
+   #:main-screen
+   #:list-screens
+   #:screen-display
+   
    ;; view.lisp
    #:width
    #:height

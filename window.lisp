@@ -73,4 +73,25 @@
 				     0 ;; kCGBaseWindowLevelKey
 				     )))
 
+(defun window-screen (window)
+  (objc window "screen" :pointer))
+
+
+;; NSScreen
+(defun main-screen ()
+  (objc "NSScreen" "mainScreen" :pointer))
+
+(defun list-screens ()
+  (let* ((screens (objc "NSScreen" "screens" :pointer)))
+    (loop for i below (objc screens "count" :int)
+	  collect (objc screens "objectAtIndex:" :int i :pointer))))
+
+(defun screen-display (screen)
+  (ns:objc
+   (ns:objc (ns:objc screen "deviceDescription" :pointer)
+	    "objectForKey:" :pointer (ns:autorelease (ns:make-ns-string "NSScreenNumber")) :pointer)
+   "intValue" :unsigned-int))
+
+
+
 
