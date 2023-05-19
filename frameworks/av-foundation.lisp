@@ -110,7 +110,9 @@
 	 (dictionary (ns:objc "NSMutableDictionary" "dictionaryWithCapacity:" :unsigned-int 10 :pointer)))
     (ns:objc video-output "setSampleBufferDelegate:queue:"
 	     :pointer capture-delegate :pointer (cffi:foreign-symbol-pointer "_dispatch_main_q"))
-    (macrolet ((ns-number-int (value)
+    (macrolet ((ns-number-bool (value)
+		 `(ns:objc "NSNumber" "numberWithBool:" :bool ,value :pointer))
+	       (ns-number-int (value)
 		 `(ns:objc "NSNumber" "numberWithInt:" :int ,value :pointer))
 	       (ns-number-double (value)
 		 `(ns:objc "NSNumber" "numberWithDouble:" :double (float ,value 1.0d0) :pointer))
@@ -127,7 +129,7 @@
 								    (:bgra core-video:+pixel-format-type-32-bgra+)
 								    (:rgba core-video:+pixel-format-type-32-rgba+)
 								    (t pixel-format-type))))
-      (set-option "kCVPixelBufferOpenGLCompatibilityKey" (ns-number-int 1))
+      (set-option "kCVPixelBufferOpenGLCompatibilityKey" (ns-number-bool t))
       (when request-size
 	(set-option "kCVPixelBufferWidthKey" (ns-number-double (first request-size)))
 	(set-option "kCVPixelBufferHeightKey" (ns-number-double (second request-size)))))
