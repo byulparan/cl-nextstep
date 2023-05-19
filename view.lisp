@@ -2,7 +2,7 @@
 
 (defvar *view-table* (make-hash-table))
 
-(cffi:defcallback draw-callback :void ((id :int) (draw-flag :int) (cgl-context :pointer) (cgl-pixel-format :pointer) (width :int) (height :int))
+(cffi:defcallback view-draw-callback :void ((id :int) (draw-flag :int) (cgl-context :pointer) (cgl-pixel-format :pointer) (width :int) (height :int))
   (let* ((view (gethash id *view-table*)))
     (setf (cgl-context view) cgl-context
 	  (cgl-pixel-format view) cgl-pixel-format
@@ -16,7 +16,7 @@
     	  (3 (release view)))
       (error (c) (break (format nil "catch signal while Drawing view: \"~a\"" c))))))
 
-(cffi:defcallback mouse-callback :void ((id :int) (mouse-flag :int) (event :pointer) (x :double) (y :double))
+(cffi:defcallback view-event-callback :void ((id :int) (mouse-flag :int) (event :pointer) (x :double) (y :double))
   (let* ((view (gethash id *view-table*)))
     (handler-case
 	(ecase mouse-flag
@@ -86,11 +86,11 @@
 
 (defmethod initialize-instance :after ((self view) &key (x 0) (y 0) (w 400) (h 200))
   (setf (cocoa-ref self) (ns:objc (ns:objc "LispView" "alloc" :pointer)
-				  "initWithID:frame:drawFn:mouseFn:"
+				  "initWithID:frame:drawFn:eventFn:"
 				  :int (id self)
 				  (:struct rect) (rect x y w h)
-				  :pointer (cffi:callback draw-callback)
-				  :pointer (cffi:callback mouse-callback)
+				  :pointer (cffi:callback view-draw-callback)
+				  :pointer (cffi:callback view-event-callback)
 				  :pointer)))
 
 (defun current-cg-context ()
@@ -111,12 +111,12 @@
   (let* ((device (cffi:foreign-funcall "MTLCreateSystemDefaultDevice" :pointer))
 	 (view (objc
 		(objc "LispMTKView" "alloc" :pointer)
-		"initWithFrame:device:id:drawFn:mouseFn:"
+		"initWithFrame:device:id:drawFn:eventFn:"
 		(:struct rect) (rect x y w h)
 		:pointer device
 		:int (id self)
-		:pointer (cffi:callback draw-callback)
-		:pointer (cffi:callback mouse-callback)
+		:pointer (cffi:callback view-draw-callback)
+		:pointer (cffi:callback view-event-callback)
 		:pointer)))
     (setf (%device self) device)
     (objc view "setDelegate:" :pointer view)

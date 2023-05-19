@@ -7,7 +7,7 @@
 @interface LispMTKView<MTKViewDelegate> : MTKView {
   int mID;
   DrawFn mDrawFn;
-  MouseFn mMouseFn;
+  EventFn mEventFn;
 }
 
 @end
@@ -18,12 +18,12 @@
 	     device:(id<MTLDevice>) inDevice
 		 id:(int)inID
 	     drawFn:(DrawFn) drawFn
-	    mouseFn:(MouseFn) mouseFn {
+	    eventFn:(EventFn) eventFn {
   self = [super initWithFrame: inFrameRect
 		       device: inDevice];
   mID = inID;
   mDrawFn = drawFn;
-  mMouseFn = mouseFn;
+  mEventFn = eventFn;
   return self;
 }
 

@@ -2,11 +2,12 @@
 
 (defvar *window-table* (make-hash-table))
 
-(cffi:defcallback window-callback :void ((id :int))
+(cffi:defcallback window-callback :void ((id :int) (event-type :int))
   (when-let* ((window (gethash id *window-table*))
-	      (close-fn (close-fn window)))
-    (handler-case (funcall close-fn)
-      (error (c) (break (format nil "catch signal while Closing Window: ~s " c))))))
+	      (handle-fn (case event-type
+			  (0 (close-fn window)))))
+    (handler-case (funcall handle-fn)
+      (error (c) (break (format nil "catch signal while call Window Event: ~s " c))))))
 
 (defclass window ()
   ((cocoa-ref :reader cocoa-ref)
@@ -33,7 +34,7 @@
     (setf id g-id)
     (incf g-id)
     (setf cocoa-ref (ns:objc (ns:objc "LispWindow" "alloc" :pointer)
-			     "initWithID:frame:styleMask:closeFn:"
+			     "initWithID:frame:styleMask:handleFn:"
 			     :int id
 			     (:struct rect) (if rect rect (ns:rect x y w h))
 			     :int (if style-mask style-mask

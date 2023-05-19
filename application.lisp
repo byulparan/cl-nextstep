@@ -21,7 +21,7 @@
 
 (defvar *startup-hooks* nil)
 
-(cffi:defcallback delegate-callback :void ((id :int))
+(cffi:defcallback app-delegate-callback :void ((id :int))
   (case id
     (0 (dolist (hook *startup-hooks*)
 	 (funcall hook)))
@@ -39,7 +39,7 @@
 	 (funcall hook)))))
 
 
-(cffi:defcallback widget-callback :void ((id :pointer))
+(cffi:defcallback app-widget-callback :void ((id :pointer))
   (let* ((task (gethash (cffi:pointer-address id) *widget-id-map*)))
     (when task
       (handler-case (funcall task id)
@@ -47,7 +47,7 @@
 	  (break (format nil "catch signal while handle Widget Callback: \"~a\"" c)))))))
 
 
-(cffi:defcallback dispatch-callback :void ((id :pointer))
+(cffi:defcallback app-dispatch-callback :void ((id :pointer))
   (let* ((id (cffi:pointer-address id)))
     (let* ((task (id-map-free-object *dispatch-id-map* id)))
       (when task
@@ -61,7 +61,7 @@
   (let* ((id (assign-id-map-id *dispatch-id-map* thunk)))
     (cffi:foreign-funcall "dispatch_async_f" :pointer (cffi:foreign-symbol-pointer "_dispatch_main_q")
 					     :pointer (cffi:make-pointer id)
-					     :pointer (cffi:callback dispatch-callback))))
+					     :pointer (cffi:callback app-dispatch-callback))))
 
 (defmacro with-event-loop ((&key (waitp nil)) &body body)
   (alexandria:with-gensyms (result semaphore id) 
@@ -72,7 +72,7 @@
 						   (setf ,result (progn ,@body))))))
 		     (cffi:foreign-funcall "dispatch_sync_f" :pointer (cffi:foreign-symbol-pointer "_dispatch_main_q")
 					   :pointer (cffi:make-pointer ,id)
-					   :pointer (cffi:callback dispatch-callback))
+					   :pointer (cffi:callback app-dispatch-callback))
 		     ,result))
 	   (t (queue-for-event-loop (lambda () ,@body))))))
 
@@ -101,8 +101,8 @@
 		(ns-app (objc "LispApplication" "sharedApplication" :pointer)))
 	   (enable-foreground)
 	   ;;(objc ns-app "setActivationPolicy:" :unsigned-int +nsapplicationactivationpolicyregular+)
-	   (objc ns-app "setLispDelegateCallback:" :pointer (cffi:callback delegate-callback))
-	   (objc ns-app "setLispWidgetCallback:" :pointer (cffi:callback widget-callback))
+	   (objc ns-app "setLispDelegateCallback:" :pointer (cffi:callback app-delegate-callback))
+	   (objc ns-app "setLispWidgetCallback:" :pointer (cffi:callback app-widget-callback))
 	   (let* ((activity-options (logior +NSActivityIdleDisplaySleepDisabled+
 					    +NSActivityIdleSystemSleepDisabled+
 					    +NSActivitySuddenTerminationDisabled+
@@ -125,8 +125,8 @@
 		  (ns-app (objc "LispApplication" "sharedApplication" :pointer)))
 	     (enable-foreground)
 	     #+ccl (change-class ccl::*initial-process* 'appkit-process)
-	     (objc ns-app "setLispDelegateCallback:" :pointer (cffi:callback delegate-callback))
-	     (objc ns-app "setLispWidgetCallback:" :pointer (cffi:callback widget-callback))
+	     (objc ns-app "setLispDelegateCallback:" :pointer (cffi:callback app-delegate-callback))
+	     (objc ns-app "setLispWidgetCallback:" :pointer (cffi:callback app-widget-callback))
 	     (let* ((activity-options (logior +NSActivityIdleDisplaySleepDisabled+
 					      +NSActivityIdleSystemSleepDisabled+
 					      +NSActivitySuddenTerminationDisabled+

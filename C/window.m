@@ -1,11 +1,16 @@
 #import <Cocoa/Cocoa.h>
 
+enum {
+  WINDOW_CLOSE = 0
+};
+
+
 @interface LispWindow : NSWindow <NSWindowDelegate> {
   int mID;
   NSString* mMemTitle;
   NSRect mMemFrame;
   NSWindowStyleMask mMemStyleMask;
-  void (*mCloseFn) (int);
+  void (*mHandleFn) (int, int);
 }
 @property(assign, nonatomic) bool isFullscreen;
 @end
@@ -17,7 +22,7 @@ static NSMutableArray* gFullscreenWindows = NULL;
 -(id) initWithID: (int) inID
 	   frame: (NSRect) frame
        styleMask: (int) styleMask
-	 closeFn: (void(*)(int)) closeFn {
+	handleFn: (void(*)(int,int)) handleFn {
   self = [super initWithContentRect: frame
 			  styleMask: styleMask
 			    backing: NSBackingStoreBuffered
@@ -26,14 +31,14 @@ static NSMutableArray* gFullscreenWindows = NULL;
     gFullscreenWindows = [[NSMutableArray alloc] init];
   }
   mID = inID;
-  mCloseFn = closeFn;
+  mHandleFn = handleFn;
   self.isFullscreen = NO;
   return self;
 }
 
 -(void)windowWillClose:(NSNotification *)notification {
   if(self.isFullscreen) [self exitFullscreen];
-  mCloseFn(mID);
+  mHandleFn(mID, WINDOW_CLOSE);
 }
 
 

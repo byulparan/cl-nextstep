@@ -19,7 +19,7 @@ static NSMutableDictionary* sDrawingState = NULL;
   pthread_t mDisplayLinkThread;
   bool mIsAnimate;
   DrawFn mDrawFn;
-  MouseFn mMouseFn;
+  EventFn mEventFn;
   NSTrackingArea* mTrackingArea;
 }
 
@@ -33,7 +33,7 @@ static NSMutableDictionary* sDrawingState = NULL;
      pixelFormat: (CGLPixelFormatObj) pixelFormat
        isAnimate: (bool) isAnimate
 	  drawFn: (DrawFn) drawFn
-	 mouseFn: (MouseFn) mouseFn {
+	 eventFn: (EventFn) eventFn {
   self = [super initWithFrame: frame
 		  pixelFormat: [[NSOpenGLPixelFormat alloc] initWithCGLPixelFormatObj: pixelFormat]];
   if (!sDrawingState) {
@@ -43,7 +43,7 @@ static NSMutableDictionary* sDrawingState = NULL;
   mDisplayLinkThread = NULL;
   mIsAnimate = isAnimate;
   mDrawFn = drawFn;
-  mMouseFn = mouseFn;
+  mEventFn = eventFn;
   int opts = (NSTrackingActiveAlways | NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved | NSTrackingInVisibleRect);
   mTrackingArea = [ [NSTrackingArea alloc] initWithRect:[self bounds]
                                         options:opts
@@ -151,32 +151,32 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 -(void) mouseDown:(NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];
-  mMouseFn(mID, DOWN, event, point.x, point.y);
+  mEventFn(mID, DOWN, event, point.x, point.y);
 }
 
 -(void) mouseDragged:(NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];
-  mMouseFn(mID, DRAGGED, event, point.x, point.y);
+  mEventFn(mID, DRAGGED, event, point.x, point.y);
 }
 
 -(void) mouseUp:(NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];
-  mMouseFn(mID, UP, event, point.x, point.y);
+  mEventFn(mID, UP, event, point.x, point.y);
 }
 
 -(void) mouseMoved: (NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];
-  mMouseFn(mID, MOVED, event, point.x, point.y);
+  mEventFn(mID, MOVED, event, point.x, point.y);
 }
 
 
 -(void) scrollWheel:(NSEvent*) event {
   NSPoint point = [self convertPoint: [event locationInWindow]
 			    fromView: nil];
-  mMouseFn(mID, SCROLLWHEEL, event, point.x, point.y);
+  mEventFn(mID, SCROLLWHEEL, event, point.x, point.y);
 }
 
 

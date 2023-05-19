@@ -20,13 +20,13 @@
 					       :core-profile (core-profile self)))))
     (unwind-protect (let* ((gl-view (ns:objc
 				     (ns:objc "LispOpenGLView" "alloc" :pointer)
-				     "initWithID:frame:pixelFormat:isAnimate:drawFn:mouseFn:"
+				     "initWithID:frame:pixelFormat:isAnimate:drawFn:eventFn:"
 				     :int (id self)
 				     (:struct ns:rect) (ns:rect x y w h)
 				     :pointer pixel-format
 				     :unsigned-char (if (animate self) 1 0)
-				     :pointer (cffi:callback draw-callback)
-				     :pointer (cffi:callback mouse-callback)
+				     :pointer (cffi:callback view-draw-callback)
+				     :pointer (cffi:callback view-event-callback)
 				     :pointer)))
 		      (set-gl-best-resolution gl-view (retina self))
 		      (setf (cocoa-ref self) gl-view))
