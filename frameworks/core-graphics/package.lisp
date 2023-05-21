@@ -7,8 +7,10 @@
 	   #:online-display-list
 	   
 	   #:make-color-generic-rgb
+	   
 	   #:make-color-space
 	   #:release-color-space
+	   #:color-space-copy-name
 	   
 	   #:save-gstate
 	   #:restore-gstate

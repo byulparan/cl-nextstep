@@ -11,3 +11,10 @@
 (defun release-color-space (color-space)
   (cffi:foreign-funcall "CGColorSpaceRelease" :pointer color-space))
 
+
+(defun color-space-copy-name (color-space)
+  (let* ((name (cffi:foreign-funcall "CGColorSpaceCopyName" :pointer color-space
+							    :pointer)))
+    (unless (cffi:null-pointer-p name) (ns:cf-string-to-lisp name))))
+
+
