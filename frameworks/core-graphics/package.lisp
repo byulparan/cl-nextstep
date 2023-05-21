@@ -3,8 +3,51 @@
   (:nicknames :cg)
   (:use :cl)
   (:export #:main-display-id
-	   #:active-display-list
 	   #:online-display-list
+	   #:active-display-list
+	   #:displays-with-point
+	   #:displays-with-rect
+	   #:display-create-image
+	   #:display-create-image-for-rect
+	   #:display-copy-color-space
+	   #:display-is-active
+	   #:display-is-always-in-mirror-set
+	   #:display-is-asleep
+	   #:display-is-builtin
+	   #:display-is-in-hw-mirror-set
+	   #:display-is-in-mirror-set
+	   #:display-is-main
+	   #:display-is-online
+	   #:display-is-stereo
+	   #:display-mirrors-display
+	   #:display-model-number
+	   #:display-primary-display
+	   #:display-rotation
+	   #:display-screen-size
+	   #:display-serial-number
+	   #:display-unit-number
+	   #:display-uses-opengl-acceleration
+	   #:display-vendor-number
+	   #:display-bounds
+	   #:display-pixels-high
+	   #:display-pixels-wide
+	   #:display-copy-display-mode
+	   #:display-set-display-mode
+	   #:retain-display-mode
+	   #:release-display-mode
+	   #:display-mode-width
+	   #:display-mode-height
+	   #:display-mode-refresh-rate
+	   #:display-mode-io-flags
+	   #:display-mode-io-display-mode-id
+	   #:display-mode-is-usable-for-desktop-gui
+	   #:display-mode-type-id
+	   #:display-hide-cursor
+	   #:display-show-cursor
+	   #:display-move-cursor-to-point
+	   #:associate-mouse-and-mouse-cursor-position
+	   #:wrap-mouse-cursor-position
+	   #:last-mouse-delta
 	   
 	   #:make-color-generic-rgb
 	   
