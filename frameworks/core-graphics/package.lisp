@@ -114,7 +114,7 @@
 	   #:image-bits-per-pixel
 	   #:image-bytes-per-row
 	   #:image-data
-	   
+	   #:write-to-png-file
 
 	   #:make-bitmap-context
 	   #:context-data

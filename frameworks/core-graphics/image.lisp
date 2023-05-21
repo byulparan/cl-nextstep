@@ -55,6 +55,24 @@
 					     :pointer))))
     (ns:objc ns-bitmap "bitmapData" :pointer)))
 
+(defun write-to-png-file (image path)
+  (ns:with-event-loop nil
+    (let* ((image-destination
+	     (cffi:foreign-funcall "CGImageDestinationCreateWithURL"
+				   :pointer 
+				   (ns:objc "NSURL" "fileURLWithPath:" :pointer (ns:autorelease (ns:make-ns-string (uiop:native-namestring path))) :pointer)
+				   :pointer (cffi:mem-ref (cffi:foreign-symbol-pointer "kUTTypePNG") :pointer)
+				   :sizet 1
+				   :pointer (cffi:null-pointer)
+				   :pointer)))
+      (unwind-protect (progn
+			(cffi:foreign-funcall "CGImageDestinationAddImage" :pointer image-destination
+									   :pointer image
+									   :pointer (cffi:null-pointer))
+			(cffi:foreign-funcall "CGImageDestinationFinalize" :pointer image-destination)))
+      (ns:cf-release image-destination))))
+
+
 
 
 ;; CGBitmapContext
