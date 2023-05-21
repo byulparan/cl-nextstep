@@ -2,7 +2,11 @@
 	    #+lispworks :next-core-graphics
   (:nicknames :cg)
   (:use :cl)
-  (:export #:make-color-generic-rgb
+  (:export #:main-display-id
+	   #:active-display-list
+	   #:online-display-list
+	   
+	   #:make-color-generic-rgb
 	   #:make-color-space
 	   #:release-color-space
 	   
