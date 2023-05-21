@@ -34,3 +34,6 @@
 
 (defun set-gl-best-resolution (opengl-view setup)
   (ns:objc (cocoa-ref opengl-view) "setWantsBestResolutionOpenGLSurface:" :bool setup))
+
+(defun display-link (opengl-view)
+  (objc opengl-view "link" :pointer))

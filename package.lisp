@@ -92,6 +92,7 @@
    #:opengl-view
    #:reshape
    #:set-gl-best-resolution
+   #:display-link
    ;; widget.lisp
    #:text-field
    #:slider
