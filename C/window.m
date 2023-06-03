@@ -73,8 +73,8 @@ static NSMutableArray* gFullscreenWindows = NULL;
   
   [gFullscreenWindows addObject: self];
   if([gFullscreenWindows count] == 1) {
-    [NSMenu setMenuBarVisible: NO];
-    // NSApp.presentationOptions =  NSApplicationPresentationAutoHideMenuBar;
+    // [NSMenu setMenuBarVisible: NO];
+    NSApp.presentationOptions =  NSApplicationPresentationAutoHideMenuBar;
   }
 }
 
@@ -85,8 +85,8 @@ static NSMutableArray* gFullscreenWindows = NULL;
   self.isFullscreen = NO;
   [gFullscreenWindows removeObject: self];
   if([gFullscreenWindows count] == 0) {
-    [NSMenu setMenuBarVisible: YES];
-    // NSApp.presentationOptions =  NSApplicationPresentationDefault;
+    // [NSMenu setMenuBarVisible: YES];
+    NSApp.presentationOptions =  NSApplicationPresentationDefault;
   }
 }
 
