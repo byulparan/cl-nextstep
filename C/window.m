@@ -92,9 +92,13 @@ static NSMutableArray* gFullscreenWindows = NULL;
 
 -(void) toggleFullscreen {
   if(self.isFullscreen) {
+    NSResponder* view =  [self firstResponder];
     [self exitFullscreen];
+    [self makeFirstResponder: view];
   } else {
+    NSResponder* view =  [self firstResponder];
     [self enterFullscreen];
+    [self makeFirstResponder: view];
   }
 }
 
