@@ -18,7 +18,6 @@
    #:cf-release
    #:cf-autorelease
    #:retain-count
-   
    #:make-ns-string
    #:ns-string-to-lisp
    #:make-cf-string
@@ -42,6 +41,8 @@
    #:queue-for-event-loop
    #:with-event-loop
    #:enable-foreground
+   #:set-process-activity
+   #:prevent-appnap
    ;; timer.lisp
    #:timer
    #:invalidate

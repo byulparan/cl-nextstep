@@ -102,15 +102,6 @@
 	     #+ccl (change-class ccl::*initial-process* 'appkit-process)
 	     (objc ns-app "setLispDelegateCallback:" :pointer (cffi:callback app-delegate-callback))
 	     (objc ns-app "setLispWidgetCallback:" :pointer (cffi:callback app-widget-callback))
-	     (let* ((activity-options (logior +NSActivityIdleDisplaySleepDisabled+
-					      +NSActivityIdleSystemSleepDisabled+
-					      +NSActivitySuddenTerminationDisabled+
-					      +NSActivityAutomaticTerminationDisabled+
-					      +NSActivityUserInitiated+
-					      +NSActivityUserInitiatedAllowingIdleSystemSleep+
-					      +NSActivityBackground+
-					      +NSActivityLatencyCritical+)))
-	       (set-process-activity activity-options "NONE REASON"))
 	     (objc ns-app "setDelegate:" :pointer ns-app)
 	     (make-default-menubar ns-app)
 	     (objc ns-app "run")
@@ -135,6 +126,11 @@
     :unsigned-long-long options
     :pointer (autorelease (ns:make-ns-string reason))
     :pointer)))
+
+(defun prevent-appnap ()
+  (set-process-activity
+   (logior +NSActivityUserInitiated+ +NSActivityLatencyCritical+)
+   "NONE REASON"))
 
 (defun make-menu-item (name &key action key)
   (objc (alloc "NSMenuItem")
