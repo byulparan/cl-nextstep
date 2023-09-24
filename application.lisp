@@ -92,31 +92,6 @@
 	(declare (ignore runner))
 	(ns:with-event-loop (:waitp blocking)
 	  (funcall function)))
-      #+lispworks
-      (mp::start-main-process
-       "main-thread" '(:priority 70000000)
-       (lambda ()
-	 (setf running-p t)
-	 (let* ((pool (new "NSAutoreleasePool"))
-		(ns-app (objc "LispApplication" "sharedApplication" :pointer)))
-	   (enable-foreground)
-	   ;;(objc ns-app "setActivationPolicy:" :unsigned-int +nsapplicationactivationpolicyregular+)
-	   (objc ns-app "setLispDelegateCallback:" :pointer (cffi:callback app-delegate-callback))
-	   (objc ns-app "setLispWidgetCallback:" :pointer (cffi:callback app-widget-callback))
-	   (let* ((activity-options (logior +NSActivityIdleDisplaySleepDisabled+
-					    +NSActivityIdleSystemSleepDisabled+
-					    +NSActivitySuddenTerminationDisabled+
-					    +NSActivityAutomaticTerminationDisabled+
-					    +NSActivityUserInitiated+
-					    +NSActivityUserInitiatedAllowingIdleSystemSleep+
-					    +NSActivityBackground+
-					    +NSActivityLatencyCritical+)))
-	     (set-process-activity activity-options "NONE REASON"))
-	   (objc ns-app "setDelegate:" :pointer ns-app)
-	   (make-default-menubar ns-app)
-	   (objc ns-app "run")
-	   (release pool))))
-      #-lispworks
       (trivial-main-thread:swap-main-thread 
        (lambda ()
 	 (setf running-p t)
