@@ -30,8 +30,13 @@
   mLispDelegateCallback(2);
 }
 
+-(BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app {
+  return YES;
+}
+
 -(IBAction) lispWidgetHandle:(id)sender {
   mLispWidgetCallback(sender);
 }
+
 
 @end
