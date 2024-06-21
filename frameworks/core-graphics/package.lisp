@@ -120,6 +120,14 @@
 	   #:context-data
 	   #:context-width
 	   #:context-height
-	   #:release-context))
+	   #:release-context
+
+	   #:make-layer
+	   #:release-layer
+	   #:retain-layer
+	   #:draw-layer-in-rect
+	   #:draw-layer-at-point
+	   #:layer-size
+	   #:layer-context))
 
 
