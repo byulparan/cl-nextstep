@@ -1,9 +1,7 @@
 (defpackage :av-foundation
   (:nicknames :av)
   (:use :cl)
-  (:export #:with-media-data
-	   #:with-texture-cache
-	   #:ready
+  (:export #:ready
 	   #:pixel-buffer
 	   
 	   #:list-camera-device
@@ -37,33 +35,6 @@
 
 (defgeneric pixel-buffer (av-media))
 (defgeneric ready (av-media))
-
-(defmacro with-media-data ((av-media width height data) &body body)
-  (alexandria:with-gensyms (m-head)
-    `(when (ready ,av-media)
-       (let* ((,m-head (pixel-buffer ,av-media)))
-	 (unless (cffi:null-pointer-p ,m-head)
-	   (core-video:buffer-lock-base-address ,m-head 0)
-	   (unwind-protect (let* ((,width (core-video:buffer-width ,m-head))
-				  (,height (core-video:buffer-height ,m-head))
-				  (,data (core-video:buffer-base-address ,m-head)))
-			     ,@body)
-	     (core-video:buffer-unlock-base-address ,m-head 0)))))))
-
-(defmacro with-texture-cache ((av-media texture-cache width height) &body body)
-  (alexandria:with-gensyms (m-head texture-object texture)
-    (alexandria:once-only (texture-cache)
-      `(when (ready ,av-media)
-	 (let* ((,m-head (av:pixel-buffer ,av-media)))
-	   (unless (cffi:null-pointer-p ,m-head)
-	     (let* ((,texture-object (core-video:texture-cache-texture ,texture-cache ,m-head))
-		    (,texture (core-video:texture-name ,texture-object))
-		    (,width (core-video:buffer-width ,m-head))
-		    (,height (core-video:buffer-height ,m-head)))
-	       (gl:bind-texture :texture-rectangle ,texture)
-	       (prog1 (progn ,@body)
-		 (ns:cf-autorelease ,texture-object)
-		 (core-video:texture-cache-flush ,texture-cache 0)))))))))
 
 ;; Capture
 (defun list-camera-device ()
