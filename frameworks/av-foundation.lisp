@@ -214,7 +214,7 @@
 	   (ready-object nil)
 	   (ready-handle ready-fn))
       (assert (probe-file path) nil "can't find file: ~a" path)
-      (unless (or (eql (bt:current-thread) (trivial-main-thread:find-main-thread))
+      (unless (or (eql (bt:current-thread) (trivial-main-thread:main-thread))
 		  ready-handle)
 	(setf ready-object
 	  #+sbcl (sb-thread:make-semaphore)

@@ -65,7 +65,7 @@
 
 (defmacro with-event-loop ((&key (waitp nil)) &body body)
   (alexandria:with-gensyms (result semaphore id) 
-    `(cond ((eql (trivial-main-thread:find-main-thread) (bt:current-thread)) (progn ,@body))
+    `(cond ((eql (trivial-main-thread:main-thread) (bt:current-thread)) (progn ,@body))
 	   (,waitp (let* ((,result nil)
 			  (,id (assign-id-map-id *dispatch-id-map*
 						 (lambda ()
