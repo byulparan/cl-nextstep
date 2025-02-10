@@ -122,8 +122,6 @@
 	 (output (make-capture-video-data-output capture-delegate pixel-format-type request-size)))
     (ns:objc session "addInput:" :pointer input)
     (ns:objc session "addOutput:" :pointer output)
-    
-
     (%make-capture :session session :delegate capture-delegate :input-type input-type)))
 
 (defun make-camera-capture (index &key (pixel-format-type :argb) request-size)
