@@ -10,5 +10,7 @@
     <string>logo.icns</string>
     <key>CFBundleIdentifier</key>
     <string>org.byulparan.gfx</string>
+    <key>NSCameraUseContinuityCameraDeviceType</key>
+    <true/>
   </dict>
 </plist>
