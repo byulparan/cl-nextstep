@@ -1,4 +1,3 @@
-
 (asdf/driver:with-current-directory nil
   (let* ((process-path (concatenate 'string
 				(namestring *default-pathname-defaults*)
@@ -20,6 +19,7 @@
 	       (:file "library")
 	       (:file "core-foundation")
 	       (:file "application")
+	       (:file "ns-string")
 	       (:module "frameworks"
 		:components
 		((:module "core-graphics"

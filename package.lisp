@@ -60,6 +60,11 @@
    #:main-screen
    #:list-screens
    #:screen-display
+
+   ;; string.lisp
+   #:make-attributed-string
+   #:attributed-string-size
+   #:draw-string
    
    ;; view.lisp
    #:width
