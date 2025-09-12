@@ -32,7 +32,8 @@
   return self;
 }
 
--(void) drawRect:(NSRect) frame {
+-(void) drawRect:(NSRect) dirtyRect {
+  NSRect frame = [self bounds];
   mDrawFn(self.id, DRAW, NULL, NULL, frame.size.width, frame.size.height);
 }
 

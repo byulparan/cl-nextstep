@@ -105,7 +105,8 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 -(void) drawRect: (NSRect) rect {
   NSOpenGLContext* context = [self openGLContext];
   [context makeCurrentContext];
-  mDrawFn(self.id, DRAW, mCGLContext, mCGLPixelFormat, rect.size.width, rect.size.height);
+  NSRect frame = [self bounds];
+  mDrawFn(self.id, DRAW, mCGLContext, mCGLPixelFormat, frame.size.width, frame.size.height);
   [context flushBuffer];
 }
 
