@@ -146,6 +146,9 @@ CGContextAddArcToPoint
 CGContextAddPath
 |#
 
+(defun add-path (context path)
+  (cffi:foreign-funcall "CGContextAddPath" :pointer context :pointer path))
+
 
 ;;; Path stroking
 #|
@@ -445,8 +448,24 @@ CGPathCreateWithEllipseInRect
 CGPathCreateCopyByDashingPath
 CGPathCreateCopyByStrokingPath
 CGPathEqualToPath
-
 |#
+
+(defun path-rect (rect &optional (affine-transform (cffi:null-pointer)))
+  "Wrap `CGPathCreateWithRect'. It call with `CFAutorelease' so you should not manage lifecycle it"
+  (ns:cf-autorelease
+   (cffi:foreign-funcall "CGPathCreateWithRect" (:struct ns:rect) rect :pointer affine-transform
+								       :pointer)))
+
+(defun path-rounded-rect (rect corner-width corner-height &optional (affine-transform (cffi:null-pointer)))
+  "Wrap `CGPathCreateWithRoundedRect'. It call with `CFAutorelease' so you should not manage lifecycle it"
+  (ns:cf-autorelease
+   (cffi:foreign-funcall "CGPathCreateWithRoundedRect" (:struct ns:rect) rect
+			 :double (float corner-width 1.0d0)
+			 :double (float corner-height 1.0d0)
+			 :pointer affine-transform
+			 :pointer)))
+
+
 
 ;; (defun path-move-to-point (path transform x y)
 ;;   (when (null transform) (setq transform +null-ptr+))

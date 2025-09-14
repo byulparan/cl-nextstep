@@ -103,6 +103,8 @@
 	   #:select-font
 	   #:show-text
 	   #:show-text-at-point
+	   #:path-rect
+	   #:path-rounded-rect
 	   
 	   #:load-image
 	   #:make-image-from-context
