@@ -19,6 +19,7 @@
 	 eventFn: (EventFn) eventFn 
 {
   self = [super initWithFrame: frame];
+  self.clipsToBounds = YES;
   _id = inID;
   mDrawFn = drawFn;
   mEventFn = eventFn;
@@ -32,8 +33,7 @@
   return self;
 }
 
--(void) drawRect:(NSRect) dirtyRect {
-  NSRect frame = [self bounds];
+-(void) drawRect:(NSRect) frame {
   mDrawFn(self.id, DRAW, NULL, NULL, frame.size.width, frame.size.height);
 }
 
