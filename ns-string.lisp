@@ -11,7 +11,7 @@
 
 
 
-(defun make-attributed-string (string &key (font "Arial") (size 14.0) (r 1.0) (g 1.0) (b 1.0) (a 1.0))
+(defun make-attributed-string (string &key (font "Arial") (size 14.0) (color (ns:color 1.0 1.0 1.0)))
   (let* ((dict (ns:objc "NSMutableDictionary" "dictionaryWithCapacity:"
 			:unsigned-long 3
 			:pointer)))
@@ -21,8 +21,7 @@
 							     :pointer)
 	     :pointer (cffi:mem-ref (cffi:foreign-symbol-pointer "NSFontAttributeName") :pointer))
     (ns:objc dict "setValue:forKey:"
-	     :pointer (ns:objc "NSColor" "colorWithCalibratedRed:green:blue:alpha:"
-			       :double (float r 1.0d0) :double (float g 1.0d0) :double (float b 1.0d0) :double (float a 1.0d0) :pointer)
+	     :pointer color
 	     :pointer (cffi:mem-ref (cffi:foreign-symbol-pointer "NSForegroundColorAttributeName") :pointer))
     (ns:autorelease
      (ns:objc (ns:alloc "NSAttributedString") "initWithString:attributes:"
