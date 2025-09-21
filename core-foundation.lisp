@@ -109,7 +109,7 @@
 
 ;; =======================================================
 ;; color
-(defun color (&key (r 0.0) (g 0.0) (b 0.0) (a 1.0))
+(defun color (&optional (r 0.0) (g 0.0) (b 0.0) (a 1.0))
   (ns:objc "NSColor" "colorWithCalibratedRed:green:blue:alpha:"
 	   :double (float r 1.0d0)
 	   :double (float g 1.0d0)
