@@ -74,6 +74,7 @@
 	   #:add-quad-curve-to-point
 	   #:close-path
 	   #:add-arc
+	   #:add-path
 	   #:draw-path
 	   #:fill-path
 	   #:eo-fill-path
