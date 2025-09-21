@@ -11,7 +11,7 @@
 
 
 
-(defun make-attributed-string (string &key (font "Arial") (size 14.0) (color (ns:color 1.0 1.0 1.0)))
+(defun attributed-string (string &key (font "Arial") (size 14.0) (color (ns:color 1.0 1.0 1.0)))
   (let* ((dict (ns:objc "NSMutableDictionary" "dictionaryWithCapacity:"
 			:unsigned-long 3
 			:pointer)))

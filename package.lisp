@@ -62,7 +62,7 @@
    #:screen-display
 
    ;; string.lisp
-   #:make-attributed-string
+   #:attributed-string
    #:attributed-string-size
    #:draw-string
    
