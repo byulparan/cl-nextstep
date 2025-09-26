@@ -17,17 +17,18 @@
    (timer-fn :initarg :timer-fn :initform (error "timer-fn should be specified") :reader timer-fn)
    (cocoa-ref :accessor cocoa-ref)))
 
-(defmethod initialize-instance :after ((self timer) &key (interval 1.0))
+(defmethod initialize-instance :after ((self timer) &key (interval 1.0) repeats)
   (setf (id self) (g-id self))
   (incf (g-id self))
   (setf (gethash (id self) *timer-table*) self)
   (setf (cocoa-ref self)
     (autorelease
      (objc (objc "LispTimer" "alloc" :pointer)
-	   "initWithID:timerFn:timerInterval:"
+	   "initWithID:timerFn:timerInterval:repeats:"
 	   :int (id self)
 	   :pointer (cffi:callback timer-callback)
 	   :double (float interval 1.0d0)
+	   :bool repeats
 	   :pointer))))
 
 (defun invalidate (timer)

@@ -13,7 +13,8 @@ typedef void(*TimerFn)(int);
 
 -(id) initWithID: (int) inID
 	 timerFn: (TimerFn) timerFn
-   timerInterval: (double) interval {
+   timerInterval: (double) interval
+	 repeats: (bool) repeats {
   self = [super init];
   mID = inID;
   mTimerFn = timerFn;
@@ -22,13 +23,14 @@ typedef void(*TimerFn)(int);
 				   target: self
 				 selector: @selector(timerHandle:)
 				 userInfo: nil
-				  repeats: YES];
+				  repeats: repeats];
   [[NSRunLoop mainRunLoop] addTimer: mTimer
 			    forMode: NSRunLoopCommonModes];
 
   
   return self;
 }
+
 
 -(void) timerHandle: (NSTimer*)timer {
   mTimerFn(mID);
@@ -37,6 +39,8 @@ typedef void(*TimerFn)(int);
 -(void) invalidate {
   [mTimer invalidate];
 }
+
+
 
 @end
 
