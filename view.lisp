@@ -100,7 +100,7 @@
 
 (defun current-cg-context ()
   (let* ((graphic-context (ns:objc "NSGraphicsContext" "currentContext" :pointer)))
-    (if (cffi:null-pointer-p graphic-context) graphic-context
+    (if (cffi:null-pointer-p graphic-context) (error "can't get current NSGraphicContext")
       (ns:objc graphic-context "CGContext" :pointer))))
 
 
