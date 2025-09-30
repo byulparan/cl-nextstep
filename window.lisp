@@ -6,8 +6,10 @@
   (when-let* ((window (gethash id *window-table*))
 	      (handle-fn (case event-type
 			  (0 (close-fn window)))))
-    (handler-case (funcall handle-fn)
-      (error (c) (break (format nil "catch signal while call Window Event: ~s " c))))))
+    (unwind-protect
+	 (handler-case (funcall handle-fn)
+	   (error (c) (break (format nil "catch signal while call Window Event: ~s " c))))
+      (remhash id *window-table*))))
 
 (defclass window ()
   ((cocoa-ref :reader cocoa-ref)
