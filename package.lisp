@@ -37,6 +37,7 @@
    ;; application.lisp
    #:*app*
    #:*startup-hooks*
+   #:*user-action-table*
    #:start-event-loop
    #:quit
    #:queue-for-event-loop
@@ -44,6 +45,7 @@
    #:enable-foreground
    #:set-process-activity
    #:prevent-appnap
+   #:make-menu-item
    ;; timer.lisp
    #:timer
    #:invalidate
