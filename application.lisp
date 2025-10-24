@@ -99,6 +99,7 @@
 	 (float-features:with-float-traps-masked (:invalid :overflow :divide-by-zero)
 	   (let* ((pool (new "NSAutoreleasePool"))
 		  (ns-app (objc "LispApplication" "sharedApplication" :pointer)))
+	     (setf *app* ns-app)
 	     (enable-foreground)
 	     #+ccl (change-class ccl::*initial-process* 'appkit-process)
 	     (objc ns-app "setLispDelegateCallback:" :pointer (cffi:callback app-delegate-callback))

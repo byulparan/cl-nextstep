@@ -35,6 +35,7 @@
    #:rect-width
    #:rect-height
    ;; application.lisp
+   #:*app*
    #:*startup-hooks*
    #:start-event-loop
    #:quit
