@@ -103,7 +103,8 @@
 	     (objc ns-app "setLispDelegateCallback:" :pointer (cffi:callback app-delegate-callback))
 	     (objc ns-app "setLispWidgetCallback:" :pointer (cffi:callback app-widget-callback))
 	     (objc ns-app "setDelegate:" :pointer ns-app)
-	     (make-default-menubar ns-app)
+	     (when default-menubar
+	       (make-default-menubar ns-app))
 	     (objc ns-app "run")
 	     (release pool)))))
       :start-event-loop)))
