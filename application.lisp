@@ -15,9 +15,10 @@
 (defconstant +NSApplicationActivationPolicyAccessory+ 1)
 (defconstant +NSApplicationActivationPolicyProhibited+ 2)
 
+(defvar *app*)
 
 (defvar *dispatch-id-map* (make-id-map))
-(defvar *widget-id-map* (make-hash-table))
+(defvar *user-action-table* (make-hash-table))
 
 (defvar *startup-hooks* nil)
 
@@ -39,8 +40,8 @@
 	 (funcall hook)))))
 
 
-(cffi:defcallback app-widget-callback :void ((id :pointer))
-  (let* ((task (gethash (cffi:pointer-address id) *widget-id-map*)))
+(cffi:defcallback app-user-action-callback :void ((id :pointer))
+  (let* ((task (gethash (cffi:pointer-address id) *user-action-table*)))
     (when task
       (handler-case (funcall task id)
 	(error (c)
@@ -103,7 +104,7 @@
 	     (enable-foreground)
 	     #+ccl (change-class ccl::*initial-process* 'appkit-process)
 	     (objc ns-app "setLispDelegateCallback:" :pointer (cffi:callback app-delegate-callback))
-	     (objc ns-app "setLispWidgetCallback:" :pointer (cffi:callback app-widget-callback))
+	     (objc ns-app "setLispUserActionCallback:" :pointer (cffi:callback app-user-action-callback))
 	     (objc ns-app "setDelegate:" :pointer ns-app)
 	     (when default-menubar
 	       (make-default-menubar ns-app))
