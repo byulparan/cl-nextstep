@@ -22,7 +22,7 @@
 (defvar *startup-hooks* nil)
 
 (cffi:defcallback app-delegate-callback :void ((id :int))
-  (case id
+  (ecase id
     (0 (dolist (hook *startup-hooks*)
 	 (funcall hook)))
     (1 (let* ((windows
