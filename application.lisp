@@ -85,8 +85,9 @@
 	(apply function args)
       (queue-for-event-loop (lambda () (apply function args))))))
 
+
 (let* ((running-p nil))
-  (defun start-event-loop ()
+  (defun start-event-loop (&key default-menubar initial-functions)
     (unless running-p
       (defun trivial-main-thread:call-in-main-thread (function &key blocking (runner trivial-main-thread::*runner*))
 	(declare (ignore runner))
@@ -105,6 +106,8 @@
 	     (objc ns-app "setDelegate:" :pointer ns-app)
 	     (when default-menubar
 	       (make-default-menubar ns-app))
+	     (dolist (fn initial-functions)
+	       (funcall fn))
 	     (objc ns-app "run")
 	     (release pool)))))
       :start-event-loop)))
