@@ -55,6 +55,7 @@
    #:window-close
    #:close-fn
    #:toggle-fullscreen
+   #:titlebar-appears-transparent
    #:content-view
    #:add-subviews
    #:set-always-on-top

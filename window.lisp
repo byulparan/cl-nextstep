@@ -61,6 +61,12 @@
 (defun toggle-fullscreen (window)
   (ns:objc window "toggleFullscreen"))
 
+(defun titlebar-appears-transparent (window)
+  (ns:objc window "titlebarAppearsTransparent" :bool))
+
+(defun (setf titlebar-appears-transparent) (value window)
+  (ns:objc window "setTitlebarAppearsTransparent:" :bool value))
+
 (defun content-view (window)
   (ns:objc window "contentView" :pointer))
 
