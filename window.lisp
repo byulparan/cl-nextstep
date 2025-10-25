@@ -31,7 +31,8 @@
 		      (ns:rect-height rect)))))
 
 (defmethod initialize-instance :after ((self window) &key rect (x 0) (y 0) (w 400) (h 200)
-				       style-mask (closable t) (resizable t) (miniaturizable t))
+						       style-mask (closable t) (resizable t) (miniaturizable t)
+						       full-size-content-view)
   (with-slots (cocoa-ref id g-id title close-fn) self
     (setf id g-id)
     (incf g-id)
@@ -43,7 +44,8 @@
 				    (logior (ash 1 0) ;; Titled
 					    (if closable (ash 1 1) 0)
 					    (if resizable (ash 1 3) 0)
-					    (if miniaturizable (ash 1 2) 0)))
+					    (if miniaturizable (ash 1 2) 0)
+					    (if full-size-content-view (ash 1 15) 0)))
 			     :pointer (cffi:callback window-callback)
 			     :pointer))
     (ns:objc cocoa-ref "setTitle:" :pointer (autorelease (make-ns-string title)))
