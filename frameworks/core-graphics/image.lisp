@@ -56,7 +56,7 @@
     (ns:objc ns-bitmap "bitmapData" :pointer)))
 
 (defun write-to-png-file (image path)
-  (ns:with-event-loop nil
+  (ns:with-event-loop (:waitp t)
     (let* ((image-destination
 	     (cffi:foreign-funcall "CGImageDestinationCreateWithURL"
 				   :pointer 
