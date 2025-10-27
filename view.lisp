@@ -89,11 +89,11 @@
 (defclass view (base-view)
   ())
 
-(defmethod initialize-instance :after ((self view) &key (x 0) (y 0) (w 400) (h 200))
+(defmethod initialize-instance :after ((self view) &key rect (x 0) (y 0) (w 400) (h 200))
   (setf (cocoa-ref self) (ns:objc (ns:objc "LispView" "alloc" :pointer)
 				  "initWithID:frame:drawFn:eventFn:"
 				  :int (id self)
-				  (:struct rect) (rect x y w h)
+				  (:struct rect) (if rect rect (rect x y w h))
 				  :pointer (cffi:callback view-draw-callback)
 				  :pointer (cffi:callback view-event-callback)
 				  :pointer)))
