@@ -149,6 +149,12 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
   return YES;
 }
 
+
+- (BOOL)acceptsFirstMouse:(NSEvent *)event {
+  return YES; // 포커스를 얻을 때 첫 클릭도 유효하게 처리
+}
+
+
 -(void) keyDown:(NSEvent*) event {
   mEventFn(self.id, KEY_DOWN, event, 0, 0);
 }
