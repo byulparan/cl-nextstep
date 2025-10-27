@@ -54,6 +54,7 @@
    #:window-show
    #:window-close
    #:close-fn
+   #:window-style-mask
    #:toggle-fullscreen
    #:titlebar-appears-transparent
    #:content-view
