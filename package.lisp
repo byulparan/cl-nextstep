@@ -45,6 +45,7 @@
    #:enable-foreground
    #:set-process-activity
    #:prevent-appnap
+   #:make-default-menubar
    #:make-menu-item
    ;; timer.lisp
    #:timer

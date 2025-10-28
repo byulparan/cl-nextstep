@@ -88,7 +88,7 @@
 
 
 (let* ((running-p nil))
-  (defun start-event-loop (&key default-menubar initial-functions)
+  (defun start-event-loop (&key (initial-functions (list #'make-default-menubar)))
     (unless running-p
       (defun trivial-main-thread:call-in-main-thread (function &key blocking (runner trivial-main-thread::*runner*))
 	(declare (ignore runner))
@@ -106,8 +106,6 @@
 	     (objc ns-app "setLispDelegateCallback:" :pointer (cffi:callback app-delegate-callback))
 	     (objc ns-app "setLispUserActionCallback:" :pointer (cffi:callback app-user-action-callback))
 	     (objc ns-app "setDelegate:" :pointer ns-app)
-	     (when default-menubar
-	       (make-default-menubar ns-app))
 	     (dolist (fn initial-functions)
 	       (funcall fn))
 	     (objc ns-app "run")
@@ -146,11 +144,11 @@
 	:pointer (autorelease (make-ns-string key))
 	:pointer))
 
-(defun make-default-menubar (ns-app)
+(defun make-default-menubar ()
   (let* ((menubar (autorelease (new "NSMenu")))
 	 (app-menu-item (autorelease (new "NSMenuItem")))
 	 (edit-menu-item (autorelease (new "NSMenuItem"))))
-    (objc ns-app "setMainMenu:" :pointer menubar)
+    (objc *app* "setMainMenu:" :pointer menubar)
     (objc menubar "addItem:" :pointer app-menu-item)
     (objc menubar "addItem:" :pointer edit-menu-item)
     (let* ((app-menu (autorelease (new "NSMenu")))
