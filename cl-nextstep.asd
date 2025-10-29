@@ -6,6 +6,10 @@
     (sb-posix:setenv "CFProcessPath" process-path 1)))
 
 (asdf:defsystem :cl-nextstep
+  :author "Sungmin Park. byulparan@gmail.com"
+  :description "Cocoa binding for Common Lisp"
+  :licence "Public Domain / 0-clause MIT"
+  :version "2025.10.29"
   :depends-on (:alexandria
 	       :cffi
 	       :cffi-libffi
