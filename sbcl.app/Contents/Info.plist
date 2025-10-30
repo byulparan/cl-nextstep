@@ -9,8 +9,6 @@
     <key>CFBundleIconFile</key>
     <string>logo.icns</string>
     <key>CFBundleIdentifier</key>
-    <string>org.byulparan.gfx</string>
-    <key>NSCameraUseContinuityCameraDeviceType</key>
-    <true/>
+    <string></string>
   </dict>
 </plist>
