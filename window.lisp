@@ -31,12 +31,13 @@
 		      (ns:rect-height rect)))))
 
 
-(defun window-style-mask (&key (titled t) (closable t) (resizable t) (miniaturizable t) full-size-content-view)
+(defun window-style-mask (&key (titled t) (closable t) (resizable t) (miniaturizable t) full-size-content-view full-screen)
   (logior (if titled (ash 1 0) 0)
 	  (if closable (ash 1 1) 0)
 	  (if resizable (ash 1 3) 0)
 	  (if miniaturizable (ash 1 2) 0)
-	  (if full-size-content-view (ash 1 15) 0)))
+	  (if full-size-content-view (ash 1 15) 0)
+	  (if full-screen (ash 1 14) 0)))
 
 
 
