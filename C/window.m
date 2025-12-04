@@ -9,6 +9,7 @@ enum {
   int mID;
   NSString* mMemTitle;
   NSRect mMemFrame;
+  bool mMemHasShadow;
   NSWindowStyleMask mMemStyleMask;
   void (*mHandleFn) (int, int);
 }
@@ -71,6 +72,9 @@ static NSMutableArray* gFullscreenWindows = NULL;
 	 display: YES];
   self.isFullscreen = YES;
   
+  mMemHasShadow = self.hasShadow;
+  self.hasShadow = NO;
+  
   [gFullscreenWindows addObject: self];
   if([gFullscreenWindows count] == 1) {
     // [NSMenu setMenuBarVisible: NO];
@@ -83,6 +87,7 @@ static NSMutableArray* gFullscreenWindows = NULL;
   [self setFrame: mMemFrame display: YES];
   self.title = mMemTitle;
   self.isFullscreen = NO;
+  self.hasShadow = mMemHasShadow;
   [gFullscreenWindows removeObject: self];
   if([gFullscreenWindows count] == 0) {
     // [NSMenu setMenuBarVisible: YES];
