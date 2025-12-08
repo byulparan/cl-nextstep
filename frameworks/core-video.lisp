@@ -252,12 +252,12 @@ In macOS 10.4 and later, the display link thread is automatically stopped if the
 (defun texture-cache-texture (texture-cache buffer)
   (cffi:with-foreign-objects ((texture-out :pointer))
     (cffi:foreign-funcall "CVOpenGLTextureCacheCreateTextureFromImage"
-			   :pointer (cffi:null-pointer)
-			   :pointer texture-cache
-			   :pointer buffer
-			   :pointer (cffi:null-pointer)
-			   :pointer texture-out
-			   :int)
+			  :pointer (cffi:null-pointer)
+			  :pointer texture-cache
+			  :pointer buffer
+			  :pointer (cffi:null-pointer)
+			  :pointer texture-out
+			  :int)
     (cffi:mem-ref texture-out :pointer)))
 
 (cffi:defcfun ("CVOpenGLTextureCacheFlush" texture-cache-flush) :void
