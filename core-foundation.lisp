@@ -56,10 +56,7 @@
 (defun retain (instance)
   (objc instance "retain" :pointer))
 
-(defmethod release ((instance #+sbcl sb-sys:system-area-pointer
-			      #+ccl ccl:macptr
-			      #+lispworks flii:pointer
-			      #+ecl si:foreign-data))
+(defmethod release (instance)
   (objc instance "release"))
 
 (defun autorelease (instance)
