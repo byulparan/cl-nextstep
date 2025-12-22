@@ -9,6 +9,6 @@
     <key>CFBundleIconFile</key>
     <string>logo.icns</string>
     <key>CFBundleIdentifier</key>
-    <string></string>
+    <string>org.byulparanSungminPark.sbcl</string>
   </dict>
 </plist>
