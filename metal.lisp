@@ -2,99 +2,53 @@
 
 
 ;; Type
-(cffi:defcstruct (origin :class %origin)
-  (x :unsigned-long)
-  (y :unsigned-long)
-  (z :unsigned-long))
-
 (defstruct (origin 
 	    (:constructor origin (x y z)))
   x y z)
 
-(defmethod cffi:translate-from-foreign (p (type %origin))
-  (cffi:with-foreign-slots ((x y z) p (:struct origin))
-    (origin x y z)))
+(sb-alien:define-alien-type nil
+  (sb-alien:struct origin
+		 (x sb-alien:unsigned-long)
+		 (y sb-alien:unsigned-long)
+		 (z sb-alien:unsigned-long)))
 
-(defmethod cffi:translate-into-foreign-memory (origin (type %origin) p)
-  (cffi:with-foreign-slots ((x y z) p (:struct origin))
-    (setf x (floor (origin-x origin))
-	  y (floor (origin-y origin))
-	  z (floor (origin-z origin)))))
-
-
-(cffi:defcstruct (size :class %size)
-  (width :unsigned-long)
-  (height :unsigned-long)
-  (depth :unsigned-long))
 
 (defstruct (size
 	    (:constructor size (width height depth)))
   width height depth)
 
-(defmethod cffi:translate-from-foreign (p (type %size))
-  (cffi:with-foreign-slots ((width height depth) p (:struct size))
-    (size width height depth)))
+(sb-alien:define-alien-type nil
+    (sb-alien:struct size
+		     (width sb-alien:unsigned-long)
+		     (height sb-alien:unsigned-long)
+		     (depth sb-alien:unsigned-long)))
 
-(defmethod cffi:translate-into-foreign-memory (size (type %size) p)
-  (cffi:with-foreign-slots ((width height depth) p (:struct size))
-    (setf width (floor (size-width size))
-	  height (floor (size-height size))
-	  depth (floor (msize-depth size)))))
-
-
-(cffi:defcstruct (region :class %region)
-  (origin (:struct origin))
-  (size (:struct size)))
 
 (defstruct (region
 	    (:constructor region (x y z width height depth)))
   x y z width height depth)
 
-(defmethod cffi:translate-from-foreign (p (type %region))
-  (cffi:with-foreign-slots ((origin size) p (:struct region))
-    (region (origin-x origin)
-	    (origin-y origin)
-	    (origin-z origin)
-	    (size-width size)
-	    (size-height size)
-	    (size-depth size))))
 
-(defmethod cffi:translate-into-foreign-memory (region (type %region) p)
-  (let* ((origin (cffi:foreign-slot-pointer p '(:struct region) 'origin))
-	 (size (cffi:foreign-slot-pointer p '(:struct region) 'size)))
-    (cffi:with-foreign-slots ((x y z) origin (:struct origin))
-      (cffi:with-foreign-slots ((width height depth) size (:struct size))
-	(setf x (floor (region-x region))
-	      y (floor (region-y region))
-	      z (floor (region-z region))
-	      width (floor (region-width region))
-	      height (floor (region-height region))
-	      depth (floor (region-depth region)))))))
+(sb-alien:define-alien-type nil
+    (sb-alien:struct region
+		     (origin (sb-alien:struct origin))
+		     (size (sb-alien:struct size))))
 
-(cffi:defcstruct (viewport :class %viewport)
-  (x :double)
-  (y :double)
-  (width :double)
-  (height :double)
-  (near :double)
-  (far :double))
+
 
 (defstruct (viewport
 	    (:constructor viewport (x y width height near far)))
   x y width height near far)
 
-(defmethod cffi:translate-from-foreign (p (type %viewport))
-  (cffi:with-foreign-slots ((x y width height near far) p (:struct viewport))
-    (viewport x y width height near far)))
 
-(defmethod cffi:translate-into-foreign-memory (viewport (type %viewport) p)
-  (cffi:with-foreign-slots ((x y width height near far) p (:struct viewport))
-    (setf x (coerce (viewport-x viewport) 'double-float)
-	  y (coerce (viewport-y viewport) 'double-float)
-	  width (coerce (viewport-width viewport) 'double-float)
-	  height (coerce (viewport-height viewport) 'double-float)
-	  near (coerce (viewport-near viewport) 'double-float)
-	  far (coerce (viewport-far viewport) 'double-float))))
+(sb-alien:define-alien-type nil
+    (sb-alien:struct viewport
+		     (x sb-alien:double)
+		     (y sb-alien:double)
+		     (width sb-alien:double)
+		     (height sb-alien:double)
+		     (near sb-alien:double)
+		     (far sb-alien:double)))
 
 
 
@@ -119,7 +73,21 @@
 
 ;; CommandEncoder
 (defun set-viewport (command-encoder viewport)
-  (ns:objc command-encoder "setViewport:" (:struct viewport) viewport))
+  (sb-alien:with-alien ((%viewport (sb-alien:struct viewport)))
+    (setf (sb-alien:slot %viewport 'x) (float (viewport-x viewport) 1.0d0)
+	  (sb-alien:slot %viewport 'y) (float (viewport-y viewport) 1.0d0)
+	  (sb-alien:slot %viewport 'width) (float (viewport-width viewport) 1.0d0)
+	  (sb-alien:slot %viewport 'height) (float (viewport-height viewport) 1.0d0)
+	  (sb-alien:slot %viewport 'near) (float (viewport-near viewport) 1.0d0)
+	  (sb-alien:slot %viewport 'far) (float (viewport-far viewport) 1.0d0))
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+							      sb-alien:system-area-pointer
+							      sb-alien:system-area-pointer
+							      (sb-alien:struct viewport)))
+     (ns::cocoa-ref command-encoder)
+     (ns::sel "setViewport:")
+     %viewport)))
 
 (defun set-render-pipeline-state (command-encoder pipeline-state)
   (ns:objc command-encoder "setRenderPipelineState:" :pointer pipeline-state))
@@ -255,38 +223,57 @@
 (defun make-texture (device descriptor)
   (ns:objc device "newTextureWithDescriptor:" :pointer descriptor :pointer))
 
+
 (defun replace-region (texture region mipmap-level data bpr)
-  (ns:objc texture "replaceRegion:mipmapLevel:withBytes:bytesPerRow:"
-	   (:struct region) region
-	   :int mipmap-level
-	   :pointer data
-	   :int bpr))
+  (sb-alien:with-alien ((%region (sb-alien:struct region))
+			(%origin (sb-alien:struct origin))
+			(%size (sb-alien:struct size)))
+    (setf (sb-alien:slot %origin 'x) (floor (region-x region))
+	  (sb-alien:slot %origin 'y) (floor (region-y region))
+	  (sb-alien:slot %origin 'z) (floor (region-z region)))
+    (setf (sb-alien:slot %size 'width) (floor (region-width region))
+	  (sb-alien:slot %size 'height) (floor (region-height region))
+	  (sb-alien:slot %size 'depth) (floor (region-depth region)))
+    (setf (sb-alien:slot %region 'origin) %origin
+	  (sb-alien:slot %region 'size) %size)
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+							      sb-alien:system-area-pointer
+							      sb-alien:system-area-pointer
+							      (sb-alien:struct region)
+							      sb-alien:int
+							      sb-alien:system-area-pointer
+							      sb-alien:int))
+     (ns::cocoa-ref texture)
+     (ns::sel "replaceRegion:mipmapLevel:withBytes:bytesPerRow:")
+     %region
+     mipmap-level
+     data
+     bpr)))
 
 
 ;;  Function 
-(cffi:defcstruct (clear-color :class %clear-color)
-  (red :double)
-  (green :double)
-  (blue :double)
-  (alpha :double))
-
-(defstruct (clear-color
-	    (:constructor make-clear-color (red green blue alpha)))
-  red green blue alpha)
-
-(defmethod cffi:translate-from-foreign (p (type %clear-color))
-  (cffi:with-foreign-slots ((red green blue alpha) p (:struct clear-color))
-    (make-clear-color red green blue alpha)))
-
-(defmethod cffi:translate-into-foreign-memory (clear-color (type %clear-color) p)
-  (cffi:with-foreign-slots ((red green blue alpha) p (:struct clear-color))
-    (setf red (coerce (clear-color-red clear-color) 'double-float)
-	  green (coerce (clear-color-green clear-color) 'double-float)
-	  blue (coerce (clear-color-blue clear-color) 'double-float)
-	  alpha (coerce (clear-color-alpha clear-color) 'double-float))))
+(sb-alien:define-alien-type nil
+  (sb-alien:struct clear-color
+		   (red sb-alien:double)
+		   (green sb-alien:double)
+		   (blue sb-alien:double)
+		   (alpha sb-alien:double)))
 
 (defun clear-color (mtk-view red green blue alpha)
-  (ns:objc mtk-view "setClearColor:" (:struct clear-color) (make-clear-color red green blue alpha)))
+  (sb-alien:with-alien ((%clear-color (sb-alien:struct clear-color)))
+    (setf (sb-alien:slot %clear-color 'red) (float red 1.0d0)
+	  (sb-alien:slot %clear-color 'green) (float green 1.0d0)
+	  (sb-alien:slot %clear-color 'blue) (float blue 1.0d0)
+	  (sb-alien:slot %clear-color 'alpha) (float alpha 1.0d0))
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+							      sb-alien:system-area-pointer
+							      sb-alien:system-area-pointer
+							      (sb-alien:struct clear-color)))
+     (ns::cocoa-ref mtk-view)
+     (ns::sel "setClearColor:")
+     %clear-color)))
 
 
 
