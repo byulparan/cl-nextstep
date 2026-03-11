@@ -83,20 +83,36 @@
   (not (zerop (logand (ns:objc event "modifierFlags" :unsigned-int) (ash 1 19)))))
 
 (defun redisplay (view)
-  (ns:objc view "setNeedsDisplayInRect:" (:struct ns:rect) (ns:rect 0 0 (ns:width view) (ns:height view))))
+  (with-sb-alien-rect (rect (ns:rect 0 0 (ns:width view) (ns:height view)))
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+							      sb-alien:system-area-pointer
+							      sb-alien:system-area-pointer
+							      (sb-alien:struct rect)))
+     (cocoa-ref view) (sel "setNeedsDisplayInRect:") rect)))
 
 ;; view
 (defclass view (base-view)
   ())
 
 (defmethod initialize-instance :after ((self view) &key rect (x 0) (y 0) (w 400) (h 200))
-  (setf (cocoa-ref self) (ns:objc (ns:objc "LispView" "alloc" :pointer)
-				  "initWithID:frame:drawFn:eventFn:"
-				  :int (id self)
-				  (:struct rect) (if rect rect (rect x y w h))
-				  :pointer (cffi:callback view-draw-callback)
-				  :pointer (cffi:callback view-event-callback)
-				  :pointer)))
+  (with-sb-alien-rect (rect (if rect rect (rect x y w h)))
+    (setf (cocoa-ref self)
+      (sb-alien:alien-funcall
+       (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:system-area-pointer
+								sb-alien:system-area-pointer
+								sb-alien:system-area-pointer
+								sb-alien:int
+								(sb-alien:struct rect)
+								sb-alien:system-area-pointer
+								sb-alien:system-area-pointer))
+       (ns:objc "LispView" "alloc" :pointer)
+       (sel "initWithID:frame:drawFn:eventFn:")
+       (id self)
+       rect
+       (cffi:callback view-draw-callback)
+       (cffi:callback view-event-callback)))))
+
 
 (defun current-cg-context ()
   (let* ((graphic-context (ns:objc "NSGraphicsContext" "currentContext" :pointer)))
@@ -114,19 +130,28 @@
 
 (defmethod initialize-instance :after ((self mtk-view) &key (x 0) (y 0) (w 400) (h 200))
   (let* ((device (cffi:foreign-funcall "MTLCreateSystemDefaultDevice" :pointer))
-	 (view (objc
-		(objc "LispMTKView" "alloc" :pointer)
-		"initWithFrame:device:id:drawFn:eventFn:"
-		(:struct rect) (rect x y w h)
-		:pointer device
-		:int (id self)
-		:pointer (cffi:callback view-draw-callback)
-		:pointer (cffi:callback view-event-callback)
-		:pointer)))
+	 (view (with-sb-alien-rect (rect (rect x y w h))
+		 (sb-alien:alien-funcall
+		  (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:system-area-pointer
+									   sb-alien:system-area-pointer
+									   sb-alien:system-area-pointer
+									   (sb-alien:struct rect)
+									   sb-alien:system-area-pointer
+									   sb-alien:int
+									   sb-alien:system-area-pointer
+									   sb-alien:system-area-pointer))
+		  (objc "LispMTKView" "alloc" :pointer)
+		  (sel "initWithFrame:device:id:drawFn:eventFn:")
+		  rect 
+		  device
+		  (id self)
+		  (cffi:callback view-draw-callback)
+		  (cffi:callback view-event-callback)))))
     (setf (%device self) device)
     (objc view "setDelegate:" :pointer view)
     (setf (cocoa-ref self) view)
     (init self)))
+
 
 (defun device (mtk-view)
   (%device mtk-view))
@@ -142,10 +167,27 @@
   (objc mtk-view "setDepthStencilPixelFormat:" :int pixel-format))
 
 (defun drawable-size (mtk-view)
-  (objc mtk-view "drawableSize" (:struct size)))
+  (let* ((%size (sb-alien:alien-funcall
+		 (sb-alien:extern-alien "objc_msgSend" (sb-alien:function (sb-alien:struct size)
+									  sb-alien:system-area-pointer
+									  sb-alien:system-area-pointer))
+		 (cocoa-ref mtk-view)
+		 (sel "drawableSize"))))
+    (ns:size (sb-alien:slot %size 'width) (sb-alien:slot %size 'height))))
+
 
 (defun (setf drawable-size) (size mtk-view)
-  (objc mtk-view "setDrawableSize:" (:struct size) size))
+  (sb-alien:with-alien ((%size (sb-alien:struct size)))
+    (setf (sb-alien:slot %size 'width) (float (size-width size) 1.0d0)
+	  (sb-alien:slot %size 'height) (float (size-height size) 1.0d0))
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+							      sb-alien:system-area-pointer
+							      sb-alien:system-area-pointer
+							      (sb-alien:struct size)))
+     (cocoa-ref mtk-view)
+     (sel "setDrawableSize:")
+     %size)))
 
 
 (defun current-drawable (mtk-view)
