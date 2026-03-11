@@ -187,25 +187,60 @@ CGContextPathContainsPoint
   (cffi:foreign-funcall "CGContextStrokePath" :pointer context))
 
 (defun fill-rect (context rect)
-  (cffi:foreign-funcall "CGContextFillRect" :pointer context (:struct ns:rect) rect))
-
-;; (defun fill-rects (context rects count)
-;;   (cffi:foreign-funcall "CGContextFillRects" :pointer context (:struct cg:rect) rects :int count))
+  (ns::with-sb-alien-rect (rect rect)
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "CGContextFillRect" (sb-alien:function sb-alien:void
+								   sb-alien:system-area-pointer
+								   (sb-alien:struct ns:rect)))
+     context
+     rect)))
 
 (defun stroke-rect (context rect)
-  (cffi:foreign-funcall "CGContextStrokeRect" :pointer context (:struct ns:rect) rect))
+  (ns::with-sb-alien-rect (rect rect)
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "CGContextStrokeRect" (sb-alien:function sb-alien:void
+								     sb-alien:system-area-pointer
+								     (sb-alien:struct ns:rect)))
+     context
+     rect)))
 
 (defun stroke-rect-with-width (context rect width)
-  (cffi:foreign-funcall "CGContextStrokeRectWithWidth" :pointer context (:struct ns:rect) rect :double (cgfloat width)))
+  (ns::with-sb-alien-rect (rect rect)
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "CGContextStrokeRectWithWidth" (sb-alien:function sb-alien:void
+									      sb-alien:system-area-pointer
+									      (sb-alien:struct ns:rect)
+									      sb-alien:double))
+     context
+     rect
+     (cgfloat width))))
 
 (defun clear-rect (context rect)
-  (cffi:foreign-funcall "CGContextClearRect" :pointer context (:struct ns:rect) rect))
+  (ns::with-sb-alien-rect (rect rect)
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "CGContextClearRect" (sb-alien:function sb-alien:void
+								    sb-alien:system-area-pointer
+								    (sb-alien:struct ns:rect)))
+     context
+     rect)))
 
 (defun fill-ellipse-in-rect (context rect)
-  (cffi:foreign-funcall "CGContextFillEllipseInRect" :pointer context (:struct ns:rect) rect))
+  (ns::with-sb-alien-rect (rect rect)
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "CGContextFillEllipseInRect" (sb-alien:function sb-alien:void
+									    sb-alien:system-area-pointer
+									    (sb-alien:struct ns:rect)))
+     context
+     rect)))
 
 (defun stroke-ellipse-in-rect (context rect)
-  (cffi:foreign-funcall "CGContextStrokeEllipseInRect" :pointer context (:struct ns:rect) rect))
+  (ns::with-sb-alien-rect (rect rect)
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "CGContextStrokeEllipseInRect" (sb-alien:function sb-alien:void
+									      sb-alien:system-area-pointer
+									      (sb-alien:struct ns:rect)))
+     context
+     rect)))
 
 ;; (defun stroke-line-segments (context points count)
 ;;   (cffi:foreign-funcall "CGContextStrokeLineSegments" :pointer  context points count))
@@ -295,9 +330,15 @@ CGInterpolationQuality
 CGContextSetInterpolationQuality
 |#
 (defun draw-image (context rect cg-image)
-  (cffi:foreign-funcall "CGContextDrawImage" :pointer context
-			(:struct ns:rect) rect
-			:pointer cg-image))
+  (ns::with-sb-alien-rect (rect rect)
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "CGContextDrawImage" (sb-alien:function sb-alien:void
+								    sb-alien:system-area-pointer
+								    (sb-alien:struct ns:rect)
+								    sb-alien:system-area-pointer))
+     context
+     rect
+     cg-image)))
 
 ;;; Shadow support
 #|
@@ -453,17 +494,28 @@ CGPathEqualToPath
 (defun path-rect (rect &optional (affine-transform (cffi:null-pointer)))
   "Wrap `CGPathCreateWithRect'. It call with `CFAutorelease' so you should not manage lifecycle it"
   (ns:cf-autorelease
-   (cffi:foreign-funcall "CGPathCreateWithRect" (:struct ns:rect) rect :pointer affine-transform
-								       :pointer)))
+   (ns::with-sb-alien-rect (rect rect)
+     (sb-alien:alien-funcall
+      (sb-alien:extern-alien "CGPathCreateWithRect" (sb-alien:function sb-alien:system-area-pointer
+								       (sb-alien:struct ns:rect)
+								       sb-alien:system-area-pointer))
+      rect
+      affine-transform))))
 
 (defun path-rounded-rect (rect corner-width corner-height &optional (affine-transform (cffi:null-pointer)))
   "Wrap `CGPathCreateWithRoundedRect'. It call with `CFAutorelease' so you should not manage lifecycle it"
   (ns:cf-autorelease
-   (cffi:foreign-funcall "CGPathCreateWithRoundedRect" (:struct ns:rect) rect
-			 :double (float corner-width 1.0d0)
-			 :double (float corner-height 1.0d0)
-			 :pointer affine-transform
-			 :pointer)))
+   (ns::with-sb-alien-rect (rect rect)
+     (sb-alien:alien-funcall
+      (sb-alien:extern-alien "CGPathCreateWithRoundedRect" (sb-alien:function sb-alien:system-area-pointer
+									      (sb-alien:struct ns:rect)
+									      sb-alien:double
+									      sb-alien:double
+									      sb-alien:system-area-pointer))
+      rect
+      (float corner-width 1.0d0)
+      (float corner-height 1.0d0)
+      affine-transform))))
 
 
 

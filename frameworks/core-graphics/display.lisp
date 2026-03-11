@@ -39,10 +39,19 @@ In case of hardware mirroring, the drawable display becomes the main display. In
   "Provides a list of online displays with bounds that include the specified point."
   (cffi:with-foreign-objects ((ids :uint32 10)
 			      (count :uint32))
-    (cffi:foreign-funcall "CGGetDisplaysWithPoint" (:struct ns:point) point
-			  :int32 +max-displays+
-			  :pointer ids
-			  :pointer count)
+    (sb-alien:with-alien ((%point (sb-alien:struct ns:point)))
+      (setf (sb-alien:slot %point 'ns::x) (float (ns:point-x point) 1.0d0)
+	    (sb-alien:slot %point 'ns::y) (float (ns:point-y point) 1.0d0))
+      (sb-alien:alien-funcall
+       (sb-alien:extern-alien "CGGetDisplaysWithPoint" (sb-alien:function sb-alien:void
+									  (sb-alien:struct ns:point)
+									  sb-alien:int
+									  sb-alien:system-area-pointer
+									  sb-alien:system-area-pointer))
+       %point
+       +max-displays+
+       ids
+       count))
     (loop for i below (cffi:mem-ref count :uint32)
 	  collect (cffi:mem-aref ids :uint32 i) )))
 
@@ -50,10 +59,17 @@ In case of hardware mirroring, the drawable display becomes the main display. In
   "Gets a list of online displays with bounds that intersect the specified rectangle."
   (cffi:with-foreign-objects ((ids :uint32 10)
 			      (count :uint32))
-    (cffi:foreign-funcall "CGGetDisplaysWithRect" (:struct ns:rect) rect
-			  :int32 +max-displays+
-			  :pointer ids
-			  :pointer count)
+    (ns::with-sb-alien-rect (rect rect)
+      (sb-alien:alien-funcall
+       (sb-alien:extern-alien "CGGetDisplaysWithRect" (sb-alien:function sb-alien:void
+									 (sb-alien:struct ns:rect)
+									 sb-alien:int
+									 sb-alien:system-area-pointer
+									 sb-alien:system-area-pointer))
+       rect
+       +max-displays+
+       ids
+       count))
     (loop for i below (cffi:mem-ref count :uint32)
 	  collect (cffi:mem-aref ids :uint32 i) )))
 
@@ -69,10 +85,15 @@ In case of hardware mirroring, the drawable display becomes the main display. In
   (display :uint32))
 
 
-(cffi:defcfun ("CGDisplayCreateImageForRect" display-create-image-for-rect) :pointer
+(defun display-create-image-for-rect (display rect)
   "An image containing the contents of the specified rectangle. If the display ID is invalid, the return value is NULL. The caller is responsible for releasing the image created by calling CGImageRelease."
-  (display :uint32)
-  (rect (:struct ns:rect)))
+  (ns::with-sb-alien-rect (rect rect)
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "CGDisplayCreateImageForRect" (sb-alien:function sb-alien:system-area-pointer
+									     sb-alien:unsigned-int
+									     (sb-alien:struct ns:rect)))
+     display
+     rect)))
 
 
 
@@ -137,9 +158,16 @@ In case of hardware mirroring, the drawable display becomes the main display. In
   "The rotation angle of the display in degrees, or 0 if the display is not valid."
   (display :uint32))
 
-(cffi:defcfun ("CGDisplayScreenSize" display-screen-size) (:struct ns:size)
+(defun display-screen-size (display)
   "The size of the specified display in millimeters, or 0 if the display is not valid."
-  (display :uint32))
+  (let* ((%size (sb-alien:alien-funcall
+		 (sb-alien:extern-alien "CGDisplayScreenSize" (sb-alien:function (sb-alien:struct ns:size)
+										 sb-alien:unsigned-int))
+		 display)))
+    (ns:size (sb-alien:slot %size 'ns:width)
+	     (sb-alien:slot %size 'ns:height))))
+
+
 
 (cffi:defcfun ("CGDisplaySerialNumber" display-serial-number) :uint32
   "The identifier of the display to be accessed."
@@ -163,9 +191,19 @@ In case of hardware mirroring, the drawable display becomes the main display. In
 ;; Getting the Display Configuration
 ;; ================================================================================
 
-(cffi:defcfun ("CGDisplayBounds" display-bounds) (:struct ns:rect)
+(defun display-bounds (display)
   "The bounds of the display, expressed as a rectangle in the global display coordinate space (relative to the upper-left corner of the main display)."
-  (display :uint32))
+  (let* ((%rect (sb-alien:alien-funcall
+		(sb-alien:extern-alien "CGDisplayBounds" (sb-alien:function (sb-alien:struct ns:rect)
+									    sb-alien:unsigned-int))
+		display))
+	 (%origin (sb-alien:slot %rect 'ns::origin))
+	 (%size (sb-alien:slot %rect 'ns:size)))
+    (ns:rect (sb-alien:slot %origin 'ns::x)
+	     (sb-alien:slot %origin 'ns::y)
+	     (sb-alien:slot %size 'ns:width)
+	     (sb-alien:slot %size 'ns:height))))
+
 
 
 (cffi:defcfun ("CGDisplayPixelsHigh" display-pixels-high) :sizet
@@ -252,18 +290,34 @@ When you change the display mode of a display in a mirroring set, your change sw
   "If the hide cursor count is 0, this function shows the cursor regardless of its current location. The display parameter has no effect. In most cases, the caller must be the foreground application to affect the cursor."
   (display :uint32))
 
-(cffi:defcfun ("CGDisplayMoveCursorToPoint" display-move-cursor-to-point) :int32
+(defun display-move-cursor-to-point (display point)
   "Moves the mouse cursor to a specified point relative to the upper-left corner of the display."
-  (display :uint32)
-  (point (:struct ns:point)))
+  (sb-alien:with-alien ((%point (sb-alien:struct ns:point)))
+    (setf (sb-alien:slot %point 'ns::x) (float (ns:point-x point) 1.0d0)
+	  (sb-alien:slot %point 'ns::y) (float (ns:point-y point) 1.0d0))
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "CGDisplayMoveCursorToPoint" (sb-alien:function sb-alien:int
+									    sb-alien:unsigned-int
+									    (sb-alien:struct ns:point)))
+     display
+     %point)))
+
 
 (cffi:defcfun ("CGAssociateMouseAndMouseCursorPosition" associate-mouse-and-mouse-cursor-position) :int32
   "Connects or disconnects the mouse and cursor while an application is in the foreground. Call this function to disconnect the mouse from the cursor. When you call this function, the events your application receives from the system have a constant absolute location but contain delta updates to the X and Y coordinates of the mouse. You can hide the cursor or change it into something appropriate for your application. You can reposition the cursor by using the function CGDisplayMoveCursorToPoint or the function CGWarpMouseCursorPosition."
   (connected :bool))
 
-(cffi:defcfun ("CGWarpMouseCursorPosition" wrap-mouse-cursor-position) :int32
+
+(defun wrap-mouse-cursor-position (new-cursor-position)
   "Moves the mouse cursor without generating events. You can use this function to “warp” or alter the cursor position without generating or posting an event. For example, this function is often used to move the cursor position back to the center of the screen by games that do not want the cursor pinned by display edges."
-  (new-cursor-position (:struct ns:point)))
+  (sb-alien:with-alien ((%point (sb-alien:struct ns:point)))
+    (setf (sb-alien:slot %point 'ns::x) (float (ns:point-x new-cursor-position) 1.0d0)
+	  (sb-alien:slot %point 'ns::y) (float (ns:point-y new-cursor-position) 1.0d0))
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "CGWarpMouseCursorPosition" (sb-alien:function sb-alien:int
+									   (sb-alien:struct ns:point)))
+     %point)))
+
 
 (defun last-mouse-delta ()
   "Reports the change in mouse position since the last mouse movement event received by the application. This function is not recommended for general use. Instead, you should use the mouse-tracking functions provided by the NSEvent class."

@@ -18,12 +18,18 @@
 
 
 (defun make-image-from-screen (rect)
-  (cffi:foreign-funcall "CGWindowListCreateImage"
-			(:struct ns:rect) rect
-			:int 12 	; kCGWindowListOptionIncludingWindow | kCGWindowListOptionOnScreenBelowWindow
-			:int 0		; kCGNullWindowID
-			:int 16		; kCGWindowImageNominalResolution
-			:pointer))
+  (ns::with-sb-alien-rect (rect rect)
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "CGWindowListCreateImage" (sb-alien:function sb-alien:system-area-pointer
+									 (sb-alien:struct ns:rect)
+									 sb-alien:int
+									 sb-alien:int
+									 sb-alien:int))
+     rect
+     12 ; kCGWindowListOptionIncludingWindow | kCGWindowListOptionOnScreenBelowWindow
+     0 ; kCGNullWindowID
+     16 ; kCGWindowImageNominalResolution
+     )))
 
 
 (cffi:defcfun ("CGBitmapContextCreateImage" make-image-from-context) :pointer
