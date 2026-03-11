@@ -126,6 +126,12 @@
 	    (:constructor point (x y)))
   x y)
 
+(sb-alien:define-alien-type nil
+    (sb-alien:struct point
+	    (x sb-alien:double)
+	    (y sb-alien:double)))
+
+
 (defmethod cffi:translate-from-foreign (p (type %point))
   (cffi:with-foreign-slots ((x y) p (:struct point))
     (point x y)))
@@ -143,6 +149,13 @@
 (defstruct (size
 	    (:constructor size (width height)))
   width height)
+
+
+(sb-alien:define-alien-type nil
+    (sb-alien:struct size
+		     (width sb-alien:double)
+		     (height sb-alien:double)))
+
 
 (defmethod cffi:translate-from-foreign (p (type %size))
   (cffi:with-foreign-slots ((width height) p (:struct size))
@@ -163,6 +176,12 @@
 	    (:constructor rect (x y width height)))
   x y width height)
 
+(sb-alien:define-alien-type nil
+    (sb-alien:struct rect
+		     (origin (sb-alien:struct point))
+		     (size (sb-alien:struct size))))
+
+
 (defmethod cffi:translate-from-foreign (p (type %rect))
   (cffi:with-foreign-slots ((origin size) p (:struct rect))
     (rect (point-x origin)
@@ -179,5 +198,20 @@
 	      y (coerce (rect-y rect) 'double-float)
 	      width (coerce (rect-width rect) 'double-float)
 	      height (coerce (rect-height rect) 'double-float))))))
+
+
+(defmacro with-sb-alien-rect ((name rect) &body body)
+  (with-unique-names (%origin %size)
+    (once-only (rect)
+      `(sb-alien:with-alien ((,name (sb-alien:struct rect))
+			     (,%origin (sb-alien:struct point))
+			     (,%size (sb-alien:struct size)))
+	 (setf (sb-alien:slot ,%origin 'x) (float (rect-x ,rect) 1.0d0)
+	       (sb-alien:slot ,%origin 'y) (float (rect-y ,rect) 1.0d0))
+	 (setf (sb-alien:slot ,%size 'width) (float (rect-width ,rect) 1.0d0)
+	       (sb-alien:slot ,%size 'height) (float (rect-height ,rect) 1.0d0))
+	 (setf (sb-alien:slot ,name 'origin) ,%origin
+	       (sb-alien:slot ,name 'size) ,%size)
+	 ,@body))))
 
 
