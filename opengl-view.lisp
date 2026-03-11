@@ -18,16 +18,25 @@
 (defmethod initialize-instance :after ((self opengl-view) &key (x 0) (y 0) (w 400) (h 200))
   (let* ((pixel-format (cgl:make-pixel-format (cgl:list-attributes
 					       :core-profile (core-profile self)))))
-    (unwind-protect (let* ((gl-view (ns:objc
-				     (ns:objc "LispOpenGLView" "alloc" :pointer)
-				     "initWithID:frame:pixelFormat:isAnimate:drawFn:eventFn:"
-				     :int (id self)
-				     (:struct ns:rect) (ns:rect x y w h)
-				     :pointer pixel-format
-				     :unsigned-char (if (animate self) 1 0)
-				     :pointer (cffi:callback view-draw-callback)
-				     :pointer (cffi:callback view-event-callback)
-				     :pointer)))
+    (unwind-protect (let* ((gl-view (with-sb-alien-rect (rect (ns:rect x y w h))
+				      (sb-alien:alien-funcall
+				       (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:system-area-pointer
+												sb-alien:system-area-pointer
+												sb-alien:system-area-pointer
+												sb-alien:int
+												(sb-alien:struct rect)
+												sb-alien:system-area-pointer
+												sb-alien:unsigned-char
+												sb-alien:system-area-pointer
+												sb-alien:system-area-pointer))
+				       (ns:objc "LispOpenGLView" "alloc" :pointer)
+				       (sel "initWithID:frame:pixelFormat:isAnimate:drawFn:eventFn:")
+				       (id self)
+				       rect
+				       pixel-format
+				       (if (animate self) 1 0)
+				       (cffi:callback view-draw-callback)
+				       (cffi:callback view-event-callback)))))
 		      (set-gl-best-resolution gl-view (retina self))
 		      (setf (cocoa-ref self) gl-view))
       (cgl:destroy-pixel-format pixel-format))))
