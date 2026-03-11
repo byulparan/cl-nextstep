@@ -29,17 +29,6 @@
        (assert (not (cffi:null-pointer-p ,object)) nil "`ns:objc` accept NullPointer with SEL: \"~a\"" ,sel)
        (cffi:foreign-funcall "objc_msgSend" :pointer ,object :pointer ,selector ,@rest))))
 
-#+x86-64
-(defmacro objc-stret (return-type instance sel &rest rest)
-  (with-gensyms (object selector result)
-    `(let* ((,object (cocoa-ref ,instance))
-	    (,selector (sel ,sel)))
-       (assert (not (cffi:null-pointer-p ,object)) nil "`ns:objc` accept NullPointer with SEL: \"~a\"" ,sel)
-       (cffi:with-foreign-objects ((,result '(:struct ,return-type)))
-	 (cffi:foreign-funcall "objc_msgSend_stret"
-			       :pointer ,result
-			       :pointer ,object :pointer ,selector ,@rest)
-	 (cffi:mem-ref ,result '(:struct ,return-type))))))
 
 (defun alloc (cls)
   (objc cls "alloc" :pointer))
@@ -117,11 +106,6 @@
 
 ;; =======================================================
 ;; structure
-
-(cffi:defcstruct (point :class %point)
-  (x :double)
-  (y :double))
-
 (defstruct (point
 	    (:constructor point (x y)))
   x y)
@@ -132,45 +116,15 @@
 	    (y sb-alien:double)))
 
 
-(defmethod cffi:translate-from-foreign (p (type %point))
-  (cffi:with-foreign-slots ((x y) p (:struct point))
-    (point x y)))
-
-(defmethod cffi:translate-into-foreign-memory (point (type %point) p)
-  (cffi:with-foreign-slots ((x y) p (:struct point))
-    (setf x (coerce (point-x point) 'double-float)
-	  y (coerce (point-y point) 'double-float))))
-
-
-(cffi:defcstruct (size :class %size)
-  (width :double)
-  (height :double))
-
 (defstruct (size
 	    (:constructor size (width height)))
   width height)
-
 
 (sb-alien:define-alien-type nil
     (sb-alien:struct size
 		     (width sb-alien:double)
 		     (height sb-alien:double)))
 
-
-(defmethod cffi:translate-from-foreign (p (type %size))
-  (cffi:with-foreign-slots ((width height) p (:struct size))
-    (size width height)))
-
-(defmethod cffi:translate-into-foreign-memory (size (type %size) p)
-  (cffi:with-foreign-slots ((width height) p (:struct size))
-    (setf width (coerce (size-width size) 'double-float)
-	  height (coerce (size-height size) 'double-float))))
-
-
-
-(cffi:defcstruct (rect :class %rect)
-  (origin (:struct point))
-  (size (:struct size)))
 
 (defstruct (rect
 	    (:constructor rect (x y width height)))
@@ -181,23 +135,6 @@
 		     (origin (sb-alien:struct point))
 		     (size (sb-alien:struct size))))
 
-
-(defmethod cffi:translate-from-foreign (p (type %rect))
-  (cffi:with-foreign-slots ((origin size) p (:struct rect))
-    (rect (point-x origin)
-	  (point-y origin)
-	  (size-width size)
-	  (size-height size))))
-
-(defmethod cffi:translate-into-foreign-memory (rect (type %rect) p)
-  (let* ((origin (cffi:foreign-slot-pointer p '(:struct rect) 'origin))
-	 (size (cffi:foreign-slot-pointer p '(:struct rect) 'size)))
-    (cffi:with-foreign-slots ((x y) origin (:struct point))
-      (cffi:with-foreign-slots ((width height) size (:struct size))
-	(setf x (coerce (rect-x rect) 'double-float)
-	      y (coerce (rect-y rect) 'double-float)
-	      width (coerce (rect-width rect) 'double-float)
-	      height (coerce (rect-height rect) 'double-float))))))
 
 
 (defmacro with-sb-alien-rect ((name rect) &body body)
