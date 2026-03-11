@@ -19,16 +19,24 @@
    (close-fn :initarg :close-fn :initform nil :accessor close-fn)))
 
 (defun in-screen-rect (rect)
-  (let* ((screen
-	   #+x86-64 (ns:objc-stret ns:rect  (ns:objc "NSScreen" "mainScreen" :pointer) "frame")
-	   #+arm64 (ns:objc (ns:objc "NSScreen" "mainScreen" :pointer) "frame" (:struct ns:rect))
-	   ))
-      (let* ((in-x (- (ns:rect-width screen) (ns:rect-width rect)))
-	     (in-y (- (ns:rect-height screen) (ns:rect-height rect))))
-	(ns:rect (clamp (ns:rect-x rect) 0 in-x)
-		      (clamp (ns:rect-y rect) 0 in-y)
-		      (ns:rect-width rect)
-		      (ns:rect-height rect)))))
+  (let* ((screen (sb-alien:alien-funcall
+		  (sb-alien:extern-alien "objc_msgSend" (sb-alien:function (sb-alien:struct rect)
+									   sb-alien:system-area-pointer
+									   sb-alien:system-area-pointer))
+		  (ns:objc "NSScreen" "mainScreen" :pointer)
+		  (sel "frame")))
+	 (origin (sb-alien:slot screen 'origin))
+	 (size (sb-alien:slot screen 'size)))
+    (setf screen (rect (sb-alien:slot origin 'x)
+		       (sb-alien:slot origin 'y)
+		       (sb-alien:slot size 'width)
+		       (sb-alien:slot size 'height)))
+    (let* ((in-x (- (ns:rect-width screen) (ns:rect-width rect)))
+	   (in-y (- (ns:rect-height screen) (ns:rect-height rect))))
+      (ns:rect (clamp (ns:rect-x rect) 0 in-x)
+	       (clamp (ns:rect-y rect) 0 in-y)
+	       (ns:rect-width rect)
+	       (ns:rect-height rect)))))
 
 
 (defun window-style-mask (&key (titled t) (closable t) (resizable t) (miniaturizable t) full-size-content-view full-screen)
@@ -47,19 +55,27 @@
   (with-slots (cocoa-ref id g-id title close-fn) self
     (setf id g-id)
     (incf g-id)
-    (setf cocoa-ref (ns:objc (ns:objc "LispWindow" "alloc" :pointer)
-			     "initWithID:frame:styleMask:handleFn:"
-			     :int id
-			     (:struct rect) (if rect rect (ns:rect x y w h))
-			     :int (if style-mask style-mask
-				    (window-style-mask
-				     :titled t
-				     :closable closable
-				     :resizable resizable
-				     :miniaturizable miniaturizable
-				     :full-size-content-view full-size-content-view))
-			     :pointer (cffi:callback window-callback)
-			     :pointer))
+    (setf cocoa-ref (with-sb-alien-rect (rect (if rect rect (rect x y w h)))
+		      (sb-alien:alien-funcall
+		       (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:system-area-pointer
+										sb-alien:system-area-pointer
+										sb-alien:system-area-pointer
+										sb-alien:int
+										(sb-alien:struct rect)
+										sb-alien:int
+										sb-alien:system-area-pointer))
+		       (ns:objc "LispWindow" "alloc" :pointer)
+		       (sel "initWithID:frame:styleMask:handleFn:")
+		       id
+		       rect
+		       (if style-mask style-mask
+			 (window-style-mask
+			  :titled t
+			  :closable closable
+			  :resizable resizable
+			  :miniaturizable miniaturizable
+			  :full-size-content-view full-size-content-view))
+		       (cffi:callback window-callback))))
     (ns:objc cocoa-ref "setTitle:" :pointer (autorelease (make-ns-string title)))
     (ns:objc cocoa-ref "setDelegate:" :pointer cocoa-ref)
     (setf (gethash id *window-table*) self)))
