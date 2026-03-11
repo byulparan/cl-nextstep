@@ -150,32 +150,47 @@
 ;; Time Management
 ;; =======================================================
 
-(cffi:defcstruct cv-smpte-time
-  (counter :uint32)
-  (flags :uint32)
-  (frames :int16)
-  (hours :int16)
-  (minutes :int16)
-  (seconds :int16)
-  (subframe-divisor :int16)
-  (subframes :int16)
-  (type :uint32))
+(sb-alien:define-alien-type nil
+    (sb-alien:struct cv-smpte-time
+		     (counter sb-alien:unsigned-int)
+		     (flags sb-alien:unsigned-int)
+		     (frames sb-alien:short)
+		     (hours sb-alien:short)
+		     (minutes sb-alien:short)
+		     (seconds sb-alien:short)
+		     (subframe-divisor sb-alien:short)
+		     (subframes sb-alien:short)
+		     (type sb-alien:unsigned-int)))
 
-(cffi:defcstruct cv-time-stamp
-  (flags :uint64)
-  (host-time :uint64)
-  (rate-scalar :double)
-  (reserved :uint64)
-  (smpte-time (:struct cv-smpte-time))
-  (version :uint32)
-  (vido-refresh-period :int64)
-  (video-time :int64)
-  (video-time-scale :int32))
+(defstruct cv-smpte-time
+  counter flags frames hours minutes seconds subframe-divisor subframes type)
 
-(cffi:defcstruct cv-time
-  (flags :int)
-  (time-scale :int)
-  (time-value :int64))
+
+(sb-alien:define-alien-type nil
+    (sb-alien:struct cv-time-stamp
+		     (flags sb-alien:unsigned-long-long)
+		     (host-time sb-alien:unsigned-long-long)
+		     (rate-scalar sb-alien:double)
+		     (reserved sb-alien:unsigned-long-long)
+		     (smpte-time (sb-alien:struct cv-smpte-time))
+		     (version sb-alien:unsigned-int)
+		     (vido-refresh-period sb-alien:long-long)
+		     (video-time sb-alien:long-long)
+		     (video-time-scale sb-alien:int)))
+
+(defstruct cv-time-stamp
+  flags host-time rate-scalar reserved smpte-time version vido-refresh-period video-time video-time-scale)
+
+
+(sb-alien:define-alien-type nil
+    (sb-alien:struct cv-time
+		     (flags sb-alien:int)
+		     (time-scale sb-alien:int)
+		     (time-value sb-alien:long-long)))
+
+(defstruct cv-time
+  flags time-scale time-value)
+
 
 ;; Configuring Display Links
 (cffi:defcfun ("CVDisplayLinkSetCurrentCGDisplay" display-link-set-current-display) :int32
@@ -196,22 +211,59 @@
 
 (defun display-link-current-time (display-link)
   "Retrieves the current (“now”) time of a given display link"
-  (cffi:with-foreign-object (out '(:struct cv-time-stamp))
-    (cffi:foreign-funcall "CVDisplayLinkGetCurrentTime" :pointer display-link
-							:pointer out)
-    (cffi:mem-ref out '(:struct cv-time-stamp))))
+  (sb-alien:with-alien ((out (sb-alien:struct cv-time-stamp)))
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "CVDisplayLinkGetCurrentTime" (sb-alien:function sb-alien:void
+									     sb-alien:system-area-pointer
+									     sb-alien:system-area-pointer))
+     display-link
+     (sb-alien:alien-sap out))
+    (let* ((%smpte-time (sb-alien:slot out 'smpte-time))
+	   (smpte-time (make-cv-smpte-time :counter (sb-alien:slot %smpte-time 'counter)
+					   :flags (sb-alien:slot %smpte-time 'flags)
+					   :frames (sb-alien:slot %smpte-time 'frames)
+					   :hours (sb-alien:slot %smpte-time 'hours)
+					   :minutes (sb-alien:slot %smpte-time 'minutes)
+					   :seconds (sb-alien:slot %smpte-time 'seconds)
+					   :subframe-divisor (sb-alien:slot %smpte-time 'subframe-divisor)
+					   :subframes (sb-alien:slot %smpte-time 'subframes)
+					   :type (sb-alien:slot  %smpte-time 'type))))
+      (make-cv-time-stamp :flags (sb-alien:slot out 'flags)
+			  :host-time (sb-alien:slot out 'host-time)
+			  :rate-scalar (sb-alien:slot out 'rate-scalar)
+			  :reserved (sb-alien:slot out 'reserved)
+			  :smpte-time smpte-time
+			  :version (sb-alien:slot out 'version)
+			  :vido-refresh-period (sb-alien:slot out 'vido-refresh-period)
+			  :video-time (sb-alien:slot out 'video-time)
+			  :video-time-scale (sb-alien:slot out 'video-time-scale)))))
 
 (cffi:defcfun ("CVDisplayLinkGetActualOutputVideoRefreshPeriod" display-link-actual-output-video-refresh-period) :double
   "Retrieves the actual output refresh period of a display as measured by the system time. This call returns the actual output refresh period computed relative to the system time (as measured using the CVGetCurrentHostTime function)."
   (display-link :pointer))
 
-(cffi:defcfun ("CVDisplayLinkGetNominalOutputVideoRefreshPeriod" display-link-nominal-output-video-refresh-period) (:struct cv-time)
-  "Retrieves the nominal refresh period of a display link. This call allows one to retrieve the device's ideal refresh period. For example, an NTSC output device might report 1001/60000 to represent the exact NTSC vertical refresh rate."
-  (display-link :pointer))
 
-(cffi:defcfun ("CVDisplayLinkGetOutputVideoLatency" display-link-output-video-latency) (:struct cv-time)
+(defun display-link-nominal-output-video-refresh-period (display-link)
+  "Retrieves the nominal refresh period of a display link. This call allows one to retrieve the device's ideal refresh period. For example, an NTSC output device might report 1001/60000 to represent the exact NTSC vertical refresh rate."
+  (let* ((%cv-time (sb-alien:alien-funcall
+		    (sb-alien:extern-alien "CVDisplayLinkGetNominalOutputVideoRefreshPeriod" (sb-alien:function (sb-alien:struct cv-time)
+														sb-alien:system-area-pointer))
+		    display-link)))
+    (make-cv-time :flags (sb-alien:slot %cv-time 'flags)
+		  :time-scale (sb-alien:slot %cv-time 'time-scale)
+		  :time-value (sb-alien:slot %cv-time 'time-value))))
+
+
+(defun display-link-output-video-latency (display-link)
   "Retrieves the nominal latency of a display link. This call allows you to retrieve the device’s built-in output latency. For example, an NTSC device with one frame of latency might report back 1001/30000 or 2002/60000."
-  (display-link :pointer))
+  (let* ((%cv-time (sb-alien:alien-funcall
+		    (sb-alien:extern-alien "CVDisplayLinkGetOutputVideoLatency" (sb-alien:function (sb-alien:struct cv-time)
+												   sb-alien:system-area-pointer))
+		    display-link)))
+    (make-cv-time :flags (sb-alien:slot %cv-time 'flags)
+		  :time-scale (sb-alien:slot %cv-time 'time-scale)
+		  :time-value (sb-alien:slot %cv-time 'time-value))))
+
 
 (cffi:defcfun ("CVDisplayLinkIsRunning" display-link-is-running) :bool
   "Indicates whether a given display link is running. Returns true if the display link is running, false otherwise."
