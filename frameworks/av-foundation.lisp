@@ -27,11 +27,13 @@
 (in-package :av-foundation)
 
 ;; CoreMedia
-(cffi:defcstruct cm-time
-  (value :int64)
-  (timescale :int)
-  (flags :unsigned-int)
-  (epoch :int64))
+(sb-alien:define-alien-type nil
+  (sb-alien:struct cm-time
+		   (value sb-alien:long-long)
+		   (timescale sb-alien:int)
+		   (flags sb-alien:unsigned-int)
+		   (epoch sb-alien:long-long)))
+
 
 (defgeneric pixel-buffer (av-media))
 (defgeneric ready (av-media))
@@ -67,14 +69,31 @@
 							       :unsigned-int)
 			   :pointer)))
     (when crop-rect
-      (ns:objc capture "setCropRect:" (:struct ns:rect) crop-rect))
+      (ns::with-sb-alien-rect (crop-rect crop-rect)
+	(sb-alien:alien-funcall
+	 (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+								  sb-alien:system-area-pointer
+								  sb-alien:system-area-pointer
+								  (sb-alien:struct ns:rect)))
+	 (ns::cocoa-ref capture)
+	 (ns::sel "setCropRect:")
+	 crop-rect)))
     (when min-frame-duration
-      (ns:objc capture "setMinFrameDuration:"
-	       (:struct cm-time) (cffi:foreign-funcall "CMTimeMake"
-						       :int64 1
-						       :int min-frame-duration
-						       (:struct cm-time))))
+      (sb-alien:alien-funcall
+       (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+								sb-alien:system-area-pointer
+								sb-alien:system-area-pointer
+								(sb-alien:struct cm-time)))
+       (ns::cocoa-ref capture)
+       (ns::sel "setMinFrameDuration:")
+       (sb-alien:alien-funcall
+	(sb-alien:extern-alien "CMTimeMake" (sb-alien:function (sb-alien:struct cm-time)
+							       sb-alien:long-long
+							       sb-alien:int))
+	1
+	min-frame-duration)))
     (ns:autorelease capture)))
+
 
 (defun make-capture-video-data-output (capture-delegate pixel-format-type request-size)
   (let* ((video-output (ns:autorelease (ns:objc (ns:alloc "AVCaptureVideoDataOutput") "init" :pointer)))
@@ -139,26 +158,46 @@
     (let* ((input (ns:objc 
 		   (ns:objc (capture-session screen-capture) "inputs" :pointer)
 		   "objectAtIndex:" :int 0 :pointer)))
-      (ns:objc input "setCropRect:" (:struct ns:rect) rect))))
+      (ns::with-sb-alien-rect (%rect rect)
+	(sb-alien:alien-funcall 
+	 (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+								  sb-alien:system-area-pointer
+								  sb-alien:system-area-pointer
+								  (sb-alien:struct ns::rect)))
+	 (ns::cocoa-ref input)
+	 (ns::sel "setCropRect:")
+	 %rect)))))
 
 (defun min-frame-duration (screen-capture)
   (ns:with-event-loop (:waitp t)
     (let* ((input (ns:objc 
 		   (ns:objc (capture-session screen-capture) "inputs" :pointer)
 		   "objectAtIndex:" :int 0 :pointer)))
-      #+x86-64 (ns:objc-stret cm-time input "minFrameDuration")
-      #+arm64 (ns:objc input "minFrameDuration" (:struct cm-time)))))
+      (sb-alien:alien-funcall
+       (sb-alien:extern-alien "objc_msgSend" (sb-alien:function (sb-alien:struct cm-time)
+								sb-alien:system-area-pointer
+								sb-alien:system-area-pointer))
+       (ns::cocoa-ref input)
+       (ns::sel "minFrameDuration")))))
+
 
 (defun (setf min-frame-duration) (framerate screen-capture)
   (ns:with-event-loop nil
     (let* ((input (ns:objc 
 		   (ns:objc (capture-session screen-capture) "inputs" :pointer)
 		   "objectAtIndex:" :int 0 :pointer)))
-      (ns:objc input "setMinFrameDuration:"
-	       (:struct cm-time) (cffi:foreign-funcall "CMTimeMake"
-						       :int64 1
-						       :int framerate
-						       (:struct cm-time))))))
+      (sb-alien:alien-funcall
+       (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+								sb-alien:system-area-pointer
+								sb-alien:system-area-pointer
+								(sb-alien:struct cm-time)))
+       (ns::cocoa-ref input)
+       (ns::sel "setMinFrameDuration:")
+       (sb-alien:alien-funcall
+	(sb-alien:extern-alien "CMTimeMake" (sb-alien:function (sb-alien:struct cm-time)
+							       sb-alien:long-long
+							       sb-alien:int))
+	1 framerate)))))
 
 (defun scale-factor (screen-capture)
   (ns:with-event-loop (:waitp t)
@@ -227,14 +266,24 @@
       (ns:with-event-loop (:waitp t)
 	(setf player (%make-player :id id :ready-fn ready-handle :end-fn end-fn))
 	(setf (gethash id *player-table*) player)
-	(setf (player-manager player) (ns:objc (ns:alloc "PlayerManager")
-					       "initWithID:path:requestSize:handlerFn:"
-					       :int id
-					       :pointer (ns:autorelease (ns:make-ns-string (namestring path)))
-					       (:struct ns:size) (if request-size (ns:size (first request-size) (second request-size))
-								   (ns:size -1 -1))
-					       :pointer (cffi:callback player-handler)
-					       :pointer))
+	(setf (player-manager player)
+	  (sb-alien:with-alien ((%size (sb-alien:struct ns::size)))
+	    (setf (sb-alien:slot %size 'ns::width) (float (if request-size (first request-size) -1) 1.0d0)
+		  (sb-alien:slot %size 'ns::height) (float (if request-size (second request-size) -1) 1.0d0))
+	    (sb-alien:alien-funcall
+	     (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:system-area-pointer
+								      sb-alien:system-area-pointer
+								      sb-alien:system-area-pointer
+								      sb-alien:int
+								      sb-alien:system-area-pointer
+								      (sb-alien:struct ns:size)
+								      sb-alien:system-area-pointer))
+	     (ns:alloc "PlayerManager")
+	     (ns::sel "initWithID:path:requestSize:handlerFn:")
+	     id
+	     (ns:autorelease (ns:make-ns-string (namestring path)))
+	     %size
+	     (cffi:callback player-handler))))
 	(incf id))
       (when ready-object
 	#+sbcl (sb-thread:wait-on-semaphore ready-object))
@@ -264,6 +313,12 @@
 
 (defun seek-to-zero (player)
   (ns:with-event-loop nil
-    (ns:objc (ns:objc (player-manager player) "player" :pointer) "seekToTime:"
-	     (:struct cm-time) (cffi:mem-ref (cffi:foreign-symbol-pointer "kCMTimeZero") '(:struct cm-time)))))
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+							      sb-alien:system-area-pointer
+							      sb-alien:system-area-pointer
+							      (sb-alien:struct cm-time)))
+     (ns:objc (player-manager player) "player" :pointer)
+     (ns::sel "seekToTime:")
+     (sb-alien:extern-alien "kCMTimeZero" (sb-alien:struct cm-time)))))
 
