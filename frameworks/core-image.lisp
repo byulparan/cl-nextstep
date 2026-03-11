@@ -41,21 +41,46 @@
 
 (defun draw-image (ci-context ci-image in-rect from-rect)
   "Renders a region of an image to a rectangle in the context destination."
-  (ns:objc ci-context "drawImage:inRect:fromRect:"
-	   :pointer ci-image
-	   (:struct ns:rect) in-rect
-	   (:struct ns:rect) from-rect))
+  (ns::with-sb-alien-rect (in-rect in-rect)
+    (ns::with-sb-alien-rect (from-rect from-rect)
+      (sb-alien:alien-funcall
+       (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+								sb-alien:system-area-pointer
+								sb-alien:system-area-pointer
+								sb-alien:system-area-pointer
+								(sb-alien:struct ns:rect)
+								(sb-alien:struct ns:rect)))
+       (ns::cocoa-ref ci-context)
+       (ns::sel "drawImage:inRect:fromRect:")
+       ci-image
+       in-rect
+       from-rect))))
+
 
 (defun render-to-bitmap (ci-context ci-image data row-bytes bounds format color-space)
-  (ns:objc ci-context "render:toBitmap:rowBytes:bounds:format:colorSpace:"
-	   :pointer ci-image
-	   :pointer data
-	   :int row-bytes
-	   (:struct ns:rect) bounds
-	   :int (case format
-		  (:ci-format-argb8 265)
-		  (t format))
-	   :pointer color-space))
+  (ns::with-sb-alien-rect (rect bounds)
+    (sb-alien:alien-funcall
+     (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+							      sb-alien:system-area-pointer
+							      sb-alien:system-area-pointer
+							      sb-alien:system-area-pointer
+							      sb-alien:system-area-pointer
+							      sb-alien:int
+							      (sb-alien:struct ns:rect)
+							      sb-alien:int
+							      sb-alien:system-area-pointer))
+     (ns::cocoa-ref ci-context)
+     (ns::sel "render:toBitmap:rowBytes:bounds:format:colorSpace:")
+     ci-image
+     data
+     row-bytes
+     rect
+     (case format
+       (:ci-format-argb8 265)
+       (t format))
+     color-space)))
+
+
 
 ;; ci-image
 (defun load-image (path)
@@ -69,39 +94,67 @@
 
 (defun image-from-texture (texture size)
   (let* ((color-space (cg:make-color-space :color-space-srgb)))
-    (unwind-protect (ns:objc "CIImage" "imageWithTexture:size:flipped:colorSpace:"
-			     :unsigned-int texture
-			     (:struct ns:size) size
-			     :int 0
-			     :pointer color-space
-			     :pointer)
-      (cg:release-color-space color-space))))
+    (sb-alien:with-alien ((%size (sb-alien:struct ns:size)))
+      (setf (sb-alien:slot %size 'ns:width) (float (ns:size-width size) 1.0d0)
+	    (sb-alien:slot %size 'ns:height) (float (ns:size-height size) 1.0d0))
+      (unwind-protect (sb-alien:alien-funcall
+		       (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:system-area-pointer
+										sb-alien:system-area-pointer
+										sb-alien:system-area-pointer
+										sb-alien:unsigned-int
+										(sb-alien:struct ns:size)
+										sb-alien:int
+										sb-alien:system-area-pointer))
+		       (ns:cls "CIImage")
+		       (ns:sel "imageWithTexture:size:flipped:colorSpace:")
+		       texture
+		       %size
+		       0
+		       color-space)
+	(cg:release-color-space color-space)))))
+
 
 (defun image-from-cg-image (cg-image)
   (ns:objc "CIImage" "imageWithCGImage:" :pointer cg-image :pointer))
 
 (defun extent (ci-image)
-  #+x86-64 (ns:objc-stret ns:rect ci-image "extent")
-  #+arm64 (ns:objc ci-image "extent" (:struct ns:rect)))
+  (sb-alien:alien-funcall
+   (sb-alien:extern-alien "objc_msgSend" (sb-alien:function (sb-alien:struct ns:rect)
+							    sb-alien:system-area-pointer
+							    sb-alien:system-area-pointer))
+   (ns::cocoa-ref ci-image)
+   (ns:sel "extent")))
+
 
 (defun draw-image-to-current-context (ci-image in-rect from-rect operation delta)
   "Draws all or part of the image in the specified rectangle in the current coordinate system."
-  (ns:objc ci-image "drawInRect:fromRect:operation:fraction:"
-	   (:struct ns:rect) in-rect
-	   (:struct ns:rect) from-rect
-	   :int (case operation
-		  (:clear 0)
-		  (:copy 1)
-		  (:source-over 2)
-		  (:source-in 3)
-		  (:source-out 4)
-		  (:source-at-op 5)
-		  (:destination-over 6)
-		  (:destination-in 7)
-		  (:destination-out 8)
-		  (:Destination-at-op)
-		  (t operation))
-	   :double (float delta 1.0d0)))
+  (ns::with-sb-alien-rect (in-rect in-rect)
+    (ns::with-sb-alien-rect (from-rect from-rect)
+      (sb-alien:alien-funcall
+       (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+								sb-alien:system-area-pointer
+								sb-alien:system-area-pointer
+								(sb-alien:struct ns:rect)
+								(sb-alien:struct ns:rect)
+								sb-alien:int
+								sb-alien:double))
+       (ns::cocoa-ref ci-image)
+       (ns:sel "drawInRect:fromRect:operation:fraction:")
+       in-rect
+       from-rect
+       (case operation
+	 (:clear 0)
+	 (:copy 1)
+	 (:source-over 2)
+	 (:source-in 3)
+	 (:source-out 4)
+	 (:source-at-op 5)
+	 (:destination-over 6)
+	 (:destination-in 7)
+	 (:destination-out 8)
+	 (:Destination-at-op)
+	 (t operation))
+       (float delta 1.0d0)))))
 
 ;; ci-filter
 (defvar *core-filter-db*)
