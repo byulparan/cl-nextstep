@@ -7,10 +7,17 @@
 
 (defmethod initialize-instance :after ((self wk-webview) &key (x 0) (y 0) (w 400) (h 200) (url ""))
   (let* ((config (ns:objc (ns:alloc "WKWebViewConfiguration") "init" :pointer))
-	 (cocoa-ref (ns:objc (ns:alloc "WKWebView") "initWithFrame:configuration:"
-			(:struct ns:rect) (ns:rect x y w h)
-			:pointer config
-			:pointer)))
+	 (cocoa-ref (with-sb-alien-rect (rect (rect x y w h))
+		      (sb-alien:alien-funcall
+		       (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:system-area-pointer
+										sb-alien:system-area-pointer
+										sb-alien:system-area-pointer
+										(sb-alien:struct rect)
+										sb-alien:system-area-pointer))
+		       (ns:alloc "WKWebView")
+		       (sel "initWithFrame:configuration:")
+		       rect
+		       config))))
     (setf (cocoa-ref self) cocoa-ref)
     (setf (url self) url)))
 
