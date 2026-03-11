@@ -31,12 +31,26 @@
 
 
 (defun attributed-string-size (attributed-string)
-  (ns:objc attributed-string "size" (:struct ns:size)))
+  (let* ((%size (sb-alien:alien-funcall
+		 (sb-alien:extern-alien "objc_msgSend" (sb-alien:function (sb-alien:struct size)
+									  sb-alien:system-area-pointer
+									  sb-alien:system-area-pointer))
+		 (cocoa-ref attributed-string)
+		 (sel "size"))))
+    (size (sb-alien:slot %size 'width) (sb-alien:slot %size 'height))))
 
 
 (defun draw-string (cg-context attributed-string rect)
   (with-ns-graphics (cg-context)
-    (ns:objc attributed-string "drawInRect:" (:struct ns:rect) rect)))
+    (with-sb-alien-rect (rect rect)
+      (sb-alien:alien-funcall
+       (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+								sb-alien:system-area-pointer
+								sb-alien:system-area-pointer
+								(sb-alien:struct rect)))
+       (cocoa-ref attributed-string)
+       (sel "drawInRect:")
+       rect))))
 
 
 
