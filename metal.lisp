@@ -7,7 +7,7 @@
   x y z)
 
 (sb-alien:define-alien-type nil
-  (sb-alien:struct origin
+  (sb-alien:struct mtl-origin
 		 (x sb-alien:unsigned-long)
 		 (y sb-alien:unsigned-long)
 		 (z sb-alien:unsigned-long)))
@@ -18,7 +18,7 @@
   width height depth)
 
 (sb-alien:define-alien-type nil
-    (sb-alien:struct size
+    (sb-alien:struct mtl-size
 		     (width sb-alien:unsigned-long)
 		     (height sb-alien:unsigned-long)
 		     (depth sb-alien:unsigned-long)))
@@ -30,9 +30,9 @@
 
 
 (sb-alien:define-alien-type nil
-    (sb-alien:struct region
-		     (origin (sb-alien:struct origin))
-		     (size (sb-alien:struct size))))
+    (sb-alien:struct mtl-region
+		     (origin (sb-alien:struct mtl-origin))
+		     (size (sb-alien:struct mtl-size))))
 
 
 
@@ -42,7 +42,7 @@
 
 
 (sb-alien:define-alien-type nil
-    (sb-alien:struct viewport
+    (sb-alien:struct mtl-viewport
 		     (x sb-alien:double)
 		     (y sb-alien:double)
 		     (width sb-alien:double)
@@ -73,7 +73,7 @@
 
 ;; CommandEncoder
 (defun set-viewport (command-encoder viewport)
-  (sb-alien:with-alien ((%viewport (sb-alien:struct viewport)))
+  (sb-alien:with-alien ((%viewport (sb-alien:struct mtl-viewport)))
     (setf (sb-alien:slot %viewport 'x) (float (viewport-x viewport) 1.0d0)
 	  (sb-alien:slot %viewport 'y) (float (viewport-y viewport) 1.0d0)
 	  (sb-alien:slot %viewport 'width) (float (viewport-width viewport) 1.0d0)
@@ -84,7 +84,7 @@
      (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
 							      sb-alien:system-area-pointer
 							      sb-alien:system-area-pointer
-							      (sb-alien:struct viewport)))
+							      (sb-alien:struct mtl-viewport)))
      (ns::cocoa-ref command-encoder)
      (ns::sel "setViewport:")
      %viewport)))
@@ -225,9 +225,9 @@
 
 
 (defun replace-region (texture region mipmap-level data bpr)
-  (sb-alien:with-alien ((%region (sb-alien:struct region))
-			(%origin (sb-alien:struct origin))
-			(%size (sb-alien:struct size)))
+  (sb-alien:with-alien ((%region (sb-alien:struct mtl-region))
+			(%origin (sb-alien:struct mtl-origin))
+			(%size (sb-alien:struct mtl-size)))
     (setf (sb-alien:slot %origin 'x) (floor (region-x region))
 	  (sb-alien:slot %origin 'y) (floor (region-y region))
 	  (sb-alien:slot %origin 'z) (floor (region-z region)))
@@ -240,7 +240,7 @@
      (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
 							      sb-alien:system-area-pointer
 							      sb-alien:system-area-pointer
-							      (sb-alien:struct region)
+							      (sb-alien:struct mtl-region)
 							      sb-alien:int
 							      sb-alien:system-area-pointer
 							      sb-alien:int))
@@ -254,14 +254,14 @@
 
 ;;  Function 
 (sb-alien:define-alien-type nil
-  (sb-alien:struct clear-color
+  (sb-alien:struct mtl-clear-color
 		   (red sb-alien:double)
 		   (green sb-alien:double)
 		   (blue sb-alien:double)
 		   (alpha sb-alien:double)))
 
 (defun clear-color (mtk-view red green blue alpha)
-  (sb-alien:with-alien ((%clear-color (sb-alien:struct clear-color)))
+  (sb-alien:with-alien ((%clear-color (sb-alien:struct mtl-clear-color)))
     (setf (sb-alien:slot %clear-color 'red) (float red 1.0d0)
 	  (sb-alien:slot %clear-color 'green) (float green 1.0d0)
 	  (sb-alien:slot %clear-color 'blue) (float blue 1.0d0)
@@ -270,7 +270,7 @@
      (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
 							      sb-alien:system-area-pointer
 							      sb-alien:system-area-pointer
-							      (sb-alien:struct clear-color)))
+							      (sb-alien:struct mtl-clear-color)))
      (ns::cocoa-ref mtk-view)
      (ns::sel "setClearColor:")
      %clear-color)))
