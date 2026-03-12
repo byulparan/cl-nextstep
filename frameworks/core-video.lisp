@@ -71,8 +71,8 @@
 ;; CVPixelBuffer
 (cffi:defcfun ("CVPixelBufferCreate" buffer-create) :int
   (allocator :pointer)
-  (width :sizet)
-  (height :sizet)
+  (width :unsigned-long-long)
+  (height :unsigned-long-long)
   (pixel-format-type :unsigned-int)
   (pixel-format-attributes :pointer)
   (out-buffer :pointer))
@@ -93,11 +93,11 @@
 
 (cffi:defcfun ("CVPixelBufferCreateWithBytes" make-buffer-with-bytes) :int
   (allocator :pointer)
-  (width :sizet)
-  (height :sizet)
+  (width :unsigned-long-long)
+  (height :unsigned-long-long)
   (pixel-format-type :unsigned-int)
   (base-address :pointer)
-  (bytes-per-row :sizet)
+  (bytes-per-row :unsigned-long-long)
   (release-callback :pointer)
   (release-refcon :pointer)
   (pixel-buffer-attributes :pointer)
@@ -112,16 +112,16 @@
 (cffi:defcfun ("CVPixelBufferGetBaseAddress" buffer-base-address) :pointer
   (buffer :pointer))
 
-(cffi:defcfun ("CVPixelBufferGetBytesPerRow" buffer-bytes-per-row) :sizet
+(cffi:defcfun ("CVPixelBufferGetBytesPerRow" buffer-bytes-per-row) :unsigned-long-long
   (buffer :pointer))
 
-(cffi:defcfun ("CVPixelBufferGetHeight" buffer-height) :sizet
+(cffi:defcfun ("CVPixelBufferGetHeight" buffer-height) :unsigned-long-long
   (buffer :pointer))
 
-(cffi:defcfun ("CVPixelBufferGetWidth" buffer-width) :sizet
+(cffi:defcfun ("CVPixelBufferGetWidth" buffer-width) :unsigned-long-long
   (buffer :pointer))
 
-(cffi:defcfun ("CVPixelBufferGetDataSize" buffer-data-size) :sizet
+(cffi:defcfun ("CVPixelBufferGetDataSize" buffer-data-size) :unsigned-long-long
   (buffer :pointer))
 
 (cffi:defcfun ("CVPixelBufferGetPixelFormatType" buffer-pixel-format-type) :unsigned-int

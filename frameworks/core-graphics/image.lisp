@@ -41,16 +41,16 @@
 (cffi:defcfun ("CGImageRelease" release-image) :void
   (cg-image :pointer))
 
-(cffi:defcfun ("CGImageGetWidth" image-width) :sizet
+(cffi:defcfun ("CGImageGetWidth" image-width) :unsigned-long-long
   (cg-image :pointer))
 
-(cffi:defcfun ("CGImageGetHeight" image-height) :sizet
+(cffi:defcfun ("CGImageGetHeight" image-height) :unsigned-long-long
   (cg-image :pointer))
 
-(cffi:defcfun ("CGImageGetBitsPerPixel" image-bits-per-pixel) :sizet
+(cffi:defcfun ("CGImageGetBitsPerPixel" image-bits-per-pixel) :unsigned-long-long
   (cg-image :pointer))
 
-(cffi:defcfun ("CGImageGetBytesPerRow" image-bytes-per-row) :sizet
+(cffi:defcfun ("CGImageGetBytesPerRow" image-bytes-per-row) :unsigned-long-long
   (cg-image :pointer))
 
 (defun image-data (cg-image)
@@ -68,7 +68,7 @@
 				   :pointer 
 				   (ns:objc "NSURL" "fileURLWithPath:" :pointer (ns:autorelease (ns:make-ns-string (uiop:native-namestring path))) :pointer)
 				   :pointer (cffi:mem-ref (cffi:foreign-symbol-pointer "kUTTypePNG") :pointer)
-				   :sizet 1
+				   :unsigned-long-long 1
 				   :pointer (cffi:null-pointer)
 				   :pointer)))
       (unwind-protect (progn
@@ -88,10 +88,10 @@
       (prog1
 	  (cffi:foreign-funcall "CGBitmapContextCreate"
 				:pointer data
-				:sizet width
-				:sizet height
-				:sizet 8
-				:sizet (* width 4)
+				:unsigned-long-long width
+				:unsigned-long-long height
+				:unsigned-long-long 8
+				:unsigned-long-long (* width 4)
 				:pointer color-space 
 				:unsigned-int (logior (ecase bitmap-info
 							(:order-default 0)
@@ -107,10 +107,10 @@
 (cffi:defcfun ("CGBitmapContextGetData" context-data) :pointer
   (context :pointer))
 
-(cffi:defcfun ("CGBitmapContextGetWidth" context-width) :sizet
+(cffi:defcfun ("CGBitmapContextGetWidth" context-width) :unsigned-long-long
   (context :pointer))
 
-(cffi:defcfun ("CGBitmapContextGetHeight" context-height) :sizet
+(cffi:defcfun ("CGBitmapContextGetHeight" context-height) :unsigned-long-long
   (context :pointer))
 
 (cffi:defcfun ("CGContextRelease" release-context) :void

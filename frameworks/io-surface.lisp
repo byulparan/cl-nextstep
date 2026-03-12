@@ -57,19 +57,19 @@
 (cffi:defcfun ("IOSurfaceDecrementUseCount" decrement-use-count) :void
   (buffer :pointer))
 
-(cffi:defcfun ("IOSurfaceGetAllocSize" alloc-size) :sizet
+(cffi:defcfun ("IOSurfaceGetAllocSize" alloc-size) :unsigned-long-long
   (buffer :pointer))
 
 (cffi:defcfun ("IOSurfaceGetBaseAddress" base-address) :pointer
   (buffer :pointer))
 
-(cffi:defcfun ("IOSurfaceGetBytesPerElement" bytes-per-element) :sizet
+(cffi:defcfun ("IOSurfaceGetBytesPerElement" bytes-per-element) :unsigned-long-long
   (buffer :pointer))
 
-(cffi:defcfun ("IOSurfaceGetBytesPerRow" bytes-per-row) :sizet
+(cffi:defcfun ("IOSurfaceGetBytesPerRow" bytes-per-row) :unsigned-long-long
   (buffer :pointer))
 
-(cffi:defcfun ("IOSurfaceGetHeight" height) :sizet
+(cffi:defcfun ("IOSurfaceGetHeight" height) :unsigned-long-long
   (buffer :pointer))
 
 (cffi:defcfun ("IOSurfaceGetID" id) :unsigned-int
@@ -86,7 +86,7 @@
 					  :unsigned-int)))
       (decode-type os-type))))
 
-(cffi:defcfun ("IOSurfaceGetPlaneCount" plane-count) :sizet
+(cffi:defcfun ("IOSurfaceGetPlaneCount" plane-count) :unsigned-long-long
   (buffer :pointer))
 
 (cffi:defcfun ("IOSurfaceGetTypeID" type-id) :unsigned-long)
@@ -94,7 +94,7 @@
 (cffi:defcfun ("IOSurfaceGetUseCount" use-count) :int
   (buffer :pointer))
 
-(cffi:defcfun ("IOSurfaceGetWidth" width) :sizet
+(cffi:defcfun ("IOSurfaceGetWidth" width) :unsigned-long-long
   (buffer :pointer))
 
 (cffi:defcfun ("IOSurfaceIncrementUseCount" increment-use-count) :void

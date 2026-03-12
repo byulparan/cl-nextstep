@@ -206,11 +206,11 @@ In case of hardware mirroring, the drawable display becomes the main display. In
 
 
 
-(cffi:defcfun ("CGDisplayPixelsHigh" display-pixels-high) :sizet
+(cffi:defcfun ("CGDisplayPixelsHigh" display-pixels-high) :unsigned-long-long
   "The display height in pixel units."
   (display :uint32))
 
-(cffi:defcfun ("CGDisplayPixelsWide" display-pixels-wide) :sizet
+(cffi:defcfun ("CGDisplayPixelsWide" display-pixels-wide) :unsigned-long-long
   "The display width in pixel units."
   (display :uint32))
 
@@ -250,11 +250,11 @@ When you change the display mode of a display in a mirroring set, your change sw
 ;; Getting Information About a Display Mode
 ;; ================================================================================
 
-(cffi:defcfun ("CGDisplayModeGetWidth" display-mode-width) :sizet
+(cffi:defcfun ("CGDisplayModeGetWidth" display-mode-width) :unsigned-long-long
   "The width, in pixels, of the specified display mode."
   (mode :pointer))
 
-(cffi:defcfun ("CGDisplayModeGetHeight" display-mode-height) :sizet
+(cffi:defcfun ("CGDisplayModeGetHeight" display-mode-height) :unsigned-long-long
   "The height, in pixels, of the specified display mode."
   (mode :pointer))
 
