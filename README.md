@@ -1,12 +1,10 @@
 # CL-NEXTSTEP
 
 Cocoa binding for CommonLisp on macOS.  
-It used CFFI.
+It used CFFI and sb-alien(for use struct by value)
 
 ## DEPENDENCIES
   * Quicklisp
-  * [trivial-main-thread](https://github.com/Shinmera/trivial-main-thread) 
-	You should be use recent version. Quicklisp version is outdated.
 
 ## USAGE
 
