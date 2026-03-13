@@ -160,10 +160,12 @@ In case of hardware mirroring, the drawable display becomes the main display. In
 
 (defun display-screen-size (display)
   "The size of the specified display in millimeters, or 0 if the display is not valid."
-  (let* ((%size (sb-alien:alien-funcall
-		 (sb-alien:extern-alien "CGDisplayScreenSize" (sb-alien:function (sb-alien:struct ns:size)
-										 sb-alien:unsigned-int))
-		 display)))
+  (sb-alien:with-alien ((%size (sb-alien:struct ns:size)))
+    (sb-alien:alien-funcall-into
+     (sb-alien:extern-alien "CGDisplayScreenSize" (sb-alien:function (sb-alien:struct ns:size)
+								     sb-alien:unsigned-int))
+     (sb-alien:alien-sap %size)
+     display)
     (ns:size (sb-alien:slot %size 'ns:width)
 	     (sb-alien:slot %size 'ns:height))))
 
@@ -193,16 +195,18 @@ In case of hardware mirroring, the drawable display becomes the main display. In
 
 (defun display-bounds (display)
   "The bounds of the display, expressed as a rectangle in the global display coordinate space (relative to the upper-left corner of the main display)."
-  (let* ((%rect (sb-alien:alien-funcall
-		(sb-alien:extern-alien "CGDisplayBounds" (sb-alien:function (sb-alien:struct ns:rect)
-									    sb-alien:unsigned-int))
-		display))
-	 (%origin (sb-alien:slot %rect 'ns::origin))
-	 (%size (sb-alien:slot %rect 'ns:size)))
-    (ns:rect (sb-alien:slot %origin 'ns::x)
-	     (sb-alien:slot %origin 'ns::y)
-	     (sb-alien:slot %size 'ns:width)
-	     (sb-alien:slot %size 'ns:height))))
+  (sb-alien:with-alien ((%rect (sb-alien:struct ns:rect)))
+    (sb-alien:alien-funcall-into
+     (sb-alien:extern-alien "CGDisplayBounds" (sb-alien:function (sb-alien:struct ns:rect)
+								 sb-alien:unsigned-int))
+     (sb-alien:alien-sap %rect)
+     display)
+    (let* ((%origin (sb-alien:slot %rect 'ns::origin))
+	   (%size (sb-alien:slot %rect 'ns:size)))
+      (ns:rect (sb-alien:slot %origin 'ns::x)
+	       (sb-alien:slot %origin 'ns::y)
+	       (sb-alien:slot %size 'ns:width)
+	       (sb-alien:slot %size 'ns:height)))))
 
 
 

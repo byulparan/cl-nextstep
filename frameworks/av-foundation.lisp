@@ -79,19 +79,22 @@
 	 (ns::sel "setCropRect:")
 	 crop-rect)))
     (when min-frame-duration
-      (sb-alien:alien-funcall
-       (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
-								sb-alien:system-area-pointer
-								sb-alien:system-area-pointer
-								(sb-alien:struct cm-time)))
-       (ns::cocoa-ref capture)
-       (ns::sel "setMinFrameDuration:")
-       (sb-alien:alien-funcall
-	(sb-alien:extern-alien "CMTimeMake" (sb-alien:function (sb-alien:struct cm-time)
-							       sb-alien:long-long
-							       sb-alien:int))
-	1
-	min-frame-duration)))
+      (sb-alien:with-alien ((%cm-time (sb-alien:struct cm-time)))
+	(sb-alien:alien-funcall-into
+	 (sb-alien:extern-alien "CMTimeMake" (sb-alien:function (sb-alien:struct cm-time)
+								sb-alien:long-long
+								sb-alien:int))
+	 (sb-alien:alien-sap %cm-time) 
+	 1
+	 min-frame-duration)
+	(sb-alien:alien-funcall
+	 (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+								  sb-alien:system-area-pointer
+								  sb-alien:system-area-pointer
+								  (sb-alien:struct cm-time)))
+	 (ns::cocoa-ref capture)
+	 (ns::sel "setMinFrameDuration:")
+	 %cm-time)))
     (ns:autorelease capture)))
 
 
@@ -173,12 +176,16 @@
     (let* ((input (ns:objc 
 		   (ns:objc (capture-session screen-capture) "inputs" :pointer)
 		   "objectAtIndex:" :int 0 :pointer)))
-      (sb-alien:alien-funcall
-       (sb-alien:extern-alien "objc_msgSend" (sb-alien:function (sb-alien:struct cm-time)
-								sb-alien:system-area-pointer
-								sb-alien:system-area-pointer))
-       (ns::cocoa-ref input)
-       (ns::sel "minFrameDuration")))))
+      (sb-alien:with-alien ((%cm-time (sb-alien:struct cm-time)))
+	(sb-alien:alien-funcall-into
+	 (sb-alien:extern-alien "objc_msgSend" (sb-alien:function (sb-alien:struct cm-time)
+								  sb-alien:system-area-pointer
+								  sb-alien:system-area-pointer))
+	 (sb-alien:alien-sap %cm-time)
+	 (ns::cocoa-ref input)
+	 (ns::sel "minFrameDuration"))
+	(* (sb-alien:slot %cm-time 'timescale)
+	   (sb-alien:slot %cm-time 'value))))))
 
 
 (defun (setf min-frame-duration) (framerate screen-capture)
@@ -186,18 +193,21 @@
     (let* ((input (ns:objc 
 		   (ns:objc (capture-session screen-capture) "inputs" :pointer)
 		   "objectAtIndex:" :int 0 :pointer)))
-      (sb-alien:alien-funcall
-       (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
-								sb-alien:system-area-pointer
-								sb-alien:system-area-pointer
-								(sb-alien:struct cm-time)))
-       (ns::cocoa-ref input)
-       (ns::sel "setMinFrameDuration:")
-       (sb-alien:alien-funcall
-	(sb-alien:extern-alien "CMTimeMake" (sb-alien:function (sb-alien:struct cm-time)
-							       sb-alien:long-long
-							       sb-alien:int))
-	1 framerate)))))
+      (sb-alien:with-alien ((%cm-time (sb-alien:struct cm-time)))
+	(sb-alien:alien-funcall-into
+	 (sb-alien:extern-alien "CMTimeMake" (sb-alien:function (sb-alien:struct cm-time)
+								sb-alien:long-long
+								sb-alien:int))
+	 (sb-alien:alien-sap %cm-time)
+	 1 framerate)
+	(sb-alien:alien-funcall
+	 (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+								  sb-alien:system-area-pointer
+								  sb-alien:system-area-pointer
+								  (sb-alien:struct cm-time)))
+	 (ns::cocoa-ref input)
+	 (ns::sel "setMinFrameDuration:")
+	 %cm-time)))))
 
 (defun scale-factor (screen-capture)
   (ns:with-event-loop (:waitp t)

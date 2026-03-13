@@ -118,12 +118,20 @@
   (ns:objc "CIImage" "imageWithCGImage:" :pointer cg-image :pointer))
 
 (defun extent (ci-image)
-  (sb-alien:alien-funcall
-   (sb-alien:extern-alien "objc_msgSend" (sb-alien:function (sb-alien:struct ns:rect)
-							    sb-alien:system-area-pointer
-							    sb-alien:system-area-pointer))
-   (ns::cocoa-ref ci-image)
-   (ns:sel "extent")))
+  (sb-alien:with-alien ((%rect (sb-alien:struct ns:rect)))
+    (sb-alien:alien-funcall-into
+     (sb-alien:extern-alien "objc_msgSend" (sb-alien:function (sb-alien:struct ns:rect)
+							      sb-alien:system-area-pointer
+							      sb-alien:system-area-pointer))
+     (sb-alien:alien-sap %rect)
+     (ns::cocoa-ref ci-image)
+     (ns:sel "extent"))
+    (let* ((origin (sb-alien:slot %rect 'ns::origin))
+	   (size (sb-alien:slot %rect 'ns:size)))
+      (ns:rect (sb-alien:slot origin 'ns::x)
+	       (sb-alien:slot origin 'ns::y)
+	       (sb-alien:slot size 'ns:width)
+	       (sb-alien:slot size 'ns:height)))))
 
 
 (defun draw-image-to-current-context (ci-image in-rect from-rect operation delta)

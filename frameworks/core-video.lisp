@@ -245,10 +245,12 @@
 
 (defun display-link-nominal-output-video-refresh-period (display-link)
   "Retrieves the nominal refresh period of a display link. This call allows one to retrieve the device's ideal refresh period. For example, an NTSC output device might report 1001/60000 to represent the exact NTSC vertical refresh rate."
-  (let* ((%cv-time (sb-alien:alien-funcall
-		    (sb-alien:extern-alien "CVDisplayLinkGetNominalOutputVideoRefreshPeriod" (sb-alien:function (sb-alien:struct cv-time)
-														sb-alien:system-area-pointer))
-		    display-link)))
+  (sb-alien:with-alien ((%cv-time (sb-alien:struct cv-time)))
+    (sb-alien:alien-funcall-into
+     (sb-alien:extern-alien "CVDisplayLinkGetNominalOutputVideoRefreshPeriod" (sb-alien:function (sb-alien:struct cv-time)
+												 sb-alien:system-area-pointer))
+     (sb-alien:alien-sap %cv-time)
+     display-link)
     (make-cv-time :flags (sb-alien:slot %cv-time 'flags)
 		  :time-scale (sb-alien:slot %cv-time 'time-scale)
 		  :time-value (sb-alien:slot %cv-time 'time-value))))
@@ -256,10 +258,12 @@
 
 (defun display-link-output-video-latency (display-link)
   "Retrieves the nominal latency of a display link. This call allows you to retrieve the device’s built-in output latency. For example, an NTSC device with one frame of latency might report back 1001/30000 or 2002/60000."
-  (let* ((%cv-time (sb-alien:alien-funcall
-		    (sb-alien:extern-alien "CVDisplayLinkGetOutputVideoLatency" (sb-alien:function (sb-alien:struct cv-time)
-												   sb-alien:system-area-pointer))
-		    display-link)))
+  (sb-alien:with-alien ((%cv-time (sb-alien:struct cv-time)))
+    (sb-alien:alien-funcall-into
+     (sb-alien:extern-alien "CVDisplayLinkGetOutputVideoLatency" (sb-alien:function (sb-alien:struct cv-time)
+										    sb-alien:system-area-pointer))
+     (sb-alien:alien-sap %cv-time)
+     display-link)
     (make-cv-time :flags (sb-alien:slot %cv-time 'flags)
 		  :time-scale (sb-alien:slot %cv-time 'time-scale)
 		  :time-value (sb-alien:slot %cv-time 'time-value))))

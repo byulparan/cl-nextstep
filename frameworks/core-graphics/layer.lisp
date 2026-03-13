@@ -46,10 +46,12 @@
 
 
 (defun layer-size (cg-layer)
-  (let* ((%size (sb-alien:alien-funcall
-		 (sb-alien:extern-alien "CGLayerGetSize" (sb-alien:function (sb-alien:struct ns:size)
-									    sb-alien:system-area-pointer))
-		 cg-layer)))
+  (sb-alien:with-alien ((%size (sb-alien:struct ns:size)))
+    (sb-alien:alien-funcall-into
+     (sb-alien:extern-alien "CGLayerGetSize" (sb-alien:function (sb-alien:struct ns:size)
+								sb-alien:system-area-pointer))
+     (sb-alien:alien-sap %size)
+     cg-layer)
     (ns:size (sb-alien:slot %size 'ns:width)
 	     (sb-alien:slot %size 'ns:height))))
 

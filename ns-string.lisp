@@ -31,12 +31,14 @@
 
 
 (defun attributed-string-size (attributed-string)
-  (let* ((%size (sb-alien:alien-funcall
-		 (sb-alien:extern-alien "objc_msgSend" (sb-alien:function (sb-alien:struct size)
-									  sb-alien:system-area-pointer
-									  sb-alien:system-area-pointer))
-		 (cocoa-ref attributed-string)
-		 (sel "size"))))
+  (sb-alien:with-alien ((%size (sb-alien:struct size)))
+    (sb-alien:alien-funcall-into
+     (sb-alien:extern-alien "objc_msgSend" (sb-alien:function (sb-alien:struct size)
+							      sb-alien:system-area-pointer
+							      sb-alien:system-area-pointer))
+     (sb-alien:alien-sap %size) 
+     (cocoa-ref attributed-string)
+     (sel "size"))
     (size (sb-alien:slot %size 'width) (sb-alien:slot %size 'height))))
 
 

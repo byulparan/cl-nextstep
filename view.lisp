@@ -167,12 +167,14 @@
   (objc mtk-view "setDepthStencilPixelFormat:" :int pixel-format))
 
 (defun drawable-size (mtk-view)
-  (let* ((%size (sb-alien:alien-funcall
-		 (sb-alien:extern-alien "objc_msgSend" (sb-alien:function (sb-alien:struct size)
-									  sb-alien:system-area-pointer
-									  sb-alien:system-area-pointer))
-		 (cocoa-ref mtk-view)
-		 (sel "drawableSize"))))
+  (sb-alien:with-alien ((%size (sb-alien:struct size)))
+    (sb-alien:alien-funcall-into
+     (sb-alien:extern-alien "objc_msgSend" (sb-alien:function (sb-alien:struct size)
+							      sb-alien:system-area-pointer
+							      sb-alien:system-area-pointer))
+     (sb-alien:alien-sap %size)
+     (cocoa-ref mtk-view)
+     (sel "drawableSize"))
     (ns:size (sb-alien:slot %size 'width) (sb-alien:slot %size 'height))))
 
 
