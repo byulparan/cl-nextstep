@@ -1,19 +1,31 @@
 (in-package :cl-nextstep)
 
-(defconstant +NSActivityIdleDisplaySleepDisabled+ (ash 1 40))
-(defconstant +NSActivityIdleSystemSleepDisabled+ (ash 1 20)) 
-(defconstant +NSActivitySuddenTerminationDisabled+ (ash 1 14)) 
-(defconstant +NSActivityAutomaticTerminationDisabled+ (ash 1 15)) 
-(defconstant +NSActivityUserInitiated+ (logior #x00FFFFFF +NSActivityIdleSystemSleepDisabled+)) 
-(defconstant +NSActivityUserInitiatedAllowingIdleSystemSleep+ (logand 
-							       +NSActivityUserInitiated+
-							       (lognot +NSActivityIdleSystemSleepDisabled+))) 
-(defconstant +NSActivityBackground+ #x000000FF) 
-(defconstant +NSActivityLatencyCritical+ #xFF00000000)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; NSActivityOptions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defconstant +activity-idle-display-sleep-disabled+ (ash 1 40))
+(defconstant +activity-idle-system-sleep-disabled+ (ash 1 20)) 
+(defconstant +activity-sudden-termination-disabled+ (ash 1 14)) 
+(defconstant +activity-automatic-termination-disabled+ (ash 1 15)) 
+(defconstant +activity-user-initiated+ (logior #x00FFFFFF +activity-idle-system-sleep-disabled+)) 
+(defconstant +activity-user-initiated-allowing-idle-system-sleep+ (logand 
+								   +activity-user-initiated+
+								   (lognot +activity-idle-system-sleep-disabled+))) 
+(defconstant +activity-background+ #x000000FF) 
+(defconstant +activity-latency-critical+ #xFF00000000)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ApplicationActivationPolicy
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defconstant +NSApplicationActivationPolicyRegular+ 0)
 (defconstant +NSApplicationActivationPolicyAccessory+ 1)
 (defconstant +NSApplicationActivationPolicyProhibited+ 2)
+
+
+
+
 
 (defvar *app*)
 
@@ -122,19 +134,40 @@
     (ns:objc (ns:objc "LispApplication" "sharedApplication" :pointer)
 	     "activateIgnoringOtherApps:" :bool t)))
 
-(defun set-process-activity (options reason)
-  (retain
-   (objc
-    (objc "NSProcessInfo" "processInfo" :pointer)
-    "beginActivityWithOptions:reason:"
-    :unsigned-long-long options
-    :pointer (autorelease (ns:make-ns-string reason))
-    :pointer)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ProcessInfo
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun process-activity-begin (options reason)
+  (with-event-loop (:waitp t)
+    (retain
+     (objc
+      (objc "NSProcessInfo" "processInfo" :pointer)
+      "beginActivityWithOptions:reason:"
+      :unsigned-long-long options
+      :pointer (autorelease (ns:make-ns-string reason))
+      :pointer))))
+
+
+(defun process-activity-end (token)
+  (with-event-loop (:waitp t)
+    (objc 
+     (objc "NSProcessInfo" "processInfo" :pointer)
+     "endActivity:"
+     :pointer token)
+    (release token)))
+
 
 (defun prevent-appnap ()
-  (set-process-activity
-   (logior +NSActivityUserInitiated+ +NSActivityLatencyCritical+)
+  (process-activity-begin
+   (logior +activity-user-initiated+ +activity-latency-critical+)
    "NONE REASON"))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Menu
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun make-menu-item (name &key action key)
   (objc (alloc "NSMenuItem")

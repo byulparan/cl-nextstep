@@ -43,8 +43,18 @@
    #:queue-for-event-loop
    #:with-event-loop
    #:enable-foreground
-   #:set-process-activity
-   #:prevent-appnap
+
+   #:+activity-idle-display-sleep-disabled+
+   #:+activity-idle-system-sleep-disabled+
+   #:+activity-sudden-termination-disabled+
+   #:+activity-automatic-termination-disabled+
+   #:+activity-user-initiated+
+   #:+activity-user-initiated-allowing-idle-system-sleep+
+   #:+activity-background+
+   #:+activity-latency-critical+
+   #:process-activity-begin
+   #:process-activity-end
+   
    #:make-default-menubar
    #:make-menu-item
    ;; timer.lisp
