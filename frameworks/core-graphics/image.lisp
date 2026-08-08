@@ -80,28 +80,33 @@
 
 
 
-
 ;; CGBitmapContext
 (defun make-bitmap-context (width height &key (data (cffi:null-pointer)) (color-space :color-space-srgb) (alpha-info :last) (bitmap-info :order-default))
   (ns:with-event-loop (:waitp t)
-    (let* ((color-space (cg:make-color-space color-space)))
-      (prog1
-	  (cffi:foreign-funcall "CGBitmapContextCreate"
-				:pointer data
-				:unsigned-long-long width
-				:unsigned-long-long height
-				:unsigned-long-long 8
-				:unsigned-long-long (* width 4)
-				:pointer color-space 
-				:unsigned-int (logior (ecase bitmap-info
-							(:order-default 0)
-							(:order-little 8192)
-							(:order-big 16384))
-						      (ecase alpha-info
-							(:last 1)
-							(:first 2)))
-				:pointer)
-	(cg:release-color-space color-space)))))
+    (flet ((byte-padding (byte)
+	     (let* ((rest (mod byte 64)))
+	       (if (zerop rest) byte
+		 (+ byte (- 64 rest))))))
+      (let* ((color-space (cg:make-color-space color-space)))
+	(prog1
+	    (cffi:foreign-funcall "CGBitmapContextCreate"
+				  :pointer data
+				  :unsigned-long-long width
+				  :unsigned-long-long height
+				  :unsigned-long-long 8
+				  ;; BytesPerRows 값은 GPU 에 매핑될때 64바이트 정렬이 되어야 함.
+				  ;; 안그러면 비율이 꺠지거나 등의 문제 발생
+				  :unsigned-long-long (byte-padding (* width 4))
+				  :pointer color-space 
+				  :unsigned-int (logior (ecase bitmap-info
+							  (:order-default 0)
+							  (:order-little 8192)
+							  (:order-big 16384))
+							(ecase alpha-info
+							  (:last 1)
+							  (:first 2)))
+				  :pointer)
+	  (cg:release-color-space color-space))))))
       
 
 (cffi:defcfun ("CGBitmapContextGetData" context-data) :pointer
