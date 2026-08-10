@@ -83,13 +83,29 @@
   (not (zerop (logand (ns:objc event "modifierFlags" :unsigned-int) (ash 1 19)))))
 
 (defun redisplay (view)
-  (with-sb-alien-rect (rect (ns:rect 0 0 (ns:width view) (ns:height view)))
-    (sb-alien:alien-funcall
-     (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
-							      sb-alien:system-area-pointer
-							      sb-alien:system-area-pointer
-							      (sb-alien:struct rect)))
-     (cocoa-ref view) (sel "setNeedsDisplayInRect:") rect)))
+  (if (cffi:pointerp view) (sb-alien:with-alien ((%frame (sb-alien:struct rect)))
+			     (sb-alien:alien-funcall-into
+			      (sb-alien:extern-alien "objc_msgSend" (sb-alien:function (sb-alien:struct rect)
+										       sb-alien:system-area-pointer
+										       sb-alien:system-area-pointer))
+			      (sb-alien:alien-sap %frame)
+			      view
+			      (sel "frame"))
+			     (let* ((size (sb-alien:slot %frame 'size)))
+			       (with-sb-alien-rect (rect (ns:rect 0 0 (sb-alien:slot size 'width) (sb-alien:slot size 'height)))
+				 (sb-alien:alien-funcall
+				  (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+											   sb-alien:system-area-pointer
+											   sb-alien:system-area-pointer
+											   (sb-alien:struct rect)))
+				  view (sel "setNeedsDisplayInRect:") rect))))
+    (with-sb-alien-rect (rect (ns:rect 0 0 (ns:width view) (ns:height view)))
+      (sb-alien:alien-funcall
+       (sb-alien:extern-alien "objc_msgSend" (sb-alien:function sb-alien:void
+								sb-alien:system-area-pointer
+								sb-alien:system-area-pointer
+								(sb-alien:struct rect)))
+       (cocoa-ref view) (sel "setNeedsDisplayInRect:") rect))))
 
 ;; view
 (defclass view (base-view)
