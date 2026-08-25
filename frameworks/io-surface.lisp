@@ -23,6 +23,7 @@
 
 (defun make-surface (width height &key (pixel-format "ARGB") global-p)
   "Creates a brand new IOSurface object. If you want this object system widely, then global-p argument should be T"
+  (assert (find pixel-format '("ARGB" "RGfA") :test #'string=) nil "현재 IOSurface 는 ARGB 와 RGfA 만 지원합니다")
   (flet ((encode-type (type)
 	   (let ((codes (map 'list #'char-code type)))
 	     (+ (ash (nth 0 codes) 24)
@@ -35,8 +36,10 @@
 					     :pointer (cffi:foreign-symbol-pointer "kCFTypeDictionaryKeyCallBacks")
 					     :pointer (cffi:foreign-symbol-pointer "kCFTypeDictionaryValueCallBacks")
 					     :pointer))
-	   (bytes-per-element 4)
-	   (kCFNumberSInt32Type 3))
+	   (bytes-per-element (cond ((string= pixel-format "ARGB") 4)
+				    ((string= pixel-format "RGfA") 16)
+				    (t (error "Not Support Format ~a in IOSurface" pixel-format))))
+	   (bytes-per-row (align-property :bytes-per-row (* width bytes-per-element))))
       ;; "kIOSurfaceIsGlobal" is deprecated. but steel work.
       (cffi:foreign-funcall "CFDictionarySetValue" :pointer dictionary
 						   :pointer (cffi:mem-ref (cffi:foreign-symbol-pointer "kIOSurfaceIsGlobal") :pointer)
@@ -46,12 +49,12 @@
 					  :pointer dictionary
 					  :pointer (cffi:mem-ref (cffi:foreign-symbol-pointer ,key) :pointer)
 					  :pointer (ns:autorelease (ns:objc "NSNumber" "numberWithInt:" :int ,value :pointer)))))
-	(cf-dict-set "kIOSurfaceBytesPerRow" (* width bytes-per-element))
+	(cf-dict-set "kIOSurfaceBytesPerRow" bytes-per-row)
 	(cf-dict-set "kIOSurfaceBytesPerElement" bytes-per-element)
 	(cf-dict-set "kIOSurfaceWidth" width)
 	(cf-dict-set "kIOSurfaceHeight" height)
 	(cf-dict-set "kIOSurfacePixelFormat" (encode-type pixel-format))
-	(cf-dict-set "kIOSurfaceAllocSize" (* width height bytes-per-element)))
+	(cf-dict-set "kIOSurfaceAllocSize" (align-property :alloc-size (* bytes-per-row height))))
       (cffi:foreign-funcall "IOSurfaceCreate" :pointer dictionary :pointer))))
 
 (cffi:defcfun ("IOSurfaceDecrementUseCount" decrement-use-count) :void
@@ -120,3 +123,15 @@
 					  :int options
 					  :pointer seed)
     (cffi:mem-ref seed :unsigned-int)))
+
+
+(defun align-property (property size)
+  (cffi:foreign-funcall "IOSurfaceAlignProperty"
+			:pointer (ecase property
+				   (:bytes-per-row (cffi:mem-ref (cffi:foreign-symbol-pointer "kIOSurfaceBytesPerRow") :pointer))
+				   (:alloc-size (cffi:mem-ref (cffi:foreign-symbol-pointer "kIOSurfaceAllocSize") :pointer)))
+			:unsigned-long size
+			:unsigned-long))
+
+
+
