@@ -69,6 +69,9 @@
 
       [self processFilter: filter withConfiguration: configuration];
       
+      [filter release];
+      [configuration release];
+      
     }];
 
 }
@@ -103,6 +106,9 @@
 
       [self processFilter: filter withConfiguration: configuration];
       
+      [filter release];
+      [configuration release];
+      
     }];
 
 }
@@ -124,8 +130,6 @@
 
   [stream startCaptureWithCompletionHandler:^(NSError * _Nullable error) {   }];
 
-  [filter release];
-  [configuration release];
 }
 
 
