@@ -77,8 +77,7 @@ static NSMutableArray* gFullscreenWindows = NULL;
   
   [gFullscreenWindows addObject: self];
   if([gFullscreenWindows count] == 1) {
-    // [NSMenu setMenuBarVisible: NO];
-    NSApp.presentationOptions =  NSApplicationPresentationAutoHideMenuBar;
+    NSApp.presentationOptions =  NSApplicationPresentationAutoHideMenuBar | NSApplicationPresentationAutoHideDock;;
   }
 }
 
@@ -90,7 +89,6 @@ static NSMutableArray* gFullscreenWindows = NULL;
   self.hasShadow = mMemHasShadow;
   [gFullscreenWindows removeObject: self];
   if([gFullscreenWindows count] == 0) {
-    // [NSMenu setMenuBarVisible: YES];
     NSApp.presentationOptions =  NSApplicationPresentationDefault;
   }
 }
